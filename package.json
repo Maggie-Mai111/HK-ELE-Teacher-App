@@ -18,7 +18,7 @@
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "test": "tsc -p tsconfig.tests.json && node --test --test-isolation=none .test-dist/tests/*.test.js",
+    "test": "tsc -p tsconfig.tests.json && node --test --experimental-test-isolation=none .test-dist/tests/*.test.js",
     "serve:subpath": "python scripts/serve_subpath.py --root dist --port 19078",
     "validate:public": "python scripts/validate_public_repository.py",
     "validate": "pnpm run validate:public && pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build:web && pnpm run validate:pwa"
