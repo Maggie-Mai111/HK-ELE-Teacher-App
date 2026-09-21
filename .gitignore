@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+.test-dist/
+dist/
+dist-android/
+dist-ios/
+android/
+ios/
+reports/
+*.log
+*.tmp
+*.pyc
+__pycache__/
+.DS_Store

@@ -1,0 +1,9 @@
+{
+  "byteCount": 62969832,
+  "dataVersion": "2026-09-14-package67-v1",
+  "fileCount": 1192,
+  "schemaVersion": "HK_ELE_MOBILE_PHASE2_STATIC_DATA_1.0.0",
+  "sourceManifestSha256": "95F83B04571153AD1496EE0572B3F2CB21D07E828F5184D96F3F9AFF667AEB05",
+  "sourcePackage": "74_github_pages_static_teacher_release_candidate",
+  "sourceRoot": "public/hkele-data"
+}

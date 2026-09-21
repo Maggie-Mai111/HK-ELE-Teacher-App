@@ -1,0 +1,44 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "development": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_FOLDER": "public-native",
+        "EXPO_PUBLIC_HKELE_RELEASE_CHANNEL": "development",
+        "EXPO_PUBLIC_HKELE_ENABLE_DATA_DEBUG": "true"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_FOLDER": "public-native",
+        "EXPO_PUBLIC_HKELE_RELEASE_CHANNEL": "preview",
+        "EXPO_PUBLIC_HKELE_ENABLE_DATA_DEBUG": "false",
+        "EXPO_PUBLIC_HKELE_DATA_URL": "https://maggie-mai111.github.io/HK-ELE-Teacher-App/hkele-data",
+        "EXPO_PUBLIC_HKELE_UPDATE_MANIFEST_URL": "https://maggie-mai111.github.io/HK-ELE-Teacher-App/hkele-data/update-manifest.json",
+        "EXPO_PUBLIC_HKELE_ENDPOINT_STATUS": "EXPECTED_NOT_YET_LIVE"
+      }
+    },
+    "android-apk": {
+      "extends": "preview",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": false,
+      "env": {
+        "EXPO_PUBLIC_FOLDER": "public-native",
+        "EXPO_PUBLIC_HKELE_RELEASE_CHANNEL": "production",
+        "EXPO_PUBLIC_HKELE_ENABLE_DATA_DEBUG": "false",
+        "EXPO_PUBLIC_HKELE_DATA_URL": "https://maggie-mai111.github.io/HK-ELE-Teacher-App/hkele-data",
+        "EXPO_PUBLIC_HKELE_UPDATE_MANIFEST_URL": "https://maggie-mai111.github.io/HK-ELE-Teacher-App/hkele-data/update-manifest.json",
+        "EXPO_PUBLIC_HKELE_ENDPOINT_STATUS": "EXPECTED_NOT_YET_LIVE"
+      }
+    }
+  }
+}

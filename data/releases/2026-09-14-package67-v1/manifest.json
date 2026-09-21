@@ -1,0 +1,88 @@
+{
+  "compatibilityRules": {
+    "compatibleSchemaMajor": 1,
+    "generalUnavailableMeaning": "SOURCE_COMPONENT_UNAVAILABLE_NOT_ZERO",
+    "incompatibleSchemaAction": "REFUSE_LOAD",
+    "incompatibleStructureUpdateChanges": "schemaVersion",
+    "ordinaryDataUpdateChanges": "dataVersion",
+    "stableFamilyKey": "baseword_key",
+    "stableFormKey": "form_key"
+  },
+  "counts": {
+    "candidate": 3185,
+    "forms": 319924,
+    "inclusiveReference": 3430,
+    "ranked": 163570,
+    "referenceOnly": 245,
+    "totalFamilies": 163784,
+    "unranked": 214
+  },
+  "dataVersion": "2026-09-14-package67-v1",
+  "files": [
+    {
+      "byteSize": 748828,
+      "compressionFormat": "gzip",
+      "path": "reference/families.json.gz",
+      "role": "offline_inclusive_reference_families",
+      "sha256": "B8FB19F0FD9A4642BE995F991F9B9FA94000BD9C70A5460B0942142FF227B8BB"
+    },
+    {
+      "byteSize": 6665108,
+      "compressionFormat": "gzip",
+      "path": "reference/forms.json.gz",
+      "role": "offline_inclusive_reference_forms",
+      "sha256": "AC61E4685985EA6A1259F2EE71EB4A156A26A106F0DD98CD7EB8B922F47803E5"
+    },
+    {
+      "byteSize": 3339062,
+      "compressionFormat": "gzip",
+      "path": "reference/search-routes.json.gz",
+      "role": "offline_identity_routes_for_reference_surfaces",
+      "sha256": "3A751108B3DFFCF2DCA53258F735B1B5ABB34351E7FE41B6D1B5538C1B6A643D"
+    },
+    {
+      "byteSize": 29356,
+      "compressionFormat": "none",
+      "path": "cpb/cpb-sight-words-100.json",
+      "role": "cpb_sight_words_ranks_1_100",
+      "sha256": "880C87A5A686289353891926176B284B3957A240DA74FAEA56A0B10C964F64A5"
+    },
+    {
+      "byteSize": 1103,
+      "compressionFormat": "none",
+      "path": "identity/identity-contract.json",
+      "role": "identity_and_tokenizer_contract",
+      "sha256": "69362CA81CC3268FD2FF3D29D8820EE6DF9F45A6EC74807BEE7A8C35C352EC64"
+    },
+    {
+      "byteSize": 38488,
+      "compressionFormat": "none",
+      "path": "identity/grammatical-relations.json",
+      "role": "registered_grammatical_relations_teacher_display",
+      "sha256": "7ACA47BFA405A6355300E444303D26934D158FAF45BBB5CFC45BD5967279818A"
+    }
+  ],
+  "minimumAppVersion": "0.1.0",
+  "releaseDate": "2026-09-21",
+  "schemaVersion": "1.0.0",
+  "sourcePackages": [
+    {
+      "packageId": "67_general_source_identity_correction_candidate_local_product_20260914_v1",
+      "path": "source-register/Package67/PRODUCT_ENTRY.json",
+      "role": "data_authority",
+      "sha256": "E95A2BFFC315C17D96BFE111469251FE4DFD7499FADDA02C14DB356700524E49"
+    },
+    {
+      "packageId": "72_teacher_readability_hierarchy_20260920_v1",
+      "path": "source-register/Package72/PRODUCT_ENTRY.json",
+      "role": "teacher_frontend_reference",
+      "sha256": "A12381C5FC4BECA12168192EA05D6358A97EFAF54D827BE9A5E11F91E6B5B1A9"
+    },
+    {
+      "packageId": "74_github_pages_static_teacher_release_candidate",
+      "path": "source-register/Package74/PRODUCT_ENTRY.json",
+      "role": "static_contract_reference",
+      "sha256": "BB8E626A90CECA69387A1E376D80B6139CD71721475CBE5A6FD21C9B138DA792"
+    }
+  ]
+}

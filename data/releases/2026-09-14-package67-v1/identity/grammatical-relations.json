@@ -1,0 +1,1523 @@
+{
+  "dataVersion": "2026-09-14-package67-v1",
+  "policy": {
+    "allowsGuessedIdentity": false,
+    "changesCoverage": false,
+    "createsRankedFamily": false
+  },
+  "relationCount": 60,
+  "relations": [
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "do",
+              "displayFamily": "do",
+              "textForm": "do"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "don't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "do not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "do",
+              "displayFamily": "do",
+              "textForm": "do"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "doesn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "does not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "did",
+              "displayFamily": "did",
+              "textForm": "did"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "didn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "did not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "trial:pronoun:i",
+              "displayFamily": "I",
+              "textForm": "I"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "i'm",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "I am",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "let",
+              "displayFamily": "let",
+              "textForm": "let"
+            },
+            {
+              "basewordKey": "trial:pronoun:us",
+              "displayFamily": "us",
+              "textForm": "us"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "let's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "let us",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "trial:pronoun:i",
+              "displayFamily": "I",
+              "textForm": "I"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "i've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "I have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "isn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "is not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "aren't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "are not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "wasn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "was not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "were",
+              "displayFamily": "were",
+              "textForm": "were"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "weren't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "were not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "haven't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "have not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "hasn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "has not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "had",
+              "displayFamily": "had",
+              "textForm": "had"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "hadn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "had not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "can",
+              "displayFamily": "can",
+              "textForm": "can"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "can't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "cannot",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "can",
+              "displayFamily": "can",
+              "textForm": "can"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "cannot",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "can not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "could",
+              "displayFamily": "could",
+              "textForm": "could"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "couldn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "could not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "won't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "will not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "would",
+              "displayFamily": "would",
+              "textForm": "would"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "wouldn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "would not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "should",
+              "displayFamily": "should",
+              "textForm": "should"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "shouldn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "should not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "must",
+              "displayFamily": "must",
+              "textForm": "must"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "mustn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "must not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "need",
+              "displayFamily": "need",
+              "textForm": "need"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "needn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "need not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "you",
+              "displayFamily": "you",
+              "textForm": "you"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "you're",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "you are",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "we",
+              "displayFamily": "we",
+              "textForm": "we"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "we're",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "we are",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "they",
+              "displayFamily": "they",
+              "textForm": "they"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "they're",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "they are",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "you",
+              "displayFamily": "you",
+              "textForm": "you"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "you've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "you have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "we",
+              "displayFamily": "we",
+              "textForm": "we"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "we've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "we have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "they",
+              "displayFamily": "they",
+              "textForm": "they"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "they've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "they have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "trial:pronoun:i",
+              "displayFamily": "I",
+              "textForm": "I"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "i'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "I will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "you",
+              "displayFamily": "you",
+              "textForm": "you"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "you'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "you will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "he",
+              "displayFamily": "he",
+              "textForm": "he"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "he'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "he will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "she",
+              "displayFamily": "she",
+              "textForm": "she"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "she'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "she will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "it",
+              "displayFamily": "it",
+              "textForm": "it"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "it'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "it will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "we",
+              "displayFamily": "we",
+              "textForm": "we"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "we'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "we will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "they",
+              "displayFamily": "they",
+              "textForm": "they"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "they'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "they will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "that",
+              "displayFamily": "that",
+              "textForm": "that"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "that",
+              "displayFamily": "that",
+              "textForm": "that"
+            },
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "that's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "that is / that has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "there",
+              "displayFamily": "there",
+              "textForm": "there"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "there",
+              "displayFamily": "there",
+              "textForm": "there"
+            },
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "there's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "there is / there has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "here",
+              "displayFamily": "here",
+              "textForm": "here"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "here's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "here is",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "what",
+              "displayFamily": "what",
+              "textForm": "what"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "what",
+              "displayFamily": "what",
+              "textForm": "what"
+            },
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "what's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "what is / what has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "who",
+              "displayFamily": "who",
+              "textForm": "who"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "who",
+              "displayFamily": "who",
+              "textForm": "who"
+            },
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "who's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "who is / who has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "he",
+              "displayFamily": "he",
+              "textForm": "he"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "he",
+              "displayFamily": "he",
+              "textForm": "he"
+            },
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "he's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "he is / he has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "she",
+              "displayFamily": "she",
+              "textForm": "she"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "she",
+              "displayFamily": "she",
+              "textForm": "she"
+            },
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "she's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "she is / she has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "it",
+              "displayFamily": "it",
+              "textForm": "it"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "it",
+              "displayFamily": "it",
+              "textForm": "it"
+            },
+            {
+              "basewordKey": "has",
+              "displayFamily": "has",
+              "textForm": "has"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "it's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "it is / it has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "trial:pronoun:i",
+              "displayFamily": "I",
+              "textForm": "I"
+            },
+            {
+              "basewordKey": "had",
+              "displayFamily": "had",
+              "textForm": "had"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "trial:pronoun:i",
+              "displayFamily": "I",
+              "textForm": "I"
+            },
+            {
+              "basewordKey": "would",
+              "displayFamily": "would",
+              "textForm": "would"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "i'd",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "I had / I would",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "he",
+              "displayFamily": "he",
+              "textForm": "he"
+            },
+            {
+              "basewordKey": "had",
+              "displayFamily": "had",
+              "textForm": "had"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "he",
+              "displayFamily": "he",
+              "textForm": "he"
+            },
+            {
+              "basewordKey": "would",
+              "displayFamily": "would",
+              "textForm": "would"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "he'd",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "he had / he would",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "there",
+              "displayFamily": "there",
+              "textForm": "there"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "there're",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "there are",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "would've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "would have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "where",
+              "displayFamily": "where",
+              "textForm": "where"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "where",
+              "displayFamily": "where",
+              "textForm": "where"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "where's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "where is / where has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "can",
+              "displayFamily": "can",
+              "textForm": "can"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "could've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "could have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "how",
+              "displayFamily": "how",
+              "textForm": "how"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "how",
+              "displayFamily": "how",
+              "textForm": "how"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "how's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "how is / how has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "there",
+              "displayFamily": "there",
+              "textForm": "there"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "there'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "there will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "that",
+              "displayFamily": "that",
+              "textForm": "that"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "that'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "that will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "who",
+              "displayFamily": "who",
+              "textForm": "who"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "who're",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "who are",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "who",
+              "displayFamily": "who",
+              "textForm": "who"
+            },
+            {
+              "basewordKey": "will",
+              "displayFamily": "will",
+              "textForm": "will"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "who'll",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "who will",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "shall",
+              "displayFamily": "shall",
+              "textForm": "shall"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "should've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "should have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "must",
+              "displayFamily": "must",
+              "textForm": "must"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "must've",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "must have",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "when",
+              "displayFamily": "when",
+              "textForm": "when"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "basewordKey": "when",
+              "displayFamily": "when",
+              "textForm": "when"
+            },
+            {
+              "basewordKey": "have",
+              "displayFamily": "have",
+              "textForm": "have"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "when's",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "when is / when has",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "may",
+              "displayFamily": "may",
+              "textForm": "may"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "mightn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "might not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "ought",
+              "displayFamily": "ought",
+              "textForm": "ought"
+            },
+            {
+              "basewordKey": "not",
+              "displayFamily": "not",
+              "textForm": "not"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "oughtn't",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "ought not",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "what",
+              "displayFamily": "what",
+              "textForm": "what"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "what're",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "what are",
+      "teacherStatus": "Registered grammatical relation"
+    },
+    {
+      "alternatives": [
+        {
+          "components": [
+            {
+              "basewordKey": "where",
+              "displayFamily": "where",
+              "textForm": "where"
+            },
+            {
+              "basewordKey": "be",
+              "displayFamily": "be",
+              "textForm": "be"
+            }
+          ]
+        }
+      ],
+      "normalizedSurface": "where're",
+      "rankedFamilyAssignment": false,
+      "sourceExpansion": "where are",
+      "teacherStatus": "Registered grammatical relation"
+    }
+  ],
+  "schemaVersion": "HK_ELE_REGISTERED_GRAMMATICAL_RELATIONS_1.0.0",
+  "sources": [
+    {
+      "interpretation": "Locked teacher-facing surface/full-form registry.",
+      "path": "source-register/Package72/frontend/contractions.js",
+      "role": "package72_contractions",
+      "sha256": "61FF67A51F81566BA04C0414E8286FFAEC5A2D6D7B4F811BDF3CD44B416FBBDD"
+    },
+    {
+      "path": "source-register/registered-grammar-original-six/GRAMMAR_FORM_SUMMARY.csv",
+      "role": "registered_grammar_original_six",
+      "sha256": "6D95C41AC96F2D3647BD888956C3FC190BA7E7B07B55D38AFB29ACC56D9B72DF"
+    },
+    {
+      "path": "source-register/registered-grammar-common-36/RELATION_REGISTRY.csv",
+      "role": "registered_grammar_common_36",
+      "sha256": "93FEB84AF4E777FABF5D0FB5DBBF2BE74A0086D4DCDDF8623E06FD7031C00F8C"
+    },
+    {
+      "path": "source-register/registered-grammar-final-18/FINAL_CONTRACTION_RELATION_REGISTRY.csv",
+      "role": "registered_grammar_final_18",
+      "sha256": "794AC575E85A3FB304D144ACE457ABD4ECCB4EA74C44B22F4963EEB911376EFC"
+    }
+  ]
+}

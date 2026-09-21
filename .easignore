@@ -1,0 +1,33 @@
+# EAS receives only the managed native build inputs.
+.git/
+.github/
+.expo/
+.test-dist/
+node_modules/
+dist/
+dist-android/
+dist-ios/
+android/
+ios/
+
+# Web-only public site. This excludes every full-data shard and the 63 MB archive.
+public/
+
+# Local QA, history, reports and source-generation material are not native build inputs.
+reports/
+audits/
+tests/
+scripts/
+schemas/
+config/
+*.md
+PRODUCT_ENTRY.json
+PHASE_STATUS.json
+INPUT_LOCK.json
+
+# Editor and operating-system residue.
+*.log
+*.tmp
+*.pyc
+__pycache__/
+.DS_Store

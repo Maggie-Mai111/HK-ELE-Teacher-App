@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-android
+dist-ios
+.test-dist
+data/releases
+data/*.json
+audits/*.json
+INPUT_LOCK.json
+reports
+pnpm-lock.yaml

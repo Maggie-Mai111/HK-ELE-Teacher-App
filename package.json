@@ -1,0 +1,56 @@
+{
+  "name": "hkele-teacher-mobile-app",
+  "version": "0.3.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "build:web": "node scripts/export_platform.mjs web dist",
+    "build:android:bundle": "node scripts/export_platform.mjs android dist-android",
+    "build:ios:bundle": "node scripts/export_platform.mjs ios dist-ios",
+    "validate:pwa": "node scripts/validate_pwa.mjs",
+    "prebuild:android": "expo prebuild --platform android --no-install",
+    "prebuild:ios": "expo prebuild --platform ios --no-install",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "test": "tsc -p tsconfig.tests.json && node --test --test-isolation=none .test-dist/tests/*.test.js",
+    "serve:subpath": "python scripts/serve_subpath.py --root dist --port 19078",
+    "validate:public": "python scripts/validate_public_repository.py",
+    "validate": "pnpm run validate:public && pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build:web && pnpm run validate:pwa"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.16",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "~57.0.24",
+    "expo-asset": "~57.0.18",
+    "expo-crypto": "57.0.3",
+    "expo-file-system": "~57.0.7",
+    "expo-image-picker": "57.0.19",
+    "expo-sharing": "~57.0.21",
+    "expo-splash-screen": "~57.0.9",
+    "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.4",
+    "expo-text-extractor": "2.0.0",
+    "fflate": "0.8.3",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-web": "~0.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/react": "~19.2.0",
+    "eslint": "^10.0.0",
+    "prettier": "^3.6.2",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.59.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "/HK-ELE-Teacher-App/",
+  "name": "HK-ELE Teacher",
+  "short_name": "HK-ELE",
+  "description": "Teacher tools for browsing HK-ELE lexical evidence and checking classroom text.",
+  "start_url": "/HK-ELE-Teacher-App/",
+  "scope": "/HK-ELE-Teacher-App/",
+  "display": "standalone",
+  "background_color": "#F5F7F2",
+  "theme_color": "#0E6550",
+  "lang": "en-HK",
+  "icons": [
+    {
+      "src": "/HK-ELE-Teacher-App/pwa-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/HK-ELE-Teacher-App/pwa-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "HK-ELE Teacher",
+    "slug": "hkele-teacher-mobile",
+    "version": "0.3.0",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "assetBundlePatterns": ["data/releases/**/*"],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "experiments": {
+      "baseUrl": "/HK-ELE-Teacher-App"
+    },
+    "updates": {
+      "enabled": false,
+      "checkAutomatically": "NEVER",
+      "fallbackToCacheTimeout": 0
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow HK-ELE Teacher to select a classroom image for on-device text recognition. The App does not upload the image.",
+          "cameraPermission": "Allow HK-ELE Teacher to take a classroom image for on-device text recognition. The App does not upload the image.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F5F7F2",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "dark": {
+            "backgroundColor": "#17231D",
+            "image": "./assets/splash-icon.png"
+          }
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.hkele.teacher",
+      "buildNumber": "3"
+    },
+    "android": {
+      "package": "org.hkele.teacher",
+      "versionCode": 3,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F5F7F2"
+      },
+      "permissions": ["android.permission.CAMERA"],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "name": "HK-ELE Teacher",
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
