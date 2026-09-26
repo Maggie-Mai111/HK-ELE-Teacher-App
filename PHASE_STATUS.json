@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "HK_ELE_PACKAGE83_PHASE_STATUS_1.0.0",
+  "schemaVersion": "HK_ELE_PACKAGE85_PHASE_STATUS_1.0.0",
   "createdOn": "2026-09-26",
-  "status": "PACKAGE83_LOCAL_USABILITY_ACCEPTED_AWAITING_STAGING_UPDATE_AUTHORIZATION",
+  "status": "PACKAGE85_LOCAL_SUPERVISOR_FEATURE_USABILITY_ACCEPTED_AWAITING_SINGLE_STAGING_UPDATE_AUTHORIZATION",
   "localAcceptance": "PASS",
   "stagingUpdate": "NOT_AUTHORIZED_NOT_EXECUTED",
   "productionDeployment": "NOT_AUTHORIZED_NOT_EXECUTED",
@@ -10,6 +10,8 @@
   "protectedInputsModified": false,
   "researchRecomputationPerformed": false,
   "databaseRebuilt": false,
+  "apiChanged": false,
+  "workerChanged": false,
   "manuscriptModified": false,
   "commitOrPushPerformed": false,
   "platformSecretsSetOrRead": false,

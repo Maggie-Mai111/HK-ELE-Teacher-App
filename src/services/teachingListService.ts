@@ -120,6 +120,7 @@ export function useTeachingList(repository: HkeleRepository) {
     label: string;
     items: TeachingListItem[];
   } | null>(null);
+  const [sessionSources, setSessionSources] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let active = true;
@@ -154,9 +155,15 @@ export function useTeachingList(repository: HkeleRepository) {
   }, [undoState]);
 
   const add = useCallback(
-    (family: FamilyRecord, selectedForm?: string) => {
+    (family: FamilyRecord, selectedForm?: string, sessionSource?: string) => {
       const existing = items.find((item) => item.basewordKey === family.baseword_key);
       const chosen = selectedForm?.trim() || family.display_family;
+      if (sessionSource) {
+        setSessionSources((current) => ({
+          ...current,
+          [family.baseword_key]: sessionSource,
+        }));
+      }
       if (existing) {
         if (!existing.selectedForms.includes(chosen)) {
           commit(
@@ -199,11 +206,17 @@ export function useTeachingList(repository: HkeleRepository) {
   );
 
   const remove = useCallback(
-    (basewordKey: string) =>
+    (basewordKey: string) => {
+      setSessionSources((current) => {
+        const next = { ...current };
+        delete next[basewordKey];
+        return next;
+      });
       commit(
         items.filter((item) => item.basewordKey !== basewordKey),
         "Removed family",
-      ),
+      );
+    },
     [commit, items],
   );
 
@@ -265,8 +278,21 @@ export function useTeachingList(repository: HkeleRepository) {
       move,
       undoState,
       undo,
+      sourceFor: (basewordKey: string) => sessionSources[basewordKey] ?? null,
     }),
-    [add, addMany, items, move, ready, remove, removeSelectedForm, undo, undoState, update],
+    [
+      add,
+      addMany,
+      items,
+      move,
+      ready,
+      remove,
+      removeSelectedForm,
+      sessionSources,
+      undo,
+      undoState,
+      update,
+    ],
   );
 }
 

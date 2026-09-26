@@ -75,9 +75,20 @@ export interface CoverageResult {
   answeredFamilies: number;
   totalFamilies: number;
   knownFamilies: number;
+  unfamiliarFamilies: number;
   familyKnownPercent: number | null;
+  familyUnfamiliarPercent: number | null;
+  knownTokens: number;
+  unfamiliarTokens: number;
+  totalTokens: number;
   tokenCoveragePercent: number | null;
+  unfamiliarTokenRatePercent: number | null;
   complete: boolean;
+}
+
+function complementaryPercent(known: number, total: number): [number, number] {
+  const knownPercent = (known / total) * 100;
+  return [knownPercent, 100 - knownPercent];
 }
 
 export function calculateCoverage(
@@ -87,14 +98,27 @@ export function calculateCoverage(
   const answered = families.filter((family) => responses[family.basewordKey] !== undefined);
   const known = answered.filter((family) => responses[family.basewordKey] === true);
   const complete = families.length > 0 && answered.length === families.length;
-  const answeredTokens = answered.reduce((sum, family) => sum + family.tokenCount, 0);
+  const totalTokens = families.reduce((sum, family) => sum + family.tokenCount, 0);
   const knownTokens = known.reduce((sum, family) => sum + family.tokenCount, 0);
+  const unfamiliarFamilies = complete ? families.length - known.length : 0;
+  const unfamiliarTokens = complete ? totalTokens - knownTokens : 0;
+  const [familyKnownPercent, familyUnfamiliarPercent] = complete
+    ? complementaryPercent(known.length, families.length)
+    : [null, null];
+  const [tokenCoveragePercent, unfamiliarTokenRatePercent] =
+    complete && totalTokens ? complementaryPercent(knownTokens, totalTokens) : [null, null];
   return {
     answeredFamilies: answered.length,
     totalFamilies: families.length,
     knownFamilies: known.length,
-    familyKnownPercent: complete ? (known.length / families.length) * 100 : null,
-    tokenCoveragePercent: complete && answeredTokens ? (knownTokens / answeredTokens) * 100 : null,
+    unfamiliarFamilies,
+    familyKnownPercent,
+    familyUnfamiliarPercent,
+    knownTokens,
+    unfamiliarTokens,
+    totalTokens,
+    tokenCoveragePercent,
+    unfamiliarTokenRatePercent,
     complete,
   };
 }

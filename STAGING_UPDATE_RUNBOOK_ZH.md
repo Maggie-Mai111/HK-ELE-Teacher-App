@@ -1,33 +1,52 @@
-# Package84 单次 staging Pages 更新说明（尚未授权执行）
+# Package85 单次 staging Pages 更新说明（尚未授权执行）
 
-当前状态：`PACKAGE84_LOCAL_RELEASE_CANDIDATE_ACCEPTED_AWAITING_SINGLE_STAGING_DEPLOYMENT_AUTHORIZATION`。本文件只是操作手册，不授予 commit、push、workflow、provider 或任何 production 权限。
+当前状态：`PACKAGE85_LOCAL_SUPERVISOR_FEATURE_USABILITY_ACCEPTED_AWAITING_SINGLE_STAGING_UPDATE_AUTHORIZATION`。本文件只是待授权操作手册，不授予同步、commit、push、workflow、provider 或 production 权限。
 
-## 复用项
+## 更新范围
 
-- staging Worker URL：`https://hkele-ai-filter-staging.hkele-teacher-webapp.workers.dev`
-- Package83 记录的 staging Worker Version ID：`922fa729-7c15-4924-ae6a-1b37c169cd48`
-- Package84 没有改变 Worker request/response、CORS、Turnstile action 或严格 JSON contract。
-- 数据库/API/Worker 不需重新发布；只更新 Pages Web/PWA 资产。
+- 仅把 Package85 的 Web/PWA tracked files 同步到指定本地 GitHub 仓库，再触发一次 staging Pages 更新。
+- 复用 staging Worker URL：`https://hkele-ai-filter-staging.hkele-teacher-webapp.workers.dev`。
+- 复用 Package84 登记的 staging Worker Version ID：`922fa729-7c15-4924-ae6a-1b37c169cd48`。
+- Package85 没有改变数据库、API、Worker request/response、CORS、Turnstile action 或严格 JSON contract，因此数据库、API 和 Worker 均不需更新。
 
-## 必须另行明确授权
+## 授权前本地核验
 
-1. 把 Package84 的 tracked files 同步到指定本地 GitHub 仓库并创建 commit。
-2. push 指定 commit/branch 到 `Maggie-Mai111/HK-ELE-Teacher-App`。
-3. 手动 dispatch 一次 staging Pages workflow，复用上述 Worker URL 与已有 staging Turnstile 配置。
-4. 如需真实 provider smoke test，另行授权一次 DeepSeek 请求及可能费用；否则继续使用 fixture/mock。
+在 Package85 目录使用锁定依赖完成：
 
-production、Worker 部署、secret 读取/设置、付费服务、APK/IPA 和 native OCR 发布均不包含在上述授权中。
+1. format check；
+2. typecheck；
+3. lint；
+4. 104 项自动测试；
+5. Web build；
+6. PWA validation；
+7. public repository validation；
+8. `TRACKED_FILE_MANIFEST.csv` 自核和 Package84 data hash 零变化确认。
 
-## 获授权后的唯一建议顺序
+任何失败都应停止 staging 更新，不得用重新生成 principal 数据、修改 Worker 或跳过校验来规避。
 
-1. 核验 `TRACKED_FILE_MANIFEST.csv`、目标仓库、branch 与工作树。
-2. 同步 tracked files，排除 `node_modules`、`.expo`、`.test-dist`、`dist*`、`reports`、`.dev.vars` 与 secret/token/key。
-3. 在目标仓库重跑 format、typecheck、lint、93 tests、Web build、PWA validation、public repository validation。
-4. 复核 diff 和 data hashes，只允许 Package84 前端、测试、PWA 与文档变更。
-5. 取得 commit/push 授权后才提交与推送；取得 workflow 授权后才 dispatch staging Pages。
-6. staging 验收：新用户/迁移、browse/search/manual/AI、root `act`=7 含 `age`、短文/490 occurrences、193 forms、Teaching list/exports、mobile/landscape/keyboard、online/offline/cache upgrade、console 0/0。
-7. 记录 commit、workflow run、Pages artifact/hash、URL、Worker URL 与结果。失败时停止并回到更新前已知 commit；不得自动转 production。
+## 必须另行明确授权的一次性步骤
 
-## 明确禁止
+1. 依据 `TRACKED_FILE_MANIFEST.csv` 把 Package85 tracked files 同步到用户指定的本地 GitHub 仓库；不要复制 `node_modules`、`.expo`、`.test-dist`、`dist` 或本地临时文件。
+2. 查看同步 diff，确认只含 Package85 登记变更、无 secret、无本机绝对路径、无 principal 数据漂移。
+3. 创建一个明确指向 Package85 的 commit。
+4. push 指定 commit/branch 到 `Maggie-Mai111/HK-ELE-Teacher-App`。
+5. 手动 dispatch 一次 staging Pages workflow，继续使用上述 Worker URL 与已有 staging Turnstile 配置。
+6. 在 staging URL 重跑桌面与 390×844 核心路径、console、PWA 和 Knowledge/Preteach 验收。
 
-不要部署 Package83；不要为了本次 UI/PWA 修复重新部署 Worker；不要提交 `.dev.vars` 或任何 secret；不要自动调用真实 DeepSeek；不要更新 production；不要构建 APK/IPA。
+上述同步、commit、push 和 workflow 必须由项目所有者另行明确授权；本任务没有执行。
+
+## 真实 AI 的独立授权边界
+
+当前功能、构建和测试只使用 mock/fixture，真实 DeepSeek 请求为 0。若 staging 后确需 provider smoke test，必须再单独授权一次真实 DeepSeek 请求及其潜在费用；该授权不得从 Pages 更新授权推定。
+
+## 明确排除
+
+- 不部署或修改 staging/production Worker；
+- 不进入 production Pages；
+- 不读取、设置或轮换 secret；
+- 不启用付费服务；
+- 不构建 APK/IPA；
+- 不创建账号、学生身份、云端知识检查存储或个人资料；
+- 不修改 Package67/72/77/78/80–84、论文或 principal 数据。
+
+回滚时使用 staging Pages 的上一成功 artifact/commit；Worker 无变更，因此无需 Worker 回滚。

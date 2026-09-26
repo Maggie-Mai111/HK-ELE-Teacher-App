@@ -17,6 +17,7 @@ import { UnmatchedWordsPanel } from "../components/UnmatchedWordsPanel";
 import type { DataMode, HkeleRepository, ResolvedOccurrence } from "../domain/hkele";
 import { matchCpb100 } from "../services/cpbService";
 import { validHkRange } from "../services/frequencyService";
+import type { KnowledgeFamily } from "../services/knowledgeTestService";
 import {
   groupOccurrences,
   nextBatchSize,
@@ -84,6 +85,8 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
   const [customEnd, setCustomEnd] = useState("500");
   const [groupLimit, setGroupLimit] = useState(OCCURRENCE_BATCH_SIZE);
   const [occurrenceLimit, setOccurrenceLimit] = useState(OCCURRENCE_BATCH_SIZE);
+  const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+  const [knowledgeNotKnown, setKnowledgeNotKnown] = useState<KnowledgeFamily[]>([]);
   const summaryRef = useRef<View>(null);
   const filteredSummaryRef = useRef<View>(null);
 
@@ -98,6 +101,7 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
       setSort("occurrence");
       setGroupLimit(OCCURRENCE_BATCH_SIZE);
       setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
+      setKnowledgeNotKnown([]);
       setDataMode(next[0]?.dataMode ?? repository.getDataMode());
       focusAndReveal(summaryRef.current);
     } catch (reason) {
@@ -236,7 +240,32 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
               {counts.unavailable + counts.unmatched + counts.review}
             </Text>
           </View>
+          <View style={styles.knowledgeEntry}>
+            <View style={styles.knowledgeEntryText}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.knowledgeEntryTitle}>
+                Check word knowledge
+              </Text>
+              <Text style={styles.knowledgeEntryNote}>
+                Let a teacher or learner mark Known / Not known and estimate the unfamiliar-word
+                rate. Answers stay in this session.
+              </Text>
+            </View>
+            <ActionButton
+              kind={knowledgeOpen ? "secondary" : "primary"}
+              label={knowledgeOpen ? "Hide word knowledge check" : "Check word knowledge"}
+              onPress={() => setKnowledgeOpen((value) => !value)}
+            />
+          </View>
+          {knowledgeOpen ? (
+            <KnowledgeTestPanel
+              onNotKnownChange={setKnowledgeNotKnown}
+              results={results}
+              teaching={teaching}
+              text={text}
+            />
+          ) : null}
           <PreteachPanel
+            notKnownFamilies={knowledgeNotKnown}
             repository={repository}
             results={results}
             teaching={teaching}
@@ -300,12 +329,6 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
             title="Text complexity"
           >
             <ComplexityPanel results={results} text={text} />
-          </ProgressiveDisclosure>
-          <ProgressiveDisclosure
-            summary="Generate teacher-controlled review questions."
-            title="Knowledge check"
-          >
-            <KnowledgeTestPanel results={results} text={text} />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure
             summary="Filter status categories and review repeated forms as grouped rows."
@@ -443,6 +466,21 @@ const styles = StyleSheet.create({
   groupText: { gap: spacing.xs },
   groupTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
   label: { color: colors.ink, fontSize: 15, fontWeight: "800" },
+  knowledgeEntry: {
+    alignItems: "flex-start",
+    backgroundColor: colors.surface,
+    borderColor: colors.primary,
+    borderRadius: 14,
+    borderWidth: 2,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.md,
+    justifyContent: "space-between",
+    padding: spacing.md,
+  },
+  knowledgeEntryNote: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  knowledgeEntryText: { flex: 1, gap: spacing.xs, minWidth: 240 },
+  knowledgeEntryTitle: { color: colors.primary, fontSize: 20, fontWeight: "800" },
   rangeDash: { color: colors.muted, fontSize: 15, fontWeight: "700" },
   rangeError: { color: colors.danger, fontSize: 15, lineHeight: 22 },
   rangeInput: {

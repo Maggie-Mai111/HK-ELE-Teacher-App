@@ -1,6 +1,6 @@
 {
-  "name": "hkele-teacher-final-usability-accessibility",
-  "version": "0.7.0",
+  "name": "hkele-teacher-supervisor-feature-discoverability",
+  "version": "0.8.0",
   "private": true,
   "main": "index.ts",
   "scripts": {

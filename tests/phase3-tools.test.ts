@@ -76,7 +76,15 @@ test("sample coverage stays unavailable until every sampled family is answered",
   assert.equal(calculateCoverage([one, two], { one: true }).complete, false);
   const complete = calculateCoverage([one, two], { one: true, two: false });
   assert.equal(complete.familyKnownPercent, 50);
+  assert.equal(complete.familyUnfamiliarPercent, 50);
+  assert.equal(complete.knownFamilies, 1);
+  assert.equal(complete.unfamiliarFamilies, 1);
   assert.ok(Math.abs((complete.tokenCoveragePercent ?? 0) - 100 / 3) < 1e-10);
+  assert.ok(Math.abs((complete.unfamiliarTokenRatePercent ?? 0) - 200 / 3) < 1e-10);
+  assert.equal(
+    (complete.tokenCoveragePercent ?? 0) + (complete.unfamiliarTokenRatePercent ?? 0),
+    100,
+  );
   assert.match(tokenCoverageGuidance(85), /substantial support/);
   assert.match(tokenCoverageGuidance(100), /Complete lexical coverage/);
 });
@@ -131,6 +139,12 @@ test("pre-teach suggestions exclude CPB and review items and show transparent re
     makeOccurrence("technical", technical, 14),
     makeOccurrence("London", makeFamily("london", 6000), 24),
     { ...makeOccurrence("US", technical, 24), status: "BLOCKED" as const, owners: [] },
+    {
+      ...makeOccurrence("unclear", technical, 30),
+      status: "AMBIGUOUS" as const,
+      bestOwnerCount: 2,
+      owners: [technical, makeFamily("unclear", 5000)],
+    },
   ];
   const suggestions = generatePreteachSuggestions(
     "The technical technical London US",

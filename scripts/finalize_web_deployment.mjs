@@ -95,9 +95,9 @@ const fingerprint = createHash("sha256")
 const serviceWorkerPath = resolve(root, "sw.js");
 let serviceWorker = await readFile(serviceWorkerPath, "utf8");
 serviceWorker = serviceWorker
-  .replace("__PACKAGE84_CACHE_VERSION__", `package84-${fingerprint}`)
-  .replace("__PACKAGE84_COMPACT_DATA_ASSETS__", JSON.stringify(compactAssets, null, 2))
-  .replace("__PACKAGE84_BUILD_ASSETS__", JSON.stringify(buildAssets, null, 2));
-if (serviceWorker.includes("__PACKAGE84_")) throw new Error("Service worker placeholders remain.");
+  .replace("__PACKAGE85_CACHE_VERSION__", `package85-${fingerprint}`)
+  .replace("__PACKAGE85_COMPACT_DATA_ASSETS__", JSON.stringify(compactAssets, null, 2))
+  .replace("__PACKAGE85_BUILD_ASSETS__", JSON.stringify(buildAssets, null, 2));
+if (serviceWorker.includes("__PACKAGE85_")) throw new Error("Service worker placeholders remain.");
 await writeFile(serviceWorkerPath, serviceWorker, "utf8");
 process.stdout.write("GitHub Pages /HK-ELE-Teacher-App/ finalization PASS\n");

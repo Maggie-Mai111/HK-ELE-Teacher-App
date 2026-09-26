@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import type { HkeleRepository, ResolvedOccurrence } from "../domain/hkele";
 import { matchCpb100 } from "../services/cpbService";
-import { collectEligibleFamilies } from "../services/knowledgeTestService";
+import { collectEligibleFamilies, type KnowledgeFamily } from "../services/knowledgeTestService";
 import {
   generatePreteachSuggestions,
   type ClassLevel,
@@ -21,9 +21,16 @@ interface Props {
   results: ResolvedOccurrence[];
   repository: HkeleRepository;
   teaching: TeachingListStore;
+  notKnownFamilies?: KnowledgeFamily[];
 }
 
-export function PreteachPanel({ text, results, repository, teaching }: Props) {
+export function PreteachPanel({
+  text,
+  results,
+  repository,
+  teaching,
+  notKnownFamilies = [],
+}: Props) {
   const [classLevel, setClassLevel] = useState<ClassLevel>("P4");
   const generated = useMemo(
     () => generatePreteachSuggestions(text, results, classLevel),
@@ -72,6 +79,50 @@ export function PreteachPanel({ text, results, repository, teaching }: Props) {
         unsupported items. Ordering uses the number of displayed reasons, repetition and HK rank—no
         hidden composite score.
       </Text>
+      <View style={styles.evidenceSection}>
+        <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+          Learner/teacher marked as Not known
+        </Text>
+        <Text style={styles.note}>
+          Direct marks from the current Knowledge check session are kept separate from system
+          suggestions and are not turned into a score.
+        </Text>
+        {notKnownFamilies.length ? (
+          notKnownFamilies.map((item) => {
+            const inList = teaching.items.some((entry) => entry.basewordKey === item.basewordKey);
+            return (
+              <View key={item.basewordKey} style={styles.directItem}>
+                <Text style={styles.itemTitle}>
+                  {item.actualForm} <Text style={styles.family}>({item.displayFamily})</Text>
+                </Text>
+                <ActionButton
+                  disabled={inList}
+                  kind="secondary"
+                  label={inList ? "In Teaching list" : "Add marked word to Teaching list"}
+                  onPress={() =>
+                    teaching.add(
+                      item.family,
+                      item.actualForm,
+                      "Learner/teacher marked as Not known",
+                    )
+                  }
+                />
+              </View>
+            );
+          })
+        ) : (
+          <Text style={styles.empty}>No Not known marks in this session yet.</Text>
+        )}
+      </View>
+      <View style={styles.evidenceSection}>
+        <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
+          System-suggested words with registered reasons
+        </Text>
+        <Text style={styles.note}>
+          These are deterministic review suggestions, not predictions of what a learner does not
+          know. No LLM selects, orders or explains them.
+        </Text>
+      </View>
       {items.length === 0 ? (
         <Text style={styles.empty}>
           No eligible suggestion has a registered reason for this text and class level.
@@ -171,6 +222,14 @@ const styles = StyleSheet.create({
     color: colors.muted,
     padding: spacing.sm,
   },
+  directItem: {
+    alignItems: "flex-start",
+    backgroundColor: colors.canvas,
+    borderRadius: 12,
+    gap: spacing.sm,
+    padding: spacing.md,
+  },
+  evidenceSection: { gap: spacing.sm },
   family: { color: colors.muted, fontWeight: "600" },
   intro: { color: colors.muted, fontSize: 14, lineHeight: 21 },
   item: { backgroundColor: colors.canvas, borderRadius: 12, gap: spacing.xs, padding: spacing.md },
@@ -185,5 +244,6 @@ const styles = StyleSheet.create({
   manualTitle: { color: colors.ink, fontSize: 15, fontWeight: "800" },
   note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   reason: { color: colors.ink, fontSize: 14, lineHeight: 20 },
+  sectionTitle: { color: colors.ink, fontSize: 17, fontWeight: "800", lineHeight: 24 },
   title: { color: colors.ink, fontSize: 20, fontWeight: "800" },
 });

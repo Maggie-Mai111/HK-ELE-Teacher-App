@@ -154,14 +154,14 @@ test("193 forms and 500 occurrences are exposed progressively rather than render
   assert.match(check, /groupOccurrences\(visible\)/);
 });
 
-test("Web hides OCR while summary-first text results keep all advanced features collapsed", () => {
+test("Web hides OCR while summary-first text results keep advanced evidence collapsed", () => {
   const check = source("src/screens/CheckTextScreen.tsx");
   assert.match(check, /Platform\.OS !== "web" \? <OcrInputPanel/);
   assert.ok(check.indexOf('title="Text complexity"') > check.indexOf("<PreteachPanel"));
+  assert.ok(check.indexOf("Check word knowledge") < check.indexOf("<PreteachPanel"));
   for (const title of [
     "Text highlighting",
     "Text complexity",
-    "Knowledge check",
     "Detailed status and grouped results",
     "All occurrences",
   ])
@@ -237,7 +237,7 @@ test("PWA source precaches compact data, versions builds and excludes the full d
   assert.match(sw, /url\.pathname\.includes\("\/hkele-data\/"\)/);
   const finalizer = source("scripts/finalize_web_deployment.mjs");
   assert.match(finalizer, /compactAssets\.length !== 3/);
-  assert.match(finalizer, /package84-/);
+  assert.match(finalizer, /package85-/);
   assert.match(finalizer, /viewport-fit=cover/);
   assert.match(finalizer, /safe-area-inset-bottom/);
 });

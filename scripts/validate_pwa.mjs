@@ -54,7 +54,7 @@ const checks = {
     serviceWorker.includes("const BUILD_ASSETS") &&
     serviceWorker.includes("/_expo/static/js/web/index-"),
   cacheVersionFinalized:
-    serviceWorker.includes("package84-") && !serviceWorker.includes("__PACKAGE84_"),
+    serviceWorker.includes("package85-") && !serviceWorker.includes("__PACKAGE85_"),
   cacheUpgradeScoped:
     serviceWorker.includes("key.startsWith(CACHE_PREFIX)") &&
     serviceWorker.includes("key !== CACHE_NAME"),
@@ -92,7 +92,7 @@ if (archiveSha256 !== "CB767B54582C8D37716BDE18FCD88768440715B7BCA03497532A13FAF
 }
 
 const report = {
-  schemaVersion: "HK_ELE_PACKAGE84_PWA_VALIDATION_1.0.0",
+  schemaVersion: "HK_ELE_PACKAGE85_PWA_VALIDATION_1.0.0",
   checkedOn: "2026-09-26",
   status: "PASS",
   basePath: "/HK-ELE-Teacher-App/",

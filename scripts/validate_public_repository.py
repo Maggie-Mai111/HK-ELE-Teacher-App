@@ -138,7 +138,7 @@ def scan_file(path: Path, findings: list[dict[str, str]]) -> None:
 
 def main() -> None:
     findings: list[dict[str, str]] = []
-    # Package84 is deliberately prepared without copying Package83's .git directory.
+    # Package85 is deliberately prepared without copying Package84's .git directory.
     # Treat the release-candidate file inventory as the prospective tracked set.
     tracked_files = [relative(path) for path in iter_repository_files()]
     for path in tracked_files:

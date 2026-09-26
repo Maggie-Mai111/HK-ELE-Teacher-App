@@ -64,7 +64,7 @@ function parseManifest(text) {
 }
 
 const source = parseManifest(
-  await readFile(resolve(root, "PACKAGE83_SOURCE_TRACKED_FILE_MANIFEST.csv"), "utf8"),
+  await readFile(resolve(root, "PACKAGE84_SOURCE_TRACKED_FILE_MANIFEST.csv"), "utf8"),
 );
 const current = new Map(entries.map((entry) => [entry.path, entry]));
 const added = [...current.keys()].filter((path) => !source.has(path));

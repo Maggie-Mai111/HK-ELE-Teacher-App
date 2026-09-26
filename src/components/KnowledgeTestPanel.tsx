@@ -7,8 +7,10 @@ import {
   collectEligibleFamilies,
   seededKnowledgeSample,
   tokenCoverageGuidance,
+  type KnowledgeFamily,
   type KnowledgeResponses,
 } from "../services/knowledgeTestService";
+import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
 
@@ -21,9 +23,13 @@ function percent(value: number | null): string {
 export function KnowledgeTestPanel({
   text,
   results,
+  teaching,
+  onNotKnownChange,
 }: {
   text: string;
   results: ResolvedOccurrence[];
+  teaching: TeachingListStore;
+  onNotKnownChange?: (families: KnowledgeFamily[]) => void;
 }) {
   const eligible = useMemo(() => collectEligibleFamilies(results), [results]);
   const [mode, setMode] = useState<Mode>(null);
@@ -42,6 +48,11 @@ export function KnowledgeTestPanel({
     return [];
   }, [eligible, mode, seed]);
   const coverage = calculateCoverage(active, responses);
+  const notKnown = useMemo(
+    () => active.filter((family) => responses[family.basewordKey] === false),
+    [active, responses],
+  );
+  useEffect(() => onNotKnownChange?.(notKnown), [notKnown, onNotKnownChange]);
   const start = (next: Exclude<Mode, null>) => {
     setMode(next);
     setResponses({});
@@ -50,29 +61,34 @@ export function KnowledgeTestPanel({
   return (
     <View style={styles.box}>
       <Text accessibilityRole="header" aria-level={3} style={styles.title}>
-        Test Word Knowledge
+        Check word knowledge
       </Text>
       <Text style={styles.intro}>
-        {eligible.length} unique resolved families are eligible. Sampling is deterministic for this
-        exact text.
+        A teacher or learner can mark words as Known or Not known to estimate an unfamiliar-word
+        rate. {eligible.length} unique resolved families are eligible; answers stay only in this
+        current session.
+      </Text>
+      <Text style={styles.caution}>
+        Unfamiliar words depend on the individual learner. Vocabulary coverage is not the same as
+        reading comprehension.
       </Text>
       <View style={styles.actions}>
         <ActionButton
           disabled={!eligible.length}
           kind={mode === "n10" ? "primary" : "secondary"}
-          label="Sample N=10"
+          label="Quick sample (10)"
           onPress={() => start("n10")}
         />
         <ActionButton
           disabled={!eligible.length}
           kind={mode === "n20" ? "primary" : "secondary"}
-          label="Sample N=20"
+          label="Larger sample (20)"
           onPress={() => start("n20")}
         />
         <ActionButton
           disabled={!eligible.length}
           kind={mode === "full" ? "primary" : "secondary"}
-          label="Full coverage check"
+          label="Full check"
           onPress={() => start("full")}
         />
       </View>
@@ -111,22 +127,45 @@ export function KnowledgeTestPanel({
                 </Text>
                 <View style={styles.actions}>
                   <ActionButton
-                    accessibilityLabel={`Yes, know ${item.displayFamily}`}
+                    accessibilityLabel={`Known: ${item.displayFamily}`}
                     kind={answer === true ? "primary" : "secondary"}
-                    label="Yes"
+                    label="Known"
                     onPress={() =>
                       setResponses((current) => ({ ...current, [item.basewordKey]: true }))
                     }
                   />
                   <ActionButton
-                    accessibilityLabel={`No, do not know ${item.displayFamily}`}
+                    accessibilityLabel={`Not known: ${item.displayFamily}`}
                     kind={answer === false ? "primary" : "secondary"}
-                    label="No"
+                    label="Not known"
                     onPress={() =>
                       setResponses((current) => ({ ...current, [item.basewordKey]: false }))
                     }
                   />
                 </View>
+                {answer === false ? (
+                  <View style={styles.notKnownAction}>
+                    <Text style={styles.note}>Learner/teacher marked as Not known.</Text>
+                    <ActionButton
+                      disabled={teaching.items.some(
+                        (entry) => entry.basewordKey === item.basewordKey,
+                      )}
+                      kind="secondary"
+                      label={
+                        teaching.items.some((entry) => entry.basewordKey === item.basewordKey)
+                          ? "In Teaching list"
+                          : "Add marked word to Teaching list"
+                      }
+                      onPress={() =>
+                        teaching.add(
+                          item.family,
+                          item.actualForm,
+                          "Learner/teacher marked as Not known",
+                        )
+                      }
+                    />
+                  </View>
+                ) : null}
               </View>
             );
           })}
@@ -134,30 +173,40 @@ export function KnowledgeTestPanel({
             <Text style={styles.resultsTitle}>
               {coverage.answeredFamilies}/{coverage.totalFamilies} families answered
             </Text>
-            <Text style={styles.resultLine}>
-              {mode === "full" ? "Known families" : "Sample known percentage"}:{" "}
-              {percent(coverage.familyKnownPercent)}
-            </Text>
-            <Text style={styles.resultLine}>
-              {mode === "full"
-                ? "Exact checked token coverage"
-                : "Estimated token coverage from this sample"}
-              : {percent(coverage.tokenCoveragePercent)}
-            </Text>
-            {coverage.tokenCoveragePercent !== null ? (
-              <Text style={styles.guidance}>
-                {tokenCoverageGuidance(coverage.tokenCoveragePercent)}
-              </Text>
-            ) : null}
-            {mode !== "full" ? (
-              <Text style={styles.note}>
-                The estimate weights answered sample families by their token frequency in this text.
-                It is not exact full-text coverage.
-              </Text>
+            {coverage.complete ? (
+              <>
+                <Text style={styles.resultLabel}>
+                  {mode === "full" ? "Exact checked result" : "Sample estimate"}
+                </Text>
+                <Text style={styles.resultLine}>
+                  Known families: {coverage.knownFamilies}/{coverage.totalFamilies} (
+                  {percent(coverage.familyKnownPercent)})
+                </Text>
+                <Text style={styles.resultLine}>
+                  Unfamiliar families: {coverage.unfamiliarFamilies}/{coverage.totalFamilies} (
+                  {percent(coverage.familyUnfamiliarPercent)})
+                </Text>
+                <Text style={styles.resultLine}>
+                  Known token coverage: {percent(coverage.tokenCoveragePercent)}
+                </Text>
+                <Text style={styles.resultLine}>
+                  Unfamiliar token rate: {percent(coverage.unfamiliarTokenRatePercent)}
+                </Text>
+                {coverage.tokenCoveragePercent !== null ? (
+                  <Text style={styles.guidance}>
+                    {tokenCoverageGuidance(coverage.tokenCoveragePercent)}
+                  </Text>
+                ) : null}
+                <Text style={styles.note}>
+                  {mode === "full"
+                    ? "This exact checked result covers eligible resolved families and their eligible tokens only. It is not an absolute unfamiliar-word rate for every item in the text."
+                    : "This is an estimate from the sampled eligible families, weighted by their token occurrences in this text. It is not an exact full-text result."}
+                </Text>
+              </>
             ) : (
               <Text style={styles.note}>
-                Exact coverage appears only after every eligible family in this full check has an
-                answer.
+                Continue marking every shown family. Final percentages remain hidden until this
+                check is complete.
               </Text>
             )}
           </View>
@@ -191,6 +240,7 @@ const styles = StyleSheet.create({
   guidance: { color: colors.ink, fontSize: 14, fontWeight: "700", lineHeight: 21 },
   intro: { color: colors.muted, fontSize: 14, lineHeight: 21 },
   note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  notKnownAction: { alignItems: "flex-start", gap: spacing.sm, paddingTop: spacing.xs },
   prompt: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
   question: {
     backgroundColor: colors.canvas,
@@ -200,6 +250,7 @@ const styles = StyleSheet.create({
   },
   questionNumber: { color: colors.primary, fontSize: 14, fontWeight: "800" },
   resultLine: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  resultLabel: { color: colors.primary, fontSize: 16, fontWeight: "800", lineHeight: 23 },
   results: {
     backgroundColor: colors.primarySoft,
     borderRadius: 12,

@@ -1,9 +1,9 @@
 {
-  "schemaVersion": "HK_ELE_PACKAGE83_DEPLOYMENT_ENTRY_1.0.0",
+  "schemaVersion": "HK_ELE_PACKAGE85_DEPLOYMENT_ENTRY_1.0.0",
   "createdOn": "2026-09-26",
-  "package": "Package83",
-  "codeBaseline": "Package82",
-  "status": "PACKAGE83_LOCAL_USABILITY_ACCEPTED_AWAITING_STAGING_UPDATE_AUTHORIZATION",
+  "package": "Package85",
+  "codeBaseline": "Package84",
+  "status": "PACKAGE85_LOCAL_SUPERVISOR_FEATURE_USABILITY_ACCEPTED_AWAITING_SINGLE_STAGING_UPDATE_AUTHORIZATION",
   "currentGate": {
     "localAccepted": true,
     "commitOrPushAuthorized": false,
@@ -11,22 +11,23 @@
     "stagingWorkerUpdateRequired": false,
     "stagingWorkerUpdated": false,
     "productionAuthorized": false,
-    "reason": "OWNER_REVIEW_OF_LOCAL_TEACHER_INTERFACE_REQUIRED_BEFORE_ANY_EXTERNAL_CHANGE"
+    "reason": "OWNER_AUTHORIZATION_REQUIRED_BEFORE_SINGLE_STAGING_PAGES_UPDATE"
   },
   "staging": {
     "workerUrl": "https://hkele-ai-filter-staging.hkele-teacher-webapp.workers.dev",
     "currentWorkerVersionId": "922fa729-7c15-4924-ae6a-1b37c169cd48",
-    "workerContractChangedByPackage83": false,
+    "workerContractChangedByPackage85": false,
+    "databaseOrApiUpdateRequired": false,
     "pagesRepository": "Maggie-Mai111/HK-ELE-Teacher-App",
     "pagesBasePath": "/HK-ELE-Teacher-App/",
     "pagesUpdatePerformed": false
   },
   "localAcceptance": {
-    "tests": "PASS_82_OF_82",
+    "tests": "PASS_104_OF_104_ORIGINAL_93_RETAINED",
     "webBuild": "PASS",
     "pwaValidation": "PASS",
     "publicRepositoryValidation": "PASS",
-    "browser": "PASS_WIDE_AND_390_BY_844",
+    "browser": "PASS_1706_BY_960_AND_390_BY_844",
     "consoleWarnings": 0,
     "consoleErrors": 0,
     "realDeepSeekRequests": 0,

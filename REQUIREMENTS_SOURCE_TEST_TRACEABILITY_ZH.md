@@ -1,27 +1,38 @@
-# Package83 需求—来源—实现—测试追踪
+# Package85 需求—来源—实现—测试追踪
 
-| 需求                                            | 来源/边界                               | 主要实现                                            | 验证                                                 |
-| ----------------------------------------------- | --------------------------------------- | --------------------------------------------------- | ---------------------------------------------------- |
-| Package82 为唯一代码基线                        | 用户指示、Package82 manifest            | manifest 核验后复制；保留源副本                     | 1,353/1,353，0 mismatch；源 manifest SHA-256 已登记  |
-| principal 数据不变                              | 2026-09-26 handoff、Package67           | 无数据构建或 ranking 代码变更                       | 163,784 / 163,570 / 214 / 3,185 / 3,430 / 245        |
-| 查明 root `act` 6 vs 7                          | 实际 online shards 与 bundled form data | `aiFilterFamilyProjection.ts`                       | parity test 直接读取 gzip：旧在线 6、权威离线 7      |
-| 一般化修复，不硬编码                            | 登记 form 统一教师字段                  | 按 family 汇集 root/prefix/suffix 等                | 测试要求 `age` 出现且在线/离线 key 完全一致          |
-| AI 优先 3,430 bundle                            | 性能与数据一致性要求                    | `HybridRepository.aiFilterFamilies()`               | Candidate/Reference 3,185/3,430；不扫描完整库        |
-| full database Browse 不变                       | 产品保留要求                            | `HybridRepository.browse()` 未改路径                | PWA/public validation、Browse browser smoke          |
-| prefix/suffix/grade/rank/HK/AWL/MSVL/CPB 不回归 | 用户验收项                              | 复用 `executeAiFilter()`                            | 新增组合回归 test PASS                               |
-| 三项主导航                                      | 批准方案                                | `NavigationBar.tsx`                                 | usability test + browser AX                          |
-| Data 移至 About 菜单                            | 批准方案                                | `AppMenu.tsx`、`DataVersionScreen.tsx`              | 版本、许可、来源、隐私信息 test/browser 可见         |
-| AI 文案与两步流程                               | 批准方案                                | `AiFilterAssistant.tsx`                             | labels test；Preview → Show matching words 保留      |
-| AI 后只更新 Browse                              | 批准方案                                | `BrowseScreen.tsx` 单一 `WebFamilyTable`            | source test 确认单一结果表面                         |
-| 摘要、Clear、Edit filters、批量加入             | 批准方案                                | `BrowseScreen.tsx`、`teachingListService.addMany()` | usability test + regression                          |
-| More filters                                    | 批准方案                                | `BrowseScreen.tsx` disclosure                       | browser 验证 AI 未配置时仍可用                       |
-| Teacher/Detailed view                           | 批准方案                                | `WebFamilyTable.tsx`                                | 新用户 Teacher；Detailed 15 columns                  |
-| 已保存列设置不丢失                              | Package72 storage contract              | 继续 `hkele-phase1v-columns-v1`                     | source test；既有 migration test                     |
-| Teaching List 无损迁移                          | Package72 contract                      | 沿用 migration/service                              | family/forms/order/status/notes regression PASS      |
-| CSV/Markdown/Excel + Selected forms             | 既有产品能力                            | exporter 未删除                                     | phase2 export tests PASS                             |
-| 390×844 不强迫宽表                              | 批准方案                                | `<760` 使用 `FamilyCard`                            | 实测 390×844，scrollWidth 390，0 console issue       |
-| AI 失败仍可手动筛选                             | 安全/可用性要求                         | 未配置时 fail closed + More filters                 | 本地未配置 build 真实浏览器 PASS                     |
-| 不调用 DeepSeek/不部署                          | 本轮禁止项                              | 显式未配置 AI build；无外部操作                     | real request 0；commit/push/deploy 均 false          |
-| secret 不进入仓库/manifest                      | 安全要求                                | validators 与排除规则                               | sensitiveFindings=[]；`.dev.vars` 不存在，仅 example |
+| 需求                                           | 来源/边界                             | 主要实现                                                                                  | 验证                                                        |
+| ---------------------------------------------- | ------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Package84 为唯一代码基线                       | 用户指示、Package84 manifest          | manifest 精确复制并保留源副本                                                             | 1,374/1,374，0 mismatch；源 manifest SHA-256 已登记         |
+| principal 数量不变                             | 2026-09-26 handoff、Package67         | 不改 data、ranking、API                                                                   | 163,784 / 163,570 / 214 / 3,185 / 3,430 / 245               |
+| AI 自然语言选词仅转受控条件                    | Package77/78 需求、Package84 contract | `AiFilterAssistant.tsx`、`aiFilterSchema.ts`、`aiFilterExecutor.ts`                       | 原 93 项回归；root `act`=7 含 `age`；真实请求 0             |
+| grade、overall/HK rank、HK band                | 导师要求、数据 contract               | Browse/detail/filter 既有实现                                                             | 功能完整性审计、原回归 PASS                                 |
+| prefix、suffix、root、AWL、MSVL、CPB 100       | 导师要求、Package84 实现              | 既有字段显示与受控过滤                                                                    | 组合过滤回归 PASS                                           |
+| Check a text                                   | 导师要求                              | `CheckTextScreen.tsx`、text analysis services                                             | 原回归与真实浏览器 PASS                                     |
+| Knowledge 入口紧邻摘要并常显                   | 本任务                                | `CheckTextScreen.tsx`                                                                     | `package85-supervisor-discoverability.test.ts`；浏览器 PASS |
+| Known / Not known 与三种模式                   | 本任务                                | `KnowledgeTestPanel.tsx`                                                                  | 标签与模式 source test；浏览器 PASS                         |
+| family 比例互补 100%                           | 本任务                                | `knowledgeTestService.ts` 共享 complement helper                                          | 新测试 PASS                                                 |
+| token 比例互补 100%                            | 本任务                                | 同上                                                                                      | 新测试 PASS                                                 |
+| sample estimate / full exact 标签              | 本任务                                | `KnowledgeTestPanel.tsx`                                                                  | 新测试与浏览器 PASS                                         |
+| 未完成不显示最终比例                           | 本任务                                | service 返回 null；panel 仅显示进度                                                       | 新测试与 Full check 浏览器 PASS                             |
+| ineligible 不入分母                            | 本任务                                | `eligibleFamilies()` 排除 unresolved/ambiguous/blocked/unsupported/full-check-unavailable | 新测试 PASS                                                 |
+| 重复词按 token occurrence 加权                 | 本任务                                | `tokenCount` 聚合                                                                         | 3-family 浏览器结果 20.0%/80.0%；新测试 PASS                |
+| 空文本与少于 10 eligible                       | 本任务                                | sample selection/empty result                                                             | 新测试 PASS                                                 |
+| 全部 Known / 全部 Not known                    | 本任务                                | shared result calculation                                                                 | 新测试 PASS                                                 |
+| 只在当前会话保留回答                           | 隐私边界                              | React state；无账号、身份、云端或 profile                                                 | source audit PASS                                           |
+| Not known 一键加入 Teaching List 且来源可见    | 本任务                                | `KnowledgeTestPanel.tsx`、`teachingListService.ts`、`TeachingListScreen.tsx`              | 新测试与真实浏览器 PASS                                     |
+| direct evidence 与 system suggestions 分开     | 本任务                                | `PreteachPanel.tsx` 两个独立 section                                                      | 新测试与 AX/browser PASS                                    |
+| 预教排除 CPB、歧义、blocked 等                 | Package77/78 与本任务                 | `preteachRecommendationService.ts`                                                        | 既有+新增测试 PASS                                          |
+| 每个系统建议有可见登记理由                     | 本任务                                | recommendation reasons + panel                                                            | 新测试 PASS                                                 |
+| 预教逻辑不调用 LLM                             | 本任务                                | 确定性 service；AI 只在 Find words                                                        | import/source isolation test PASS                           |
+| 不创建隐藏综合分数                             | 本任务                                | 理由数、重复、HK rank、字母顺序的稳定 comparator                                          | method audit + source test PASS                             |
+| Teaching List 手动增删排序                     | 导师要求、Package72 contract          | 既有 service/screen 保留                                                                  | 原回归 PASS                                                 |
+| word-family detail                             | 导师要求                              | `WordDetailScreen.tsx`                                                                    | 原回归与功能审计 PASS                                       |
+| CSV、Markdown、Excel、Selected forms           | 导师要求                              | Teaching List exporters/forms                                                             | 原回归与浏览器 PASS                                         |
+| PWA、离线、移动端                              | 导师要求、既有架构边界                | service worker、compact reference、共享 `src/`                                            | PWA validation + 390×844 browser PASS；完整数据库在线限定   |
+| 无页面横向溢出、触控可用                       | 本任务                                | 既有 responsive styles + 新区块复用 controls                                              | 1706×960 与 390×844；0 overflow；可见目标 ≥44 px            |
+| console 无 warning/error                       | 本任务                                | 最终 build                                                                                | 真实浏览器 0/0                                              |
+| Package84 全功能无回归                         | 本任务                                | 原测试集保留                                                                              | 原 93 项全部通过；总计 104/104                              |
+| 不改数据库/API/Worker                          | 用户边界                              | UI 与共享客户端 service 内收口                                                            | manifest/data diff 0；build/validation PASS                 |
+| 不 commit/push/deploy/真实 DeepSeek/production | 用户边界                              | 仅本地实现与 fixture/mock                                                                 | 外部动作全部 false                                          |
 
-测试总数 82：Package82 最新 76 项全部保留，Package83 新增 6 项（2 项数据一致性、4 项教师可用性）。最终报告以 `IMPLEMENTATION_AND_ACCEPTANCE_REPORT_ZH.md` 为准；Package82 复制而来的历史报告只作为基线证据。
+详细导师功能状态见 `SUPERVISOR_FEATURE_COMPLETENESS_AUDIT_ZH.md`；Knowledge 计算口径见 `KNOWLEDGE_AND_UNFAMILIAR_RATE_DESIGN_ZH.md`；预教规则见 `PRETEACH_RECOMMENDATION_METHOD_AUDIT_ZH.md`。

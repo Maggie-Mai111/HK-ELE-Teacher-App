@@ -43,6 +43,11 @@ function ListItem({
         />
       </View>
       <Text style={styles.label}>Learning status</Text>
+      {teaching.sourceFor(item.basewordKey) ? (
+        <Text style={styles.source}>
+          Source this session: {teaching.sourceFor(item.basewordKey)}
+        </Text>
+      ) : null}
       <View style={styles.chips}>
         {TEACHING_STATUSES.map((status) => (
           <ChoiceChip
@@ -260,6 +265,14 @@ const styles = StyleSheet.create({
   label: { color: colors.ink, fontSize: 15, fontWeight: "800" },
   message: { color: colors.ink, fontSize: 15, lineHeight: 22 },
   order: { color: colors.primary, fontSize: 14, fontWeight: "800" },
+  source: {
+    backgroundColor: colors.warningSoft,
+    borderRadius: 9,
+    color: colors.ink,
+    fontSize: 15,
+    lineHeight: 22,
+    padding: spacing.sm,
+  },
   title: { color: colors.ink, fontSize: 22, fontWeight: "800" },
   titleRow: {
     alignItems: "flex-start",
