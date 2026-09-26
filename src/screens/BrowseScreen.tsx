@@ -1,5 +1,13 @@
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
 import { AiFilterAssistant } from "../components/AiFilterAssistant";
@@ -12,11 +20,12 @@ import type {
   BrowsePage,
   BrowseScope,
   BrowseSort,
+  DataMode,
   FamilyRecord,
   HkeleRepository,
   SurfaceSearchResult,
-  DataMode,
 } from "../domain/hkele";
+import { browseResultState, type BrowseResultMode } from "../services/browseResultState";
 import { dataModePresentation } from "../services/dataModePresentation";
 import { describeAiFilterConditions, type AiFilterExecution } from "../services/aiFilterExecutor";
 import type { TeachingListStore } from "../services/teachingListService";
@@ -39,7 +48,28 @@ const sorts: Array<[BrowseSort, string]> = [
   ["az", "A–Z"],
 ];
 
+function searchStatus(result: SurfaceSearchResult): string {
+  if (result.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "Full database check unavailable";
+  if (result.status === "UNMATCHED") return "Not found after a full database check";
+  if (result.status === "RESOLVED") return "Family found";
+  if (result.status === "AMBIGUOUS") return "More than one family — review";
+  if (result.status === "REGISTERED_GRAMMATICAL_RELATION") return "Registered grammatical relation";
+  return "Context review required";
+}
+
+function focusAndReveal(target: View | null) {
+  setTimeout(() => {
+    const node = target as unknown as {
+      focus?: () => void;
+      scrollIntoView?: (options: { block: string; behavior: string }) => void;
+    } | null;
+    node?.scrollIntoView?.({ block: "start", behavior: "smooth" });
+    node?.focus?.();
+  }, 0);
+}
+
 export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
+  const viewport = useWindowDimensions();
   const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
   const [scope, setScope] = useState<BrowseScope>("core");
   const [sort, setSort] = useState<BrowseSort>("overall");
@@ -51,6 +81,14 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const [search, setSearch] = useState<SurfaceSearchResult | null>(null);
   const [searching, setSearching] = useState(false);
   const [aiSelection, setAiSelection] = useState<AiFilterExecution | null>(null);
+  const [resultMode, setResultMode] = useState<BrowseResultMode>("browse");
+  const [moreFiltersOpen, setMoreFiltersOpen] = useState(false);
+  const [editRequestNonce, setEditRequestNonce] = useState(0);
+  const [batchMessage, setBatchMessage] = useState("");
+  const resultSummaryRef = useRef<View>(null);
+  const manualFiltersRef = useRef<View>(null);
+  const focusAfterBrowseLoad = useRef(false);
+  const state = browseResultState(resultMode);
 
   useEffect(() => {
     let active = true;
@@ -59,9 +97,12 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     void repository
       .browse({ scope, sort, page: pageNumber, pageSize: 25 })
       .then((result) => {
-        if (active) {
-          setPage(result);
-          setDataMode(result.sourceMode);
+        if (!active) return;
+        setPage(result);
+        setDataMode(result.sourceMode);
+        if (focusAfterBrowseLoad.current) {
+          focusAfterBrowseLoad.current = false;
+          focusAndReveal(resultSummaryRef.current);
         }
       })
       .catch((reason: unknown) => {
@@ -76,12 +117,21 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     };
   }, [pageNumber, repository, scope, sort]);
 
+  const activateBrowse = () => {
+    setResultMode("browse");
+    setSearch(null);
+    setAiSelection(null);
+    setBatchMessage("");
+  };
   const selectScope = (next: BrowseScope) => {
+    activateBrowse();
+    focusAfterBrowseLoad.current = true;
     setScope(next);
     setPageNumber(1);
-    setSearch(null);
   };
   const selectSort = (next: BrowseSort) => {
+    activateBrowse();
+    focusAfterBrowseLoad.current = true;
     setSort(next);
     setPageNumber(1);
   };
@@ -89,84 +139,61 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     if (!query.trim()) return;
     setSearching(true);
     setError("");
+    setBatchMessage("");
     try {
       const result = await repository.searchSurface(query);
       setSearch(result);
+      setAiSelection(null);
+      setResultMode("search");
       setDataMode(result.dataMode);
+      focusAndReveal(resultSummaryRef.current);
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason));
     } finally {
       setSearching(false);
     }
   };
+  const clearSearch = () => {
+    setQuery("");
+    setSearch(null);
+    setResultMode("browse");
+    focusAndReveal(resultSummaryRef.current);
+  };
   const isAdded = (family: FamilyRecord) =>
     teaching.items.some((item) => item.basewordKey === family.baseword_key);
+  const useTable = Platform.OS === "web" && viewport.width >= 760;
+  const activeFamilies = state.aiActive
+    ? (aiSelection?.families ?? [])
+    : state.searchActive
+      ? (search?.owners ?? [])
+      : (page?.families ?? []);
+
+  const showManualFilters = () => {
+    activateBrowse();
+    setMoreFiltersOpen(true);
+    focusAndReveal(manualFiltersRef.current);
+  };
+  const applyAi = (execution: AiFilterExecution) => {
+    setAiSelection(execution);
+    setSearch(null);
+    setResultMode("ai");
+    setBatchMessage("");
+    focusAndReveal(resultSummaryRef.current);
+  };
 
   return (
     <View style={styles.content}>
       <ScreenHeader
-        intro="Find a family by list position or search an exact word form. Current database evidence is shown without changing the registered ranking."
-        title="Browse"
+        intro="Search an exact form first, or use AI and manual filters to work from registered principal data."
+        title="Find words"
       />
-      <DataModeNotice mode={dataMode} />
-      <AiFilterAssistant
-        onApply={(execution) => {
-          setAiSelection(execution);
-          setSearch(null);
-        }}
-        repository={repository}
-      />
-      {aiSelection ? (
-        <View style={styles.resultBox}>
-          <View style={styles.aiResultHeader}>
-            <View style={styles.aiResultTitleGroup}>
-              <Text style={styles.sectionTitle}>Confirmed AI-assisted filter</Text>
-              <Text style={styles.muted}>
-                {aiSelection.matchedBeforeLimit.toLocaleString("en")} matched principal records ·
-                showing {aiSelection.families.length.toLocaleString("en")}
-              </Text>
-              <Text style={styles.aiConditions}>
-                Actual conditions: {describeAiFilterConditions(aiSelection.filters).join(" · ")}
-              </Text>
-            </View>
-            <ActionButton
-              kind="secondary"
-              label="Undo AI filter"
-              onPress={() => setAiSelection(null)}
-            />
-          </View>
-          {aiSelection.families.length === 0 ? (
-            <Text style={styles.muted}>
-              No registered family meets every condition shown above. Use Undo AI filter or modify
-              the request in the AI assistant; no hidden condition was added.
-            </Text>
-          ) : Platform.OS === "web" ? (
-            <WebFamilyTable
-              families={aiSelection.families}
-              isAdded={isAdded}
-              onAdd={teaching.add}
-              onOpen={(family) => onOpenFamily(family.baseword_key)}
-            />
-          ) : (
-            aiSelection.families.map((family) => (
-              <FamilyCard
-                added={isAdded(family)}
-                family={family}
-                key={family.baseword_key}
-                onAdd={teaching.add}
-                onOpen={(item) => onOpenFamily(item.baseword_key)}
-              />
-            ))
-          )}
-        </View>
-      ) : null}
       <View style={styles.searchBox}>
         <TextInput
           accessibilityLabel="Search a word or form"
           autoCapitalize="none"
           onChangeText={setQuery}
           onSubmitEditing={() => void searchNow()}
-          placeholder="Search a word or form"
+          placeholder="Search a word or exact form"
           returnKeyType="search"
           style={styles.input}
           value={query}
@@ -177,168 +204,283 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           onPress={() => void searchNow()}
         />
       </View>
-      {search ? (
-        <View style={styles.resultBox}>
-          <Text style={styles.sectionTitle}>Search result: {search.submittedQuery}</Text>
-          <Text style={styles.resultStatus}>
-            Status:{" "}
-            {search.status === "FULL_DATABASE_CHECK_UNAVAILABLE"
-              ? "Full database check unavailable"
-              : search.status === "UNMATCHED"
-                ? "Not found after a full database check"
-                : search.status === "RESOLVED"
-                  ? "Family found"
-                  : search.status === "AMBIGUOUS"
-                    ? "More than one family — review"
-                    : search.status === "REGISTERED_GRAMMATICAL_RELATION"
-                      ? "Registered grammatical relation"
-                      : "Context review required"}
-          </Text>
-          {search.identityException ? (
-            <Text style={styles.warning}>{search.identityException.teacherDisplay}</Text>
-          ) : null}
-          {search.owners.length === 0 ? (
-            <Text style={styles.muted}>
-              {search.status === "FULL_DATABASE_CHECK_UNAVAILABLE"
-                ? "This form is outside the built-in set. Recheck when the online or installed full database is available; it is not labelled unmatched."
-                : search.status === "UNMATCHED"
-                  ? "The full database was checked and no registered family owner was found."
-                  : "No ranked family owner is assigned to this registered language relation or review state."}
-            </Text>
-          ) : null}
-          {search.owners.map((family) => (
-            <FamilyCard
-              added={isAdded(family)}
-              family={family}
-              key={family.baseword_key}
-              matchNote={`Matched: ${family.matched_forms.join(", ") || search.normalizedQuery}`}
-              onAdd={teaching.add}
-              onOpen={(item) => onOpenFamily(item.baseword_key)}
-            />
-          ))}
-        </View>
-      ) : null}
-      <Text style={styles.label}>Manual list filters</Text>
-      <View style={styles.chips}>
-        {scopes.map(([value, label]) => (
-          <ChoiceChip
-            key={value}
-            label={label}
-            onPress={() => selectScope(value)}
-            selected={scope === value}
-          />
-        ))}
-      </View>
-      <Text style={styles.label}>Sort</Text>
-      <View style={styles.chips}>
-        {sorts.map(([value, label]) => (
-          <ChoiceChip
-            key={value}
-            label={label}
-            onPress={() => selectSort(value)}
-            selected={sort === value}
-          />
-        ))}
+      <DataModeNotice mode={dataMode} />
+      <AiFilterAssistant
+        editRequestNonce={editRequestNonce}
+        onApply={applyAi}
+        onUseManualFilters={showManualFilters}
+        repository={repository}
+      />
+      <View ref={manualFiltersRef} style={styles.moreFilters} tabIndex={-1}>
+        <ActionButton
+          kind="secondary"
+          label={moreFiltersOpen ? "Hide filters" : "More filters"}
+          onPress={() => setMoreFiltersOpen((value) => !value)}
+        />
+        {moreFiltersOpen ? (
+          <View style={styles.filterBody}>
+            <Text style={styles.label}>List scope</Text>
+            <View style={styles.chips}>
+              {scopes.map(([value, label]) => (
+                <ChoiceChip
+                  key={value}
+                  label={label}
+                  onPress={() => selectScope(value)}
+                  selected={scope === value}
+                />
+              ))}
+            </View>
+            <Text style={styles.label}>Sort</Text>
+            <View style={styles.chips}>
+              {sorts.map(([value, label]) => (
+                <ChoiceChip
+                  key={value}
+                  label={label}
+                  onPress={() => selectSort(value)}
+                  selected={sort === value}
+                />
+              ))}
+            </View>
+          </View>
+        ) : null}
       </View>
       {error ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
         </Text>
       ) : null}
-      {loading ? (
+      {loading && resultMode === "browse" ? (
         <ActivityIndicator accessibilityLabel="Loading words" color={colors.primary} size="large" />
       ) : null}
-      {page && !loading ? (
-        <>
-          <Text style={styles.count}>
-            {page.availableItems.toLocaleString("en")} families · page {page.page} ·{" "}
-            {dataModePresentation(page.sourceMode).shortLabel}
-          </Text>
-          {Platform.OS === "web" ? (
-            <WebFamilyTable
-              families={page.families}
-              isAdded={isAdded}
-              onAdd={teaching.add}
-              onOpen={(family) => onOpenFamily(family.baseword_key)}
-            />
-          ) : (
-            page.families.map((family) => (
-              <FamilyCard
-                added={isAdded(family)}
-                family={family}
-                key={family.baseword_key}
-                onAdd={teaching.add}
-                onOpen={(item) => onOpenFamily(item.baseword_key)}
+      <View
+        accessibilityLiveRegion="polite"
+        ref={resultSummaryRef}
+        style={styles.resultSummary}
+        tabIndex={-1}
+      >
+        {state.searchActive && search ? (
+          <>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              {search.owners.length.toLocaleString("en")} result
+              {search.owners.length === 1 ? "" : "s"} for “{search.submittedQuery}”
+            </Text>
+            <Text style={styles.resultStatus}>{searchStatus(search)}</Text>
+            {search.identityException ? (
+              <Text style={styles.warning}>{search.identityException.teacherDisplay}</Text>
+            ) : null}
+            {search.owners.length === 0 ? (
+              <Text style={styles.muted}>
+                {search.status === "FULL_DATABASE_CHECK_UNAVAILABLE"
+                  ? "This form is outside the built-in set. Recheck when the online full database is available."
+                  : search.status === "UNMATCHED"
+                    ? "The full database was checked and no registered family owner was found."
+                    : "No ranked family owner is assigned to this registered relation or review state."}
+              </Text>
+            ) : null}
+            <ActionButton kind="secondary" label="Clear search" onPress={clearSearch} />
+          </>
+        ) : state.aiActive && aiSelection ? (
+          <>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              {aiSelection.matchedBeforeLimit.toLocaleString("en")} matches · showing first{" "}
+              {aiSelection.families.length.toLocaleString("en")}
+            </Text>
+            <Text style={styles.aiConditions}>
+              {describeAiFilterConditions(aiSelection.filters).join(" · ")}
+            </Text>
+            <Text style={styles.muted}>
+              Principal Candidate/Reference data · deterministic filtering
+            </Text>
+            <View style={styles.actions}>
+              <ActionButton
+                kind="secondary"
+                label="Clear results"
+                onPress={() => {
+                  setAiSelection(null);
+                  setBatchMessage("");
+                  setResultMode("browse");
+                }}
               />
-            ))
-          )}
-          <View style={styles.pager}>
-            <ActionButton
-              disabled={pageNumber === 1}
-              kind="secondary"
-              label="Previous"
-              onPress={() => setPageNumber((value) => Math.max(1, value - 1))}
+              <ActionButton
+                kind="secondary"
+                label="Edit AI request"
+                onPress={() => {
+                  setAiSelection(null);
+                  setBatchMessage("");
+                  setResultMode("browse");
+                  setEditRequestNonce((value) => value + 1);
+                }}
+              />
+              <ActionButton
+                kind="secondary"
+                label="Adjust manual filters"
+                onPress={showManualFilters}
+              />
+              <ActionButton
+                disabled={aiSelection.families.length === 0}
+                label="Add shown words to Teaching list"
+                onPress={() => {
+                  const result = teaching.addMany(aiSelection.families);
+                  setBatchMessage(
+                    `${result.added} added · ${result.existing} already in list · ${result.total} total`,
+                  );
+                }}
+              />
+            </View>
+            {batchMessage ? (
+              <View accessibilityLiveRegion="polite" style={styles.batchNotice}>
+                <Text style={styles.batchText}>{batchMessage}</Text>
+                {teaching.undoState?.label === "Bulk addition to Teaching list" ? (
+                  <ActionButton
+                    kind="secondary"
+                    label="Undo bulk addition"
+                    onPress={() => {
+                      teaching.undo();
+                      setBatchMessage("Bulk addition undone.");
+                    }}
+                  />
+                ) : null}
+              </View>
+            ) : null}
+            {aiSelection.families.length === 0 ? (
+              <Text style={styles.muted}>
+                No registered family meets every confirmed condition. Edit the request, adjust
+                manual filters, or clear the result; no hidden condition was added.
+              </Text>
+            ) : null}
+          </>
+        ) : page ? (
+          <>
+            <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
+              {page.availableItems.toLocaleString("en")} families · page {page.page}
+            </Text>
+            <Text style={styles.muted}>{dataModePresentation(page.sourceMode).shortLabel}</Text>
+          </>
+        ) : null}
+      </View>
+      {activeFamilies.length > 0 ? (
+        useTable ? (
+          <WebFamilyTable
+            families={activeFamilies}
+            isAdded={isAdded}
+            onAdd={teaching.add}
+            onOpen={(family) => onOpenFamily(family.baseword_key)}
+          />
+        ) : (
+          activeFamilies.map((family) => (
+            <FamilyCard
+              added={isAdded(family)}
+              family={family}
+              key={family.baseword_key}
+              {...(state.searchActive
+                ? {
+                    matchNote: `Matched: ${
+                      search?.owners
+                        .find((owner) => owner.baseword_key === family.baseword_key)
+                        ?.matched_forms.join(", ") ||
+                      search?.normalizedQuery ||
+                      ""
+                    }`,
+                  }
+                : {})}
+              onAdd={teaching.add}
+              onOpen={(item) => onOpenFamily(item.baseword_key)}
             />
-            <ActionButton
-              disabled={pageNumber * 25 >= page.availableItems}
-              kind="secondary"
-              label="Next"
-              onPress={() => setPageNumber((value) => value + 1)}
-            />
-          </View>
-        </>
+          ))
+        )
+      ) : null}
+      {resultMode === "browse" && page && !loading ? (
+        <View style={styles.pager}>
+          <ActionButton
+            disabled={pageNumber === 1}
+            kind="secondary"
+            label="Previous page"
+            onPress={() => {
+              focusAfterBrowseLoad.current = true;
+              setPageNumber((value) => Math.max(1, value - 1));
+            }}
+          />
+          <ActionButton
+            disabled={pageNumber * 25 >= page.availableItems}
+            kind="secondary"
+            label="Next page"
+            onPress={() => {
+              focusAfterBrowseLoad.current = true;
+              setPageNumber((value) => value + 1);
+            }}
+          />
+        </View>
       ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  aiConditions: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  batchNotice: {
+    alignItems: "flex-start",
+    backgroundColor: colors.surface,
+    borderRadius: 10,
+    gap: spacing.sm,
+    padding: spacing.sm,
+  },
+  batchText: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   content: { gap: spacing.md, padding: spacing.lg },
-  count: { color: colors.muted, fontSize: 14, lineHeight: 21 },
   error: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 10,
     color: colors.danger,
+    fontSize: 15,
+    lineHeight: 22,
     padding: spacing.md,
   },
+  filterBody: { gap: spacing.sm },
   input: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderRadius: 11,
     borderWidth: 1,
     color: colors.ink,
-    flex: 1,
+    flexBasis: 220,
+    flexGrow: 1,
+    flexShrink: 1,
     fontSize: 16,
     minHeight: 48,
+    minWidth: 220,
     paddingHorizontal: spacing.md,
   },
   label: { color: colors.ink, fontSize: 15, fontWeight: "800" },
-  muted: { color: colors.muted, fontSize: 15 },
-  pager: { flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
-  resultBox: {
+  moreFilters: {
+    alignItems: "flex-start",
     backgroundColor: colors.subdued,
+    borderRadius: 14,
+    gap: spacing.sm,
+    padding: spacing.md,
+  },
+  muted: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  pager: { flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
+  resultStatus: { color: colors.primary, fontSize: 15, fontWeight: "700", lineHeight: 22 },
+  resultSummary: {
+    backgroundColor: colors.primarySoft,
     borderRadius: 15,
     gap: spacing.sm,
     padding: spacing.md,
   },
-  resultStatus: { color: colors.primary, fontSize: 14, fontWeight: "700" },
-  searchBox: { alignItems: "stretch", flexDirection: "row", gap: spacing.sm },
-  sectionTitle: { color: colors.ink, fontSize: 19, fontWeight: "800" },
+  searchBox: {
+    alignItems: "stretch",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  sectionTitle: { color: colors.ink, fontSize: 20, fontWeight: "800", lineHeight: 27 },
   warning: {
     backgroundColor: colors.warningSoft,
     borderRadius: 8,
     color: colors.ink,
+    fontSize: 15,
     lineHeight: 22,
     padding: spacing.sm,
   },
-  aiResultHeader: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    justifyContent: "space-between",
-  },
-  aiResultTitleGroup: { flex: 1, gap: spacing.xs, minWidth: 240 },
-  aiConditions: { color: colors.ink, fontSize: 14, lineHeight: 21 },
 });

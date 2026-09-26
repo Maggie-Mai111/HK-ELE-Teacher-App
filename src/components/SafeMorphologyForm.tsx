@@ -44,9 +44,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
-  labels: { color: colors.muted, fontSize: 10 },
+  labels: { color: colors.muted, fontSize: 14, lineHeight: 20 },
   legend: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
-  legendItem: { borderBottomWidth: 3, fontSize: 12, fontWeight: "800", paddingBottom: 2 },
+  legendItem: { borderBottomWidth: 3, fontSize: 14, fontWeight: "800", paddingBottom: 2 },
   plain: {
     backgroundColor: colors.subdued,
     borderRadius: 8,

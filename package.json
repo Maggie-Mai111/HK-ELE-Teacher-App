@@ -1,6 +1,6 @@
 {
-  "name": "hkele-teacher-web-pwa-controlled-deployment",
-  "version": "0.5.0",
+  "name": "hkele-teacher-final-usability-accessibility",
+  "version": "0.7.0",
   "private": true,
   "main": "index.ts",
   "scripts": {

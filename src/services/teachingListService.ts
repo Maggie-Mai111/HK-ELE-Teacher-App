@@ -116,6 +116,10 @@ export async function refreshTeachingItems(
 export function useTeachingList(repository: HkeleRepository) {
   const [items, setItems] = useState<TeachingListItem[]>([]);
   const [ready, setReady] = useState(false);
+  const [undoState, setUndoState] = useState<{
+    label: string;
+    items: TeachingListItem[];
+  } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -131,11 +135,23 @@ export function useTeachingList(repository: HkeleRepository) {
     };
   }, [repository]);
 
-  const commit = useCallback((next: TeachingListItem[]) => {
-    const ordered = next.map((item, index) => ({ ...item, customOrder: index }));
-    setItems(ordered);
-    void writeDocument({ schemaVersion: "1.1.0", items: ordered });
-  }, []);
+  const commit = useCallback(
+    (next: TeachingListItem[], undoLabel?: string) => {
+      if (undoLabel) setUndoState({ label: undoLabel, items });
+      const ordered = next.map((item, index) => ({ ...item, customOrder: index }));
+      setItems(ordered);
+      void writeDocument({ schemaVersion: "1.1.0", items: ordered });
+    },
+    [items],
+  );
+
+  const undo = useCallback(() => {
+    if (!undoState) return;
+    const restored = undoState.items.map((item, index) => ({ ...item, customOrder: index }));
+    setItems(restored);
+    setUndoState(null);
+    void writeDocument({ schemaVersion: "1.1.0", items: restored });
+  }, [undoState]);
 
   const add = useCallback(
     (family: FamilyRecord, selectedForm?: string) => {
@@ -162,8 +178,32 @@ export function useTeachingList(repository: HkeleRepository) {
     [commit, items],
   );
 
+  const addMany = useCallback(
+    (families: FamilyRecord[]) => {
+      const existing = new Set(items.map((item) => item.basewordKey));
+      const unique = families.filter(
+        (family, index, values) =>
+          values.findIndex((value) => value.baseword_key === family.baseword_key) === index,
+      );
+      const additions = unique
+        .filter((family) => !existing.has(family.baseword_key))
+        .map((family, index) => createTeachingItem(family, items.length + index));
+      if (additions.length) commit([...items, ...additions], "Bulk addition to Teaching list");
+      return {
+        added: additions.length,
+        existing: unique.length - additions.length,
+        total: items.length + additions.length,
+      };
+    },
+    [commit, items],
+  );
+
   const remove = useCallback(
-    (basewordKey: string) => commit(items.filter((item) => item.basewordKey !== basewordKey)),
+    (basewordKey: string) =>
+      commit(
+        items.filter((item) => item.basewordKey !== basewordKey),
+        "Removed family",
+      ),
     [commit, items],
   );
 
@@ -177,6 +217,7 @@ export function useTeachingList(repository: HkeleRepository) {
             ? [{ ...item, selectedForms, updatedAt: new Date().toISOString() }]
             : [];
         }),
+        "Removed selected form",
       );
     },
     [commit, items],
@@ -213,8 +254,19 @@ export function useTeachingList(repository: HkeleRepository) {
   );
 
   return useMemo(
-    () => ({ items, ready, add, remove, removeSelectedForm, update, move }),
-    [add, items, move, ready, remove, removeSelectedForm, update],
+    () => ({
+      items,
+      ready,
+      add,
+      addMany,
+      remove,
+      removeSelectedForm,
+      update,
+      move,
+      undoState,
+      undo,
+    }),
+    [add, addMany, items, move, ready, remove, removeSelectedForm, undo, undoState, update],
   );
 }
 

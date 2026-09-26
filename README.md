@@ -1,47 +1,25 @@
-# HK-ELE Teacher Web/PWA — Package82
+# HK-ELE Teacher Web/PWA — Package83
 
-Package82 is the controlled-deployment successor to Package81. It preserves the principal HK-ELE data and teacher workflows, changes GitHub Pages publishing to manual-only, fixes the real Pages origin/Turnstile contract, applies 3-per-minute anonymous-session and 10-per-minute global Worker limits, and adds a 17-case AI usability evaluation.
+Package83 是以 Package82 为唯一代码基线的本地教师可用性修订。最终状态：
 
-Current stop: `STAGING_NOT_EXECUTED_WRANGLER_CLI_NOT_AUTHENTICATED`.
+`PACKAGE83_LOCAL_USABILITY_ACCEPTED_AWAITING_STAGING_UPDATE_AUTHORIZATION`
 
-The owner authorized Web/PWA staging and production deployment on 2026-09-26, but this machine's Wrangler CLI was not authenticated and GitHub CLI was unavailable. No Package82 push, Worker deployment, platform secret operation, Pages workflow run, or real DeepSeek request was performed. Use `MANUAL_DEPLOYMENT_RUNBOOK_ZH.md` for the safe handoff.
+本包修正 Candidate/Reference AI 在线/离线派生字段路径，使 root `act` 两端均为 7 个 family 并包含 `age`；修复采用共享 form-enriched 规则，没有硬编码个案，也没有研究重算。full database Browse 保持原静态 shards。
 
-## Frozen authority
+教师界面主导航现为 `Find words`、`Check a text`、`Teaching list`；版本、许可、隐私与来源信息位于 `Menu > About & data version`。AI 保留 Preview → 教师确认 → principal 数据确定性筛选。新用户采用 Teacher view，Detailed view 保留 15 列；既有列设置 key 与 Teaching List 迁移保持不变。390×844 使用卡片结果。
 
-- 163,784 identities; 163,570 ranked; 214 unranked.
-- Candidate 3,185; inclusive Reference 3,430; reference-only 245.
-- Package67 is the data authority, Package72 the Web regression baseline, Package77 the direct product/test evidence, and Package81 the only code baseline.
-- Stage 4 proper-name-adjusted ranking remains sensitivity-only.
-- Native AI remains deferred; no APK or IPA is built.
+## 固定数据边界
 
-## Controlled deployment
+- identities 163,784；ranked 163,570；unranked 214。
+- Candidate 3,185；inclusive Reference 3,430；reference-only 245。
+- principal ranking 不变；Stage 4 sensitivity ranking 未使用。
 
-`GitHub Pages static Web/PWA → Cloudflare Worker → DeepSeek`
+## 本地验收
 
-- Repository: `Maggie-Mai111/HK-ELE-Teacher-App`
-- Pages path: `/HK-ELE-Teacher-App`
-- Staging Worker: `hkele-ai-filter-staging`
-- Production Worker: `hkele-ai-filter`
-- Turnstile hostname/action: `maggie-mai111.github.io` / `ai_filter`
-- Rate limits: session 3/minute; global 10/minute
-- Pages deployment: `workflow_dispatch` only
+- format、TypeScript、ESLint：PASS。
+- 全部测试：82/82 PASS。
+- Web build、PWA validation、public repository validation：PASS。
+- 1706×960 与 390×844 真实浏览器：PASS；console 0 warning、0 error。
+- 真实 DeepSeek 请求：0。
 
-Secrets must be entered only in Cloudflare's dashboard or the interactive `wrangler secret put` prompt. Never add a `.dev.vars` file with real values or paste a secret into chat, source, logs, GitHub variables, or documentation.
-
-## Verified locally
-
-```text
-pnpm install --frozen-lockfile
-pnpm run format
-pnpm run typecheck
-pnpm run lint
-pnpm test
-pnpm run build:web
-pnpm run validate:pwa
-pnpm run validate:public
-pnpm run runtime:acceptance
-```
-
-Local results: 75/75 tests passed; Web/PWA build and public-repository checks passed; mock-only Wrangler acceptance passed; wide and 390×844 browser regression passed with zero app console warnings/errors. Real DeepSeek calls: 0. Actual provider cost: 0.
-
-Read `DEPLOYMENT_ENTRY.json`, `ACCOUNT_AND_LICENSE_PREFLIGHT_ZH.md`, `STAGING_DEPLOYMENT_REPORT_ZH.md`, `SECURITY_AND_SECRET_VERIFICATION_ZH.md`, `PUBLIC_URLS_AND_ROLLBACK_ZH.md`, and `MANUAL_DEPLOYMENT_RUNBOOK_ZH.md` before any external action.
+先读 `PRODUCT_ENTRY.json`、`ONLINE_OFFLINE_AI_PARITY_AUDIT_ZH.md`、`TEACHER_USABILITY_DESIGN_ZH.md`、`IMPLEMENTATION_AND_ACCEPTANCE_REPORT_ZH.md` 与 `STAGING_UPDATE_RUNBOOK_ZH.md`。本轮没有 commit/push、Pages 更新、Worker 部署或 production 变更。

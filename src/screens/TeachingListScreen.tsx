@@ -12,6 +12,7 @@ import { colors, spacing } from "../theme/tokens";
 interface Props {
   teaching: TeachingListStore;
   onOpenFamily: (basewordKey: string) => void;
+  onFindWords: () => void;
 }
 
 function ListItem({
@@ -60,7 +61,7 @@ function ListItem({
             <ActionButton
               accessibilityLabel={`Remove selected form ${form}`}
               kind="secondary"
-              label="×"
+              label="Remove"
               onPress={() => teaching.removeSelectedForm(item.basewordKey, form)}
             />
           </View>
@@ -107,7 +108,7 @@ function ListItem({
   );
 }
 
-export function TeachingListScreen({ teaching, onOpenFamily }: Props) {
+export function TeachingListScreen({ teaching, onOpenFamily, onFindWords }: Props) {
   const [message, setMessage] = useState("");
   const [exporting, setExporting] = useState(false);
 
@@ -127,8 +128,8 @@ export function TeachingListScreen({ teaching, onOpenFamily }: Props) {
   return (
     <View style={styles.content}>
       <ScreenHeader
-        intro="Keep a stable, device-local list by family identity. Selected forms, status, notes, connections, and order are saved automatically."
-        title="Teaching List"
+        intro="This list is saved on this device. Export important work so you keep a separate copy."
+        title="Teaching list"
       />
       {!teaching.ready ? (
         <ActivityIndicator
@@ -139,43 +140,55 @@ export function TeachingListScreen({ teaching, onOpenFamily }: Props) {
       ) : null}
       {teaching.ready ? (
         <>
-          <View style={styles.exportBox}>
-            <Text style={styles.exportTitle}>Export ({teaching.items.length} families)</Text>
-            <Text style={styles.exportNote}>
-              CSV and Markdown are lightweight; Excel includes a frozen header row and filters.
-            </Text>
-            <View style={styles.actions}>
-              <ActionButton
-                disabled={exporting}
-                kind="secondary"
-                label="CSV"
-                onPress={() => void runExport("csv")}
-              />
-              <ActionButton
-                disabled={exporting}
-                kind="secondary"
-                label="Markdown"
-                onPress={() => void runExport("md")}
-              />
-              <ActionButton
-                disabled={exporting}
-                kind="secondary"
-                label="Excel"
-                onPress={() => void runExport("xlsx")}
-              />
-            </View>
-            {message ? (
-              <Text accessibilityRole="alert" style={styles.message}>
-                {message}
-              </Text>
-            ) : null}
-          </View>
           {teaching.items.length === 0 ? (
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>Your teaching list is empty.</Text>
               <Text style={styles.emptyText}>
-                Add a family from Browse, Check a Text, or Word detail.
+                Start in Find words, or add a family while reviewing Check a text results.
               </Text>
+              <ActionButton label="Go to Find words" onPress={onFindWords} />
+            </View>
+          ) : null}
+          {teaching.items.length > 0 ? (
+            <View style={styles.exportBox}>
+              <Text style={styles.exportTitle}>Export ({teaching.items.length} families)</Text>
+              <Text style={styles.exportNote}>
+                CSV and Markdown are lightweight; Excel includes Selected forms, a frozen header row
+                and filters. Export important work before changing devices or clearing storage.
+              </Text>
+              <View style={styles.actions}>
+                <ActionButton
+                  disabled={exporting}
+                  kind="secondary"
+                  label="CSV"
+                  onPress={() => void runExport("csv")}
+                />
+                <ActionButton
+                  disabled={exporting}
+                  kind="secondary"
+                  label="Markdown"
+                  onPress={() => void runExport("md")}
+                />
+                <ActionButton
+                  disabled={exporting}
+                  kind="secondary"
+                  label="Excel"
+                  onPress={() => void runExport("xlsx")}
+                />
+              </View>
+              {message ? (
+                <Text accessibilityRole="alert" style={styles.message}>
+                  {message}
+                </Text>
+              ) : null}
+            </View>
+          ) : null}
+          {teaching.undoState ? (
+            <View accessibilityLiveRegion="polite" style={styles.undoBox}>
+              <Text style={styles.undoText}>
+                {teaching.undoState.label}. You can restore it safely.
+              </Text>
+              <ActionButton kind="secondary" label="Undo last change" onPress={teaching.undo} />
             </View>
           ) : null}
           {teaching.items.map((item, index) => (
@@ -221,7 +234,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md,
   },
-  exportNote: { color: colors.muted, fontSize: 14, lineHeight: 21 },
+  exportNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   exportTitle: { color: colors.primary, fontSize: 19, fontWeight: "800" },
   formChip: {
     alignItems: "center",
@@ -231,22 +244,22 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingLeft: spacing.sm,
   },
-  formChipText: { color: colors.ink, fontSize: 14, fontWeight: "700" },
+  formChipText: { color: colors.ink, fontSize: 15, fontWeight: "700" },
   input: {
     backgroundColor: colors.canvas,
     borderColor: colors.border,
     borderRadius: 10,
     borderWidth: 1,
     color: colors.ink,
-    fontSize: 15,
+    fontSize: 16,
     minHeight: 70,
     padding: spacing.sm,
     textAlignVertical: "top",
   },
-  key: { color: colors.muted, fontSize: 12 },
-  label: { color: colors.ink, fontSize: 14, fontWeight: "800" },
-  message: { color: colors.ink, fontSize: 14 },
-  order: { color: colors.primary, fontSize: 13, fontWeight: "800" },
+  key: { color: colors.muted, fontSize: 14, lineHeight: 20 },
+  label: { color: colors.ink, fontSize: 15, fontWeight: "800" },
+  message: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  order: { color: colors.primary, fontSize: 14, fontWeight: "800" },
   title: { color: colors.ink, fontSize: 22, fontWeight: "800" },
   titleRow: {
     alignItems: "flex-start",
@@ -255,4 +268,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   titleText: { flex: 1 },
+  undoBox: {
+    alignItems: "flex-start",
+    backgroundColor: colors.warningSoft,
+    borderRadius: 14,
+    gap: spacing.sm,
+    padding: spacing.md,
+  },
+  undoText: { color: colors.ink, fontSize: 15, lineHeight: 22 },
 });

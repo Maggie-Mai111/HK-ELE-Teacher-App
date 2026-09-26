@@ -65,7 +65,12 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
     let active = true;
     const element = host.current;
     const sitekey = aiRuntimeConfiguration.turnstileSiteKey;
-    if (!element || !sitekey) {
+    if (aiRuntimeConfiguration.fixtureMode) {
+      onTokenChange("local-browser-acceptance-fixture");
+      setMessage("Local acceptance fixture ready; no provider request will be sent.");
+      return;
+    }
+    if (!element || !aiRuntimeConfiguration.configured || !sitekey) {
       onTokenChange(null);
       setMessage("AI is not configured for this environment; manual filters remain available.");
       return;
@@ -118,7 +123,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
   return (
     <View style={{ gap: spacing.xs }}>
       <div aria-label="Cloudflare Turnstile" ref={host} />
-      <Text accessibilityLiveRegion="polite" style={{ color: colors.muted, fontSize: 13 }}>
+      <Text accessibilityLiveRegion="polite" style={{ color: colors.muted, fontSize: 15 }}>
         {message}
       </Text>
     </View>

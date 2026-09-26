@@ -8,6 +8,8 @@ const environment = (["local", "staging", "production"] as const).includes(
   : null;
 const endpoint = process.env.EXPO_PUBLIC_HKELE_AI_FILTER_URL?.trim() || null;
 const turnstileSiteKey = process.env.EXPO_PUBLIC_HKELE_TURNSTILE_SITE_KEY?.trim() || null;
+const fixtureMode =
+  environment === "local" && process.env.EXPO_PUBLIC_HKELE_AI_FIXTURE_MODE === "true";
 
 function validEndpoint(value: string | null, target: HkeleEnvironment | null): boolean {
   if (!value || !target) return false;
@@ -27,8 +29,10 @@ export const aiRuntimeConfiguration = Object.freeze({
   environment,
   endpoint: validEndpoint(endpoint, environment) ? endpoint : null,
   turnstileSiteKey: environment && turnstileSiteKey ? turnstileSiteKey : null,
+  fixtureMode,
   turnstileAction: "ai_filter",
   requestTimeoutMs: 12_000,
   configured:
-    environment !== null && validEndpoint(endpoint, environment) && turnstileSiteKey !== null,
+    fixtureMode ||
+    (environment !== null && validEndpoint(endpoint, environment) && turnstileSiteKey !== null),
 });

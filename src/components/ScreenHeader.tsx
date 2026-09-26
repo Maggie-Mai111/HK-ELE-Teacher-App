@@ -10,7 +10,7 @@ interface Props {
 export function ScreenHeader({ title, intro }: Props) {
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" style={styles.heading}>
+      <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
         {title}
       </Text>
       <Text style={styles.intro}>{intro}</Text>

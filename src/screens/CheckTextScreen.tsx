@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
+import { useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
 import { ChoiceChip } from "../components/ChoiceChip";
@@ -7,21 +7,25 @@ import { ComplexityPanel } from "../components/ComplexityPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { HighlightedText } from "../components/HighlightedText";
 import { KnowledgeTestPanel } from "../components/KnowledgeTestPanel";
+import { OccurrenceCard } from "../components/OccurrenceCard";
 import { OcrInputPanel } from "../components/OcrInputPanel";
 import { PendingFullCheckPanel } from "../components/PendingFullCheckPanel";
 import { PreteachPanel } from "../components/PreteachPanel";
+import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { ScreenHeader } from "../components/ScreenHeader";
 import { UnmatchedWordsPanel } from "../components/UnmatchedWordsPanel";
-import type { DataMode, FamilyRecord, HkeleRepository, ResolvedOccurrence } from "../domain/hkele";
+import type { DataMode, HkeleRepository, ResolvedOccurrence } from "../domain/hkele";
 import { matchCpb100 } from "../services/cpbService";
-import { hkFrequencyDisplay, inHkRange, validHkRange } from "../services/frequencyService";
-import { grammaticalRelationDisplay } from "../services/grammaticalRelationService";
+import { validHkRange } from "../services/frequencyService";
 import {
-  groupUnmatchedWords,
+  groupOccurrences,
+  nextBatchSize,
+  OCCURRENCE_BATCH_SIZE,
+} from "../services/progressiveResults";
+import {
   groupPendingFullDatabaseChecks,
-  textFormAndFamily,
+  groupUnmatchedWords,
   textResultKind,
-  textResultStatusLabel,
 } from "../services/textResultPresentation";
 import type { TeachingListStore } from "../services/teachingListService";
 import { scan, TokenizerError } from "../services/tokenizer";
@@ -30,6 +34,8 @@ import { colors, spacing } from "../theme/tokens";
 type ResultFilter =
   "all" | "candidate" | "reference" | "other" | "grammar" | "cpb" | "unavailable" | "review";
 type ResultSort = "occurrence" | "family";
+type MembershipCategory =
+  "candidate" | "reference" | "other" | "grammar" | "unavailable" | "unmatched" | "review";
 
 interface Props {
   repository: HkeleRepository;
@@ -39,9 +45,6 @@ interface Props {
     evidence: { members: Array<{ surface: string; count: number }>; count: number },
   ) => void;
 }
-
-type MembershipCategory =
-  "candidate" | "reference" | "other" | "grammar" | "unavailable" | "unmatched" | "review";
 
 function category(item: ResolvedOccurrence): MembershipCategory {
   const kind = textResultKind(item);
@@ -53,6 +56,17 @@ function category(item: ResolvedOccurrence): MembershipCategory {
   if (owner?.candidate_member === true || owner?.candidate_member === 1) return "candidate";
   if (owner?.reference_member === true || owner?.reference_member === 1) return "reference";
   return "other";
+}
+
+function focusAndReveal(target: View | null) {
+  setTimeout(() => {
+    const node = target as unknown as {
+      focus?: () => void;
+      scrollIntoView?: (options: { block: string; behavior: string }) => void;
+    } | null;
+    node?.scrollIntoView?.({ block: "start", behavior: "smooth" });
+    node?.focus?.();
+  }, 0);
 }
 
 export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
@@ -68,6 +82,10 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
   const [customEnabled, setCustomEnabled] = useState(false);
   const [customStart, setCustomStart] = useState("1");
   const [customEnd, setCustomEnd] = useState("500");
+  const [groupLimit, setGroupLimit] = useState(OCCURRENCE_BATCH_SIZE);
+  const [occurrenceLimit, setOccurrenceLimit] = useState(OCCURRENCE_BATCH_SIZE);
+  const summaryRef = useRef<View>(null);
+  const filteredSummaryRef = useRef<View>(null);
 
   const analyze = async () => {
     setLoading(true);
@@ -76,7 +94,12 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
       const tokenScan = scan(text);
       const next = await repository.resolveOccurrences(text, tokenScan.occurrences);
       setResults(next);
+      setFilter("all");
+      setSort("occurrence");
+      setGroupLimit(OCCURRENCE_BATCH_SIZE);
+      setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
       setDataMode(next[0]?.dataMode ?? repository.getDataMode());
+      focusAndReveal(summaryRef.current);
     } catch (reason) {
       setResults([]);
       if (reason instanceof TokenizerError) {
@@ -127,6 +150,11 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
     }
     return selected;
   }, [filter, results, sort]);
+  const groups = useMemo(() => groupOccurrences(visible), [visible]);
+  const uniqueFamilies = useMemo(
+    () => new Set(results.flatMap((item) => item.owners.map((owner) => owner.baseword_key))).size,
+    [results],
+  );
   const unmatched = useMemo(() => groupUnmatchedWords(results), [results]);
   const pendingFullCheck = useMemo(() => groupPendingFullDatabaseChecks(results), [results]);
   const familyEvidence = (basewordKey: string) => {
@@ -138,21 +166,31 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
     const members = [...countsBySurface].map(([surface, count]) => ({ surface, count }));
     return { members, count: members.reduce((sum, member) => sum + member.count, 0) };
   };
-  const add = (family: FamilyRecord) => teaching.add(family);
   const customRange = useMemo(() => {
     const start = Number(customStart);
     const end = Number(customEnd);
     return customEnabled && validHkRange(start, end) ? { start, end } : null;
   }, [customEnabled, customEnd, customStart]);
+  const changeFilter = (next: ResultFilter) => {
+    setFilter(next);
+    setGroupLimit(OCCURRENCE_BATCH_SIZE);
+    setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
+    focusAndReveal(filteredSummaryRef.current);
+  };
+  const changeSort = (next: ResultSort) => {
+    setSort(next);
+    setGroupLimit(OCCURRENCE_BATCH_SIZE);
+    setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
+    focusAndReveal(filteredSummaryRef.current);
+  };
 
   return (
     <View style={styles.content}>
       <ScreenHeader
-        intro="Analyze up to 500 word occurrences using registered identity routes. Your text stays visible and is not uploaded by this app."
-        title="Check a Text"
+        intro="Paste or type classroom text. Analysis uses registered identity routes and stays in this session."
+        title="Check a text"
       />
-      <DataModeNotice mode={dataMode} />
-      <OcrInputPanel currentText={text} onApplyText={setText} />
+      {Platform.OS !== "web" ? <OcrInputPanel currentText={text} onApplyText={setText} /> : null}
       <TextInput
         accessibilityLabel="Text to check"
         multiline
@@ -167,29 +205,47 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
         label={loading ? "Checking…" : "Check text"}
         onPress={() => void analyze()}
       />
+      <DataModeNotice mode={dataMode} />
       {error ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
         </Text>
       ) : null}
-      {loading ? <ActivityIndicator color={colors.primary} size="large" /> : null}
+      {loading ? (
+        <ActivityIndicator accessibilityLabel="Checking text" color={colors.primary} size="large" />
+      ) : null}
       {results.length ? (
         <>
-          <View accessibilityLabel="Text check summary" style={styles.summary}>
-            <Text style={styles.summaryTitle}>{results.length} word occurrences</Text>
+          <View
+            accessibilityLabel="Text check summary"
+            accessibilityLiveRegion="polite"
+            ref={summaryRef}
+            style={styles.summary}
+            tabIndex={-1}
+          >
+            <Text accessibilityRole="header" aria-level={2} style={styles.summaryTitle}>
+              Text summary
+            </Text>
+            <Text style={styles.summaryLead}>
+              {results.length} occurrences · {uniqueFamilies} registered families
+            </Text>
             <Text style={styles.summaryText}>
               Candidate {counts.candidate} · Reference {counts.reference} · Other ranked{" "}
-              {counts.other} · Grammatical relations {counts.grammar} · Full check unavailable{" "}
-              {counts.unavailable} · Unmatched {counts.unmatched}
-              {" · "}Other review {counts.review} · Independent CPB highlights {counts.cpb}
+              {counts.other}
+              {" · "}Grammar {counts.grammar} · Needs review{" "}
+              {counts.unavailable + counts.unmatched + counts.review}
             </Text>
           </View>
-          <UnmatchedWordsPanel items={unmatched} />
-          <PendingFullCheckPanel items={pendingFullCheck} />
-          <View style={styles.toolsBox}>
-            <Text accessibilityRole="header" style={styles.toolsTitle}>
-              Text highlighting
-            </Text>
+          <PreteachPanel
+            repository={repository}
+            results={results}
+            teaching={teaching}
+            text={text}
+          />
+          <ProgressiveDisclosure
+            summary="CPB, HK frequency and custom-range highlighting controls."
+            title="Text highlighting"
+          >
             <View style={styles.chips}>
               <ChoiceChip
                 label={cpbEnabled ? "★ CPB 100 on" : "CPB 100 off"}
@@ -231,162 +287,133 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
                 Enter whole-number ranks with an end rank equal to or above the start.
               </Text>
             ) : null}
-          </View>
-          <HighlightedText
-            cpbEnabled={cpbEnabled}
-            customRange={customRange}
-            hkEnabled={hkEnabled}
-            results={results}
-            text={text}
-          />
-          <ComplexityPanel results={results} text={text} />
-          <KnowledgeTestPanel results={results} text={text} />
-          <PreteachPanel
-            repository={repository}
-            results={results}
-            teaching={teaching}
-            text={text}
-          />
-          <Text style={styles.label}>Show</Text>
-          <View style={styles.chips}>
-            {(
-              [
-                ["all", `All (${results.length})`],
-                ["candidate", `Candidate (${counts.candidate})`],
-                ["reference", `Reference (${counts.reference})`],
-                ["other", `Other (${counts.other})`],
-                ["grammar", `Grammar (${counts.grammar})`],
-                ["cpb", `CPB/common (${counts.cpb})`],
-                ["unavailable", `Full check unavailable (${counts.unavailable})`],
-                ["review", `Review (${counts.review})`],
-              ] as Array<[ResultFilter, string]>
-            ).map(([value, textLabel]) => (
+            <HighlightedText
+              cpbEnabled={cpbEnabled}
+              customRange={customRange}
+              hkEnabled={hkEnabled}
+              results={results}
+              text={text}
+            />
+          </ProgressiveDisclosure>
+          <ProgressiveDisclosure
+            summary="Readability indicators and transparent calculation notes."
+            title="Text complexity"
+          >
+            <ComplexityPanel results={results} text={text} />
+          </ProgressiveDisclosure>
+          <ProgressiveDisclosure
+            summary="Generate teacher-controlled review questions."
+            title="Knowledge check"
+          >
+            <KnowledgeTestPanel results={results} text={text} />
+          </ProgressiveDisclosure>
+          <ProgressiveDisclosure
+            summary="Filter status categories and review repeated forms as grouped rows."
+            title="Detailed status and grouped results"
+          >
+            <UnmatchedWordsPanel items={unmatched} />
+            <PendingFullCheckPanel items={pendingFullCheck} />
+            <Text style={styles.label}>Show</Text>
+            <View style={styles.chips}>
+              {(
+                [
+                  ["all", `All (${results.length})`],
+                  ["candidate", `Candidate (${counts.candidate})`],
+                  ["reference", `Reference (${counts.reference})`],
+                  ["other", `Other (${counts.other})`],
+                  ["grammar", `Grammar (${counts.grammar})`],
+                  ["cpb", `CPB/common (${counts.cpb})`],
+                  ["unavailable", `Full check unavailable (${counts.unavailable})`],
+                  ["review", `Review (${counts.review})`],
+                ] as Array<[ResultFilter, string]>
+              ).map(([value, label]) => (
+                <ChoiceChip
+                  key={value}
+                  label={label}
+                  onPress={() => changeFilter(value)}
+                  selected={filter === value}
+                />
+              ))}
+            </View>
+            <Text style={styles.label}>Order</Text>
+            <View style={styles.chips}>
               <ChoiceChip
-                key={value}
-                label={textLabel}
-                onPress={() => setFilter(value)}
-                selected={filter === value}
+                label="In text"
+                onPress={() => changeSort("occurrence")}
+                selected={sort === "occurrence"}
               />
-            ))}
-          </View>
-          <Text style={styles.label}>Order</Text>
-          <View style={styles.chips}>
-            <ChoiceChip
-              label="In text"
-              onPress={() => setSort("occurrence")}
-              selected={sort === "occurrence"}
-            />
-            <ChoiceChip
-              label="Family A–Z"
-              onPress={() => setSort("family")}
-              selected={sort === "family"}
-            />
-          </View>
-          {visible.map((item) => {
-            const owner = item.owners.length === 1 ? item.owners[0] : null;
-            const cpb = matchCpb100(item.surface);
-            const hk = owner ? hkFrequencyDisplay(owner.current_hk_frequency_rank) : null;
-            const custom =
-              owner && customRange
-                ? inHkRange(owner.current_hk_frequency_rank, customRange.start, customRange.end)
-                : false;
-            const inList = owner
-              ? teaching.items.some((entry) => entry.basewordKey === owner.baseword_key)
-              : false;
-            const relation = item.grammaticalRelation ?? null;
-            const mapping = textFormAndFamily(item);
-            return (
-              <View
-                key={item.occurrenceId}
-                style={[
-                  styles.result,
-                  cpbEnabled && cpb && styles.resultCpb,
-                  custom && styles.resultCustom,
-                ]}
-              >
-                <View style={styles.resultTop}>
-                  <Text style={styles.surface}>{item.surface}</Text>
-                  <Text style={[styles.status, category(item) === "review" && styles.review]}>
-                    {textResultStatusLabel(item)}
+              <ChoiceChip
+                label="Family A–Z"
+                onPress={() => changeSort("family")}
+                selected={sort === "family"}
+              />
+            </View>
+            <View
+              accessibilityLiveRegion="polite"
+              ref={filteredSummaryRef}
+              style={styles.filteredSummary}
+              tabIndex={-1}
+            >
+              <Text style={styles.filteredText}>
+                {visible.length} occurrences · {groups.length} grouped family/form rows · showing
+                first {Math.min(groupLimit, groups.length)}
+              </Text>
+            </View>
+            {groups.slice(0, groupLimit).map((group) => (
+              <View key={group.key} style={styles.groupRow}>
+                <View style={styles.groupText}>
+                  <Text style={styles.groupTitle}>
+                    {group.form} × {group.count}
+                  </Text>
+                  <Text style={styles.groupNote}>
+                    {group.family} · {group.status}
                   </Text>
                 </View>
-                <View style={styles.badges}>
-                  {cpbEnabled && cpb ? (
-                    <Text style={styles.cpbBadge}>★ CPB 100 rank {cpb.rank}</Text>
-                  ) : null}
-                  {hkEnabled && hk ? (
-                    <Text
-                      style={[
-                        styles.hkBadge,
-                        hk.band === "top-1k" && styles.hkTopBadge,
-                        hk.band === "next-1k" && styles.hkNextBadge,
-                        hk.band === "later" && styles.hkLaterBadge,
-                      ]}
-                    >
-                      {hk.symbol} {hk.label}
-                      {owner?.current_hk_frequency_rank
-                        ? ` · rank ${owner.current_hk_frequency_rank}`
-                        : ""}
-                    </Text>
-                  ) : null}
-                  {custom ? (
-                    <Text style={styles.customBadge}>
-                      ◎ Custom HK {customRange?.start}–{customRange?.end}
-                    </Text>
-                  ) : null}
-                </View>
-                <Text style={styles.offset}>
-                  Characters {item.startOffset}–{item.endOffset}
-                </Text>
-                <Text style={styles.context}>{item.context}</Text>
-                {owner ? (
-                  <View accessibilityLabel="Text form and HK-ELE family" style={styles.mapping}>
-                    <Text style={styles.mappingLabel}>Text form</Text>
-                    <Text style={styles.mappingValue}>{mapping.textForm}</Text>
-                    <Text style={styles.mappingLabel}>HK-ELE family</Text>
-                    <Text style={styles.mappingValue}>{mapping.family}</Text>
-                  </View>
-                ) : null}
-                {relation ? (
-                  <View style={styles.relation}>
-                    <Text style={styles.mappingLabel}>Registered relation</Text>
-                    <Text style={styles.relationValue}>
-                      {item.surface} → {grammaticalRelationDisplay(relation)}
-                    </Text>
-                    <Text style={styles.relationNote}>
-                      This is a language relation, not a ranked HK-ELE family. Context decides
-                      between alternatives where more than one is shown.
-                    </Text>
-                  </View>
-                ) : null}
-                {item.identityException ? (
-                  <Text style={styles.warning}>{item.identityException.teacherDisplay}</Text>
-                ) : null}
-                {item.status === "AMBIGUOUS" ? (
-                  <Text style={styles.warning}>
-                    Possible owners: {item.owners.map((value) => value.display_family).join(", ")}
-                  </Text>
-                ) : null}
-                {owner ? (
-                  <View style={styles.actions}>
-                    <ActionButton
-                      kind="secondary"
-                      label="Word detail"
-                      onPress={() =>
-                        onOpenFamily(owner.baseword_key, familyEvidence(owner.baseword_key))
-                      }
-                    />
-                    <ActionButton
-                      disabled={inList}
-                      kind="secondary"
-                      label={inList ? "In teaching list" : "Add to list"}
-                      onPress={() => add(owner)}
-                    />
-                  </View>
-                ) : null}
               </View>
-            );
-          })}
+            ))}
+            {groupLimit < groups.length ? (
+              <ActionButton
+                kind="secondary"
+                label={`Show ${Math.min(OCCURRENCE_BATCH_SIZE, groups.length - groupLimit)} more grouped rows`}
+                onPress={() =>
+                  setGroupLimit((value) =>
+                    nextBatchSize(value, groups.length, OCCURRENCE_BATCH_SIZE),
+                  )
+                }
+              />
+            ) : null}
+          </ProgressiveDisclosure>
+          <ProgressiveDisclosure
+            summary={`${visible.length} individual records, shown ${OCCURRENCE_BATCH_SIZE} at a time.`}
+            title="All occurrences"
+          >
+            {visible.slice(0, occurrenceLimit).map((item) => {
+              return (
+                <OccurrenceCard
+                  cpbEnabled={cpbEnabled}
+                  customRange={customRange}
+                  hkEnabled={hkEnabled}
+                  item={item}
+                  key={item.occurrenceId}
+                  onOpenFamily={(basewordKey) =>
+                    onOpenFamily(basewordKey, familyEvidence(basewordKey))
+                  }
+                  teaching={teaching}
+                />
+              );
+            })}
+            {occurrenceLimit < visible.length ? (
+              <ActionButton
+                kind="secondary"
+                label={`Show ${Math.min(OCCURRENCE_BATCH_SIZE, visible.length - occurrenceLimit)} more occurrences`}
+                onPress={() =>
+                  setOccurrenceLimit((value) =>
+                    nextBatchSize(value, visible.length, OCCURRENCE_BATCH_SIZE),
+                  )
+                }
+              />
+            ) : null}
+          </ProgressiveDisclosure>
         </>
       ) : null}
     </View>
@@ -394,142 +421,60 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
 }
 
 const styles = StyleSheet.create({
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  badges: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   content: { gap: spacing.md, padding: spacing.lg },
-  context: { color: colors.muted, fontSize: 14, fontStyle: "italic", lineHeight: 21 },
   error: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 10,
     color: colors.danger,
+    fontSize: 15,
     lineHeight: 22,
     padding: spacing.md,
   },
+  filteredSummary: { backgroundColor: colors.subdued, borderRadius: 10, padding: spacing.sm },
+  filteredText: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
+  groupNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  groupRow: {
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    minHeight: 52,
+    paddingVertical: spacing.sm,
+  },
+  groupText: { gap: spacing.xs },
+  groupTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
   label: { color: colors.ink, fontSize: 15, fontWeight: "800" },
-  cpbBadge: {
-    backgroundColor: colors.cpbSoft,
-    borderRadius: 7,
-    color: colors.cpb,
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  customBadge: {
-    backgroundColor: colors.customSoft,
-    borderRadius: 7,
-    color: colors.custom,
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  hkBadge: {
-    borderRadius: 7,
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  hkLaterBadge: { backgroundColor: colors.hkLaterSoft, color: colors.hkLater },
-  hkNextBadge: { backgroundColor: colors.hkNextSoft, color: colors.hkNext },
-  hkTopBadge: { backgroundColor: colors.hkTopSoft, color: colors.hkTop },
-  offset: { color: colors.muted, fontSize: 12 },
-  mapping: {
-    backgroundColor: colors.subdued,
-    borderRadius: 10,
-    gap: spacing.xs,
-    padding: spacing.sm,
-  },
-  mappingLabel: { color: colors.muted, fontSize: 12, fontWeight: "800" },
-  mappingValue: { color: colors.ink, fontSize: 16, fontWeight: "800" },
-  relation: {
-    backgroundColor: colors.primarySoft,
-    borderRadius: 10,
-    gap: spacing.xs,
-    padding: spacing.sm,
-  },
-  relationNote: { color: colors.muted, fontSize: 13, lineHeight: 19 },
-  relationValue: { color: colors.primary, fontSize: 17, fontWeight: "800" },
-  result: {
+  rangeDash: { color: colors.muted, fontSize: 15, fontWeight: "700" },
+  rangeError: { color: colors.danger, fontSize: 15, lineHeight: 22 },
+  rangeInput: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 10,
     borderWidth: 1,
-    gap: spacing.sm,
-    padding: spacing.md,
+    color: colors.ink,
+    fontSize: 16,
+    minHeight: 48,
+    paddingHorizontal: spacing.md,
+    width: 116,
   },
-  resultCpb: { borderColor: colors.cpb, borderStyle: "dashed", borderWidth: 2 },
-  resultCustom: { borderColor: colors.custom, borderWidth: 2 },
-  resultTop: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: spacing.sm,
-    justifyContent: "space-between",
-  },
-  review: { backgroundColor: colors.warningSoft, color: colors.accent },
-  status: {
-    backgroundColor: colors.primarySoft,
-    borderRadius: 999,
-    color: colors.primary,
-    flexShrink: 1,
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    textAlign: "center",
-  },
+  rangeRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   summary: {
     backgroundColor: colors.primarySoft,
     borderRadius: 14,
     gap: spacing.xs,
     padding: spacing.md,
   },
-  summaryText: { color: colors.ink, fontSize: 14, lineHeight: 21 },
-  summaryTitle: { color: colors.primary, fontSize: 19, fontWeight: "800" },
-  toolsBox: {
-    backgroundColor: colors.subdued,
-    borderRadius: 14,
-    gap: spacing.sm,
-    padding: spacing.md,
-  },
-  toolsTitle: { color: colors.ink, fontSize: 18, fontWeight: "800" },
-  rangeDash: { color: colors.muted, fontSize: 14, fontWeight: "700" },
-  rangeError: { color: colors.danger, fontSize: 13, lineHeight: 19 },
-  rangeInput: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 9,
-    borderWidth: 1,
-    color: colors.ink,
-    fontSize: 16,
-    minHeight: 44,
-    paddingHorizontal: spacing.sm,
-    width: 105,
-  },
-  rangeRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
-  surface: { color: colors.ink, fontSize: 22, fontWeight: "800" },
+  summaryLead: { color: colors.ink, fontSize: 18, fontWeight: "800", lineHeight: 25 },
+  summaryText: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  summaryTitle: { color: colors.primary, fontSize: 20, fontWeight: "800" },
   textarea: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     color: colors.ink,
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 16,
+    lineHeight: 24,
     minHeight: 180,
     padding: spacing.md,
-  },
-  warning: {
-    backgroundColor: colors.warningSoft,
-    borderRadius: 8,
-    color: colors.ink,
-    lineHeight: 21,
-    padding: spacing.sm,
   },
 });

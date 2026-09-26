@@ -73,7 +73,7 @@ export class StaticShardRepository implements HkeleRepository {
   async browse(request: BrowseRequest): Promise<BrowsePage> {
     const manifest = await this.manifest();
     const info = manifest.browse[request.scope]?.[request.sort];
-    if (!info) throw new Error("Unsupported Browse selection");
+    if (!info) throw new Error("Unsupported Find words selection");
     const start = (request.page - 1) * request.pageSize;
     const stop = Math.min(start + request.pageSize, info.available_items);
     const families: FamilyRecord[] = [];

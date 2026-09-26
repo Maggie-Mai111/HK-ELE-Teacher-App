@@ -6,9 +6,11 @@
   "start_url": "/HK-ELE-Teacher-App/",
   "scope": "/HK-ELE-Teacher-App/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#F5F7F2",
   "theme_color": "#0E6550",
   "lang": "en-HK",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/HK-ELE-Teacher-App/pwa-icon-192.png",

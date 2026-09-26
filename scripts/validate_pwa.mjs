@@ -40,9 +40,24 @@ const checks = {
   icon512: icon512.width === 512 && icon512.height === 512,
   manifestLinked: index.includes('href="/HK-ELE-Teacher-App/manifest.webmanifest"'),
   serviceWorkerRegistered: index.includes('serviceWorker.register("/HK-ELE-Teacher-App/sw.js"'),
+  viewportFit: index.includes("maximum-scale=5, viewport-fit=cover"),
+  safeAreaCss: index.includes("safe-area-inset-bottom"),
   subpathAssets: index.includes("/HK-ELE-Teacher-App/_expo/"),
   refreshFallback: fallback === index,
   appShellConfigured: serviceWorker.includes("const APP_SHELL"),
+  compactCacheConfigured:
+    serviceWorker.includes("const COMPACT_DATA_ASSETS") &&
+    serviceWorker.includes("reference/families.json") &&
+    serviceWorker.includes("reference/forms.json") &&
+    serviceWorker.includes("reference/search-routes.json"),
+  hashedBuildCached:
+    serviceWorker.includes("const BUILD_ASSETS") &&
+    serviceWorker.includes("/_expo/static/js/web/index-"),
+  cacheVersionFinalized:
+    serviceWorker.includes("package84-") && !serviceWorker.includes("__PACKAGE84_"),
+  cacheUpgradeScoped:
+    serviceWorker.includes("key.startsWith(CACHE_PREFIX)") &&
+    serviceWorker.includes("key !== CACHE_NAME"),
   fullDataExcludedFromPrecache: !serviceWorker
     .slice(
       serviceWorker.indexOf("const APP_SHELL"),
@@ -77,12 +92,18 @@ if (archiveSha256 !== "CB767B54582C8D37716BDE18FCD88768440715B7BCA03497532A13FAF
 }
 
 const report = {
-  schemaVersion: "HK_ELE_PWA_VALIDATION_1.0.0",
+  schemaVersion: "HK_ELE_PACKAGE84_PWA_VALIDATION_1.0.0",
   checkedOn: "2026-09-26",
   status: "PASS",
   basePath: "/HK-ELE-Teacher-App/",
   checks,
-  appShellCacheOnly: true,
+  appShellCacheOnly: false,
+  compactReferencePrecached: true,
+  compactReferenceFiles: entries
+    .filter((entry) =>
+      entry.path.match(/^assets\/data\/releases\/2026-09-14-package67-v1\/reference\/.+\.gz$/),
+    )
+    .map((entry) => entry.path),
   fullDatabasePrecached: false,
   updateArchivePrecached: false,
   onlineFullDatabaseSupported: true,

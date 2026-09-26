@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 999,
     borderWidth: 1,
-    minHeight: 40,
+    minHeight: 44,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },

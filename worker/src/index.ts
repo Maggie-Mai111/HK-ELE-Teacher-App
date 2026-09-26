@@ -27,6 +27,25 @@ export interface WorkerEnv {
 
 type Fetcher = typeof fetch;
 
+type ProviderFailureStage =
+  | "provider_network"
+  | "provider_timeout"
+  | "provider_http"
+  | "provider_envelope_json"
+  | "provider_envelope"
+  | "provider_content_json"
+  | "provider_result_schema";
+
+class ProviderFailure extends Error {
+  constructor(
+    readonly stage: ProviderFailureStage,
+    readonly upstreamStatus = 0,
+  ) {
+    super(stage);
+    this.name = "ProviderFailure";
+  }
+}
+
 const ROUTE = "/api/ai/interpret-filter";
 const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 const DEEPSEEK = "https://api.deepseek.com/chat/completions";
@@ -153,33 +172,79 @@ async function callDeepSeek(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10_000);
   try {
-    const upstream = await fetcher(env.DEEPSEEK_API_URL || DEEPSEEK, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "deepseek-flash",
-        thinking: { type: "disabled" },
-        response_format: { type: "json_object" },
-        max_tokens: 384,
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: request.query },
-        ],
-      }),
-      signal: controller.signal,
-    });
-    if (!upstream.ok) {
-      const error = new Error("provider unavailable") as Error & { status?: number };
-      error.status = upstream.status;
-      throw error;
+    let upstream: Response;
+    try {
+      upstream = await fetcher(env.DEEPSEEK_API_URL || DEEPSEEK, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "deepseek-flash",
+          thinking: { type: "disabled" },
+          response_format: { type: "json_object" },
+          max_tokens: 384,
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: request.query },
+          ],
+        }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw new ProviderFailure("provider_timeout");
+      }
+      throw new ProviderFailure("provider_network");
     }
-    return JSON.parse(providerContent(await upstream.json())) as unknown;
+    if (!upstream.ok) {
+      throw new ProviderFailure("provider_http", upstream.status);
+    }
+    let envelope: unknown;
+    try {
+      envelope = await upstream.json();
+    } catch {
+      throw new ProviderFailure("provider_envelope_json");
+    }
+    let content: string;
+    try {
+      content = providerContent(envelope);
+    } catch {
+      throw new ProviderFailure("provider_envelope");
+    }
+    try {
+      return JSON.parse(content) as unknown;
+    } catch {
+      throw new ProviderFailure("provider_content_json");
+    }
   } finally {
     clearTimeout(timer);
   }
+}
+
+function providerFailureResponse(
+  origin: string,
+  env: WorkerEnv,
+  failure: ProviderFailure,
+): Response {
+  if (failure.upstreamStatus === 429) {
+    return safeError(origin, 429, "PROVIDER_RATE_LIMITED", "AI search is temporarily busy.");
+  }
+  const diagnostic =
+    env.ENVIRONMENT === "staging"
+      ? {
+          stage: failure.stage,
+          upstreamStatus: failure.upstreamStatus || null,
+        }
+      : undefined;
+  return json(origin, 502, {
+    error: {
+      code: "PROVIDER_RESPONSE_REJECTED",
+      message: "AI search returned no usable filter. Nothing was applied.",
+      ...(diagnostic ? { diagnostic } : {}),
+    },
+  });
 }
 
 async function allowed(binding: RateLimitBinding, key: string): Promise<boolean> {
@@ -252,21 +317,19 @@ export async function handleRequest(
     surface: checked.surface,
   };
   try {
-    const result = validateAiFilterResult(await callDeepSeek(providerRequest, env, fetcher));
+    const rawResult = await callDeepSeek(providerRequest, env, fetcher);
+    let result: ReturnType<typeof validateAiFilterResult>;
+    try {
+      result = validateAiFilterResult(rawResult);
+    } catch {
+      throw new ProviderFailure("provider_result_schema");
+    }
     return json(origin, 200, result);
   } catch (error) {
-    const status =
-      typeof error === "object" && error !== null && "status" in error
-        ? Number((error as { status?: unknown }).status)
-        : 0;
-    if (status === 429) {
-      return safeError(origin, 429, "PROVIDER_RATE_LIMITED", "AI search is temporarily busy.");
-    }
-    return safeError(
+    return providerFailureResponse(
       origin,
-      502,
-      "PROVIDER_RESPONSE_REJECTED",
-      "AI search returned no usable filter. Nothing was applied.",
+      env,
+      error instanceof ProviderFailure ? error : new ProviderFailure("provider_network"),
     );
   }
 }

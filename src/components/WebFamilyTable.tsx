@@ -25,6 +25,17 @@ const columns = [
 ] as const;
 type ColumnKey = (typeof columns)[number][0];
 const fixed = new Set<ColumnKey>(["family", "view", "add"]);
+const teacherColumns = new Set<ColumnKey>([
+  "family",
+  "status",
+  "overall",
+  "hk",
+  "first_seen",
+  "root",
+  "view",
+  "add",
+]);
+type TableView = "teacher" | "detailed";
 
 function defaults(): Record<ColumnKey, boolean> {
   return Object.fromEntries(columns.map(([key]) => [key, true])) as Record<ColumnKey, boolean>;
@@ -41,6 +52,11 @@ function initialVisibility(): Record<ColumnKey, boolean> {
   } catch {
     return defaults();
   }
+}
+
+function initialView(): TableView {
+  if (Platform.OS !== "web" || typeof localStorage === "undefined") return "teacher";
+  return localStorage.getItem(STORAGE_KEY) ? "detailed" : "teacher";
 }
 
 function display(value: unknown): string {
@@ -97,28 +113,60 @@ interface Props {
 
 export function WebFamilyTable({ families, isAdded, onAdd, onOpen }: Props) {
   const [visible, setVisible] = useState(initialVisibility);
+  const [view, setView] = useState<TableView>(initialView);
   useEffect(() => {
     if (Platform.OS === "web" && typeof localStorage !== "undefined") {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(visible));
     }
   }, [visible]);
-  const shown = useMemo(() => columns.filter(([key]) => visible[key]), [visible]);
+  const shown = useMemo(
+    () =>
+      view === "teacher"
+        ? columns.filter(([key]) => teacherColumns.has(key))
+        : columns.filter(([key]) => visible[key]),
+    [view, visible],
+  );
   if (Platform.OS !== "web") return null;
   return (
     <View style={styles.wrapper}>
-      <Text style={styles.settingsTitle}>Columns ({shown.length} of 15 shown)</Text>
-      <View style={styles.settings}>
-        {columns.map(([key, label]) => (
+      <View style={styles.viewRow}>
+        <Text style={styles.settingsTitle}>Table view</Text>
+        <View style={styles.settings}>
           <ChoiceChip
-            key={key}
-            label={label}
-            onPress={() => {
-              if (!fixed.has(key)) setVisible((current) => ({ ...current, [key]: !current[key] }));
-            }}
-            selected={visible[key]}
+            label="Teacher view"
+            onPress={() => setView("teacher")}
+            selected={view === "teacher"}
           />
-        ))}
+          <ChoiceChip
+            label="Detailed view"
+            onPress={() => setView("detailed")}
+            selected={view === "detailed"}
+          />
+        </View>
       </View>
+      {view === "teacher" ? (
+        <Text style={styles.viewNote}>
+          A focused set of teaching columns. Switch to Detailed view for all 15 columns and your
+          saved column choices.
+        </Text>
+      ) : (
+        <>
+          <Text style={styles.settingsTitle}>Columns ({shown.length} of 15 shown)</Text>
+          <View style={styles.settings}>
+            {columns.map(([key, label]) => (
+              <ChoiceChip
+                key={key}
+                label={label}
+                onPress={() => {
+                  if (!fixed.has(key))
+                    setVisible((current) => ({ ...current, [key]: !current[key] }));
+                }}
+                selected={visible[key]}
+              />
+            ))}
+          </View>
+        </>
+      )}
       <ScrollView horizontal nestedScrollEnabled style={styles.scroll}>
         <View style={styles.table}>
           <View style={[styles.row, styles.headerRow]}>
@@ -180,7 +228,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   disabled: { opacity: 0.45 },
-  headerCell: { color: colors.surface, fontSize: 13, fontWeight: "800", padding: spacing.sm },
+  headerCell: { color: colors.surface, fontSize: 14, fontWeight: "800", padding: spacing.sm },
   headerRow: { backgroundColor: colors.primary },
   row: { flexDirection: "row" },
   scroll: { borderColor: colors.border, borderRadius: 12, borderWidth: 1, maxWidth: "100%" },
@@ -188,4 +236,12 @@ const styles = StyleSheet.create({
   settingsTitle: { color: colors.ink, fontSize: 14, fontWeight: "800" },
   table: { backgroundColor: colors.surface },
   wrapper: { gap: spacing.sm, maxWidth: "100%" },
+  viewNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  viewRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+  },
 });

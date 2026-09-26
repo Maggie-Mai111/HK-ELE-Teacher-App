@@ -9,8 +9,10 @@ interface AppCardProps extends PropsWithChildren {
 
 export function AppCard({ title, children }: AppCardProps) {
   return (
-    <View accessibilityRole="summary" style={styles.card}>
-      <Text style={styles.title}>{title}</Text>
+    <View style={styles.card}>
+      <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+        {title}
+      </Text>
       {children}
     </View>
   );

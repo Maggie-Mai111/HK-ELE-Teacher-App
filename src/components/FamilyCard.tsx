@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.subdued,
     borderRadius: 999,
     color: colors.primary,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,

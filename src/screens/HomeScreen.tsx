@@ -13,16 +13,16 @@ export function HomeScreen() {
         A mobile workspace for exploring the HK-ELE lexical database and planning vocabulary
         support.
       </Text>
-      <AppCard title="Foundation ready">
+      <AppCard title="Teacher workspace">
         <Text style={styles.body}>
-          This first build establishes the shared data contract, verified identity rules, offline
-          Candidate + Reference package, and cross-platform app shell.
+          Find words, Check a text and Teaching list use the registered HK-ELE evidence and preserve
+          the existing data contract.
         </Text>
       </AppCard>
-      <AppCard title="Coming after approval">
+      <AppCard title="Available offline">
         <Text style={styles.body}>
-          Browse, Check a Text, Teaching List, classroom review tools, and OCR are deliberately not
-          included in this phase.
+          Candidate + Reference data remains available after the PWA has completed one online load.
+          Full-database checks remain online-only.
         </Text>
       </AppCard>
     </View>

@@ -51,7 +51,7 @@ export function HighlightedText({ text, results, cpbEnabled, hkEnabled, customRa
 
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
         Highlighted text
       </Text>
       <Text selectable style={styles.text}>
@@ -100,13 +100,13 @@ const styles = StyleSheet.create({
   legend: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
   legendItem: {
     borderRadius: 7,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "800",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
   },
-  note: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   text: { color: colors.ink, fontSize: 17, lineHeight: 28 },
   title: { color: colors.ink, fontSize: 18, fontWeight: "800" },
   token: { borderRadius: 3, overflow: "hidden" },

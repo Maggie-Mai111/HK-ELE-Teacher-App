@@ -10,10 +10,9 @@ interface NavigationBarProps {
 }
 
 const items: ReadonlyArray<{ route: AppRoute; label: string }> = [
-  { route: "browse", label: "Browse" },
-  { route: "check", label: "Check text" },
+  { route: "browse", label: "Find words" },
+  { route: "check", label: "Check a text" },
   { route: "list", label: "Teaching list" },
-  { route: "data", label: "Data" },
 ];
 
 export function NavigationBar({ activeRoute, onNavigate }: NavigationBarProps) {
@@ -65,7 +64,8 @@ const styles = StyleSheet.create({
   },
   label: {
     color: colors.muted,
-    fontSize: 13,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "600",
   },
   pressed: { opacity: 0.72 },

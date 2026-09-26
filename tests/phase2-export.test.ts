@@ -43,7 +43,7 @@ test("CSV export preserves stable keys and quotes teacher text", () => {
 
 test("Markdown export contains teacher fields and escapes the table", () => {
   const markdown = teachingListToMarkdown([{ ...items[0]!, notes: "contrast | compare" }]);
-  assert.match(markdown, /^# HK-ELE Teaching List/m);
+  assert.match(markdown, /^# HK-ELE Teaching list/m);
   assert.match(markdown, /contrast \\| compare/);
   assert.match(markdown, /Practise/);
 });

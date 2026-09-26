@@ -17,7 +17,7 @@ export function ComplexityPanel({
   );
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
         Estimated text complexity
       </Text>
       <Text style={styles.meta}>
@@ -66,10 +66,10 @@ const styles = StyleSheet.create({
     minWidth: 130,
     padding: spacing.md,
   },
-  metricLabel: { color: colors.muted, fontSize: 13, lineHeight: 19 },
+  metricLabel: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   metricValue: { color: colors.primary, fontSize: 26, fontWeight: "800" },
   metrics: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  note: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   notice: {
     backgroundColor: colors.warningSoft,
     borderRadius: 9,

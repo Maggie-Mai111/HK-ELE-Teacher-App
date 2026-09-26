@@ -50,7 +50,7 @@ export function PreteachPanel({ text, results, repository, teaching }: Props) {
 
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={2} style={styles.title}>
         Words to review for possible pre-teaching
       </Text>
       <Text style={styles.intro}>
@@ -183,7 +183,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
   },
   manualTitle: { color: colors.ink, fontSize: 15, fontWeight: "800" },
-  note: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   reason: { color: colors.ink, fontSize: 14, lineHeight: 20 },
   title: { color: colors.ink, fontSize: 20, fontWeight: "800" },
 });

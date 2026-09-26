@@ -1,11 +1,16 @@
-const CACHE_NAME = "hkele-teacher-app-shell-v1";
+const CACHE_PREFIX = "hkele-teacher-app-shell-";
+const CACHE_NAME = `${CACHE_PREFIX}__PACKAGE84_CACHE_VERSION__`;
 const BASE_PATH = "/HK-ELE-Teacher-App/";
+const COMPACT_DATA_ASSETS = __PACKAGE84_COMPACT_DATA_ASSETS__;
+const BUILD_ASSETS = __PACKAGE84_BUILD_ASSETS__;
 const APP_SHELL = [
   BASE_PATH,
   `${BASE_PATH}manifest.webmanifest`,
   `${BASE_PATH}favicon.ico`,
   `${BASE_PATH}pwa-icon-192.png`,
   `${BASE_PATH}pwa-icon-512.png`,
+  ...BUILD_ASSETS,
+  ...COMPACT_DATA_ASSETS,
 ];
 
 self.addEventListener("install", (event) => {
@@ -18,7 +23,11 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
+        Promise.all(
+          keys
+            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+            .map((key) => caches.delete(key)),
+        ),
       )
       .then(() => self.clients.claim()),
   );
@@ -50,7 +59,10 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (["script", "style", "image", "font"].includes(request.destination)) {
+  if (
+    APP_SHELL.includes(url.pathname) ||
+    ["script", "style", "image", "font"].includes(request.destination)
+  ) {
     event.respondWith(
       caches.match(request).then(
         (cached) =>

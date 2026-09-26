@@ -16,6 +16,7 @@ import type {
 } from "../domain/hkele";
 import { BUNDLED_DATA_ASSETS } from "./bundledAssets";
 import { inflateRecord } from "./gzipJson";
+import { deriveAiFilterFamilies } from "../services/aiFilterFamilyProjection";
 import { registeredGrammaticalRelation } from "../services/grammaticalRelationService";
 
 interface CompactTable {
@@ -155,33 +156,7 @@ export class BundledReferenceRepository implements HkeleRepository {
 
   async aiFilterFamilies(): Promise<FamilyRecord[]> {
     const [families, forms] = await Promise.all([this.families(), this.forms()]);
-    const byFamily = new Map<string, FormRecord[]>();
-    for (const form of forms)
-      byFamily.set(form.baseword_key, [...(byFamily.get(form.baseword_key) ?? []), form]);
-    const collect = (items: FormRecord[], field: keyof FormRecord): string | null => {
-      const values = [
-        ...new Set(
-          items
-            .flatMap((item) => String(item[field] ?? "").split(/[|;,·/]+/))
-            .map((item) => item.trim())
-            .filter(Boolean),
-        ),
-      ];
-      return values.length ? values.join(" | ") : null;
-    };
-    return families.map((family) => {
-      const familyForms = byFamily.get(family.baseword_key) ?? [];
-      return {
-        ...family,
-        browse_external_level_reference:
-          family.external_level_reference_display ??
-          collect(familyForms, "external_level_reference"),
-        browse_root: collect(familyForms, "root"),
-        browse_root_meaning: collect(familyForms, "root_meaning"),
-        browse_prefix: collect(familyForms, "prefix"),
-        browse_suffix: collect(familyForms, "suffix"),
-      };
-    });
+    return deriveAiFilterFamilies(families, forms);
   }
 
   async getFamily(basewordKey: string): Promise<FamilyDetail> {

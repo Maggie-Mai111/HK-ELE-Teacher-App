@@ -57,17 +57,19 @@ export class HybridRepository implements HkeleRepository {
     );
   }
 
-  aiFilterFamilies(): Promise<FamilyRecord[]> {
+  async aiFilterFamilies(): Promise<FamilyRecord[]> {
     const primary = this.staticSource.aiFilterFamilies;
     const fallback = this.bundledSource.aiFilterFamilies;
     if (!fallback) return Promise.reject(new Error("AI filter data is unavailable."));
-    return this.withFallback(
-      () =>
-        primary
-          ? primary.call(this.staticSource)
-          : Promise.reject(new Error("No static AI filter index")),
-      () => fallback.call(this.bundledSource),
-    );
+    try {
+      // Candidate/Reference AI filtering deliberately prefers the compact,
+      // authoritative form-enriched bundle. Full-database Browse remains on the
+      // static source and is unaffected by this product-derived filter path.
+      return await fallback.call(this.bundledSource);
+    } catch {
+      if (!primary) throw new Error("AI filter data is unavailable.");
+      return primary.call(this.staticSource);
+    }
   }
 
   getFamily(basewordKey: string): Promise<FamilyDetail> {

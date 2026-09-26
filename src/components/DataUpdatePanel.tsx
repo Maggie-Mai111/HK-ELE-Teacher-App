@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   previewTitle: { color: colors.ink, fontSize: 15, fontWeight: "800" },
-  privacy: { color: colors.muted, fontSize: 13, lineHeight: 20 },
+  privacy: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   status: { gap: spacing.xs },
   value: { color: colors.ink, fontSize: 14, lineHeight: 21 },
 });

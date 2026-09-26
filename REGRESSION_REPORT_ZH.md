@@ -1,4 +1,6 @@
-# Package82 回归报告
+# Package82 基线回归（由 Package83 继承的历史证据）
+
+> Package83 当前回归结果为 82/82 PASS；请以 `IMPLEMENTATION_AND_ACCEPTANCE_REPORT_ZH.md` 为准。本文件仅保留前序基线。
 
 ## 自动与构建
 

@@ -1,4 +1,6 @@
-# Package82 综合验收与停止点
+# Package82 基线验收（由 Package83 继承的历史证据）
+
+> Package83 当前验收请以 `IMPLEMENTATION_AND_ACCEPTANCE_REPORT_ZH.md` 为准。本文件只保留 Package82 基线证据，不表示 Package83 的当前状态。
 
 Package82 已完成本地受控部署实现与手动交接：Pages 改为手动触发；真实 Pages origin、Worker 名称、Turnstile hostname/action、CORS 和 3/10 每分钟限流已经固化；AI 条件透明度、Undo 与 unsupported 拒绝已加强。
 

@@ -7,6 +7,7 @@ import {
   type AiFilterResult,
 } from "../domain/aiFilterSchema";
 import { aiRuntimeConfiguration } from "../config/runtime";
+import { interpretAiFilterFixture } from "./aiFilterFixture";
 
 export type AiFilterClientErrorCode =
   "OFFLINE" | "NOT_CONFIGURED" | "RATE_LIMITED" | "SERVICE_UNAVAILABLE" | "INVALID_RESPONSE";
@@ -33,6 +34,7 @@ export async function interpretAiFilter(
   options: ClientOptions = {},
 ): Promise<AiFilterResult> {
   const checked = validateAiFilterRequest(request);
+  if (aiRuntimeConfiguration.fixtureMode) return interpretAiFilterFixture(checked.query);
   let gateway: AiFilterGatewayRequest;
   try {
     gateway = validateAiFilterGatewayRequest({ ...checked, ...security });

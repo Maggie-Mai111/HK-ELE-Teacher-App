@@ -4,12 +4,12 @@ import type { DataMode } from "../domain/hkele";
 import { dataModePresentation } from "../services/dataModePresentation";
 import { colors, spacing } from "../theme/tokens";
 
-export function DataModeNotice({ mode }: { mode: DataMode }) {
+export function DataModeNotice({ mode, detailed = false }: { mode: DataMode; detailed?: boolean }) {
   const value = dataModePresentation(mode);
   return (
     <View accessibilityLabel={`Available data: ${value.title}`} style={styles.box}>
-      <Text style={styles.title}>Available data: {value.title}</Text>
-      <Text style={styles.note}>{value.explanation}</Text>
+      <Text style={styles.title}>Database status: {value.title}</Text>
+      {detailed ? <Text style={styles.note}>{value.explanation}</Text> : null}
     </View>
   );
 }

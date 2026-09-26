@@ -99,7 +99,7 @@ test("14 representative teacher requests keep exactly the mocked explicit condit
   }
 });
 
-test("zero result reports actual conditions and remains undoable in the Browse UI", () => {
+test("zero result reports confirmed conditions and remains clearable in the Browse UI", () => {
   const family = {
     baseword_key: "act",
     display_family: "act",
@@ -116,8 +116,10 @@ test("zero result reports actual conditions and remains undoable in the Browse U
   assert.equal(result.matchedBeforeLimit, 0);
   assert.match(describeAiFilterConditions(result.filters).join(" | "), /Root: not-registered/);
   const browse = readFileSync("src/screens/BrowseScreen.tsx", "utf8");
-  assert.match(browse, /Actual conditions:/);
-  assert.match(browse, /Undo AI filter/);
+  assert.match(browse, /matches · showing first/);
+  assert.match(browse, /label="Clear results"/);
+  assert.match(browse, /label="Edit AI request"/);
+  assert.match(browse, /label="Adjust manual filters"/);
   assert.match(browse, /no hidden condition was added/);
 });
 

@@ -75,7 +75,7 @@ export function OcrInputPanel({ currentText, onApplyText }: Props) {
 
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={2} style={styles.title}>
         Camera and on-device OCR
       </Text>
       <Text style={styles.note}>
@@ -157,13 +157,13 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   message: { color: colors.ink, fontSize: 14, lineHeight: 21 },
-  note: { color: colors.muted, fontSize: 13, lineHeight: 20 },
+  note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   notice: {
     backgroundColor: colors.warningSoft,
     borderRadius: 9,
     color: colors.ink,
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 22,
     padding: spacing.sm,
   },
   review: { gap: spacing.sm },

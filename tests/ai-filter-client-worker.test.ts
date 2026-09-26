@@ -255,6 +255,48 @@ test("invalid provider JSON, unknown fields, 429, timeout and offline make one a
   }
 });
 
+test("staging exposes only a safe provider failure stage while production stays generic", async () => {
+  const staging = env();
+  staging.ENVIRONMENT = "staging";
+  staging.ALLOWED_ORIGIN = "https://maggie-mai111.github.io";
+  staging.TURNSTILE_EXPECTED_HOSTNAME = "maggie-mai111.github.io";
+  delete staging.TURNSTILE_SITEVERIFY_URL;
+  staging.DEEPSEEK_API_URL = "https://api.deepseek.com/chat/completions";
+  const rejected = upstream({
+    providerStatus: 401,
+    turnstile: {
+      success: true,
+      hostname: "maggie-mai111.github.io",
+      action: "ai_filter",
+      "error-codes": [],
+    },
+  });
+  const stagingResponse = await handleRequest(
+    workerRequest({}, "https://maggie-mai111.github.io"),
+    staging,
+    rejected.fetcher,
+  );
+  assert.equal(stagingResponse.status, 502);
+  const stagingBody = (await stagingResponse.json()) as {
+    error: { diagnostic?: { stage?: string; upstreamStatus?: number | null } };
+  };
+  assert.deepEqual(stagingBody.error.diagnostic, {
+    stage: "provider_http",
+    upstreamStatus: 401,
+  });
+
+  const production = { ...staging, ENVIRONMENT: "production" as const };
+  const productionResponse = await handleRequest(
+    workerRequest({}, "https://maggie-mai111.github.io"),
+    production,
+    rejected.fetcher,
+  );
+  const productionBody = (await productionResponse.json()) as {
+    error: { diagnostic?: unknown };
+  };
+  assert.equal(productionBody.error.diagnostic, undefined);
+});
+
 test("secret and privacy boundary contains only mock placeholders and no raw logging", () => {
   const ignore = readFileSync(".gitignore", "utf8");
   assert.match(ignore, /^\.dev\.vars$/m);

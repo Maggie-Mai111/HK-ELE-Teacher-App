@@ -4,14 +4,21 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { ActionButton } from "../components/ActionButton";
 import { AppCard } from "../components/AppCard";
 import { DataModeNotice } from "../components/DataModeNotice";
+import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { MorphologyLegend, SafeMorphologyForm } from "../components/SafeMorphologyForm";
 import {
   familySetLabel,
   hasFlag,
   type DataMode,
   type FamilyDetail,
+  type FormRecord,
   type HkeleRepository,
 } from "../domain/hkele";
+import {
+  nextBatchSize,
+  PROGRESSIVE_BATCH_SIZE,
+  visibleForms,
+} from "../services/progressiveResults";
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 
@@ -26,6 +33,14 @@ interface Props {
   teaching: TeachingListStore;
   onBack: () => void;
   textEvidence?: TextEvidence;
+}
+
+interface FormTierProps {
+  title: string;
+  description: string;
+  forms: FormRecord[];
+  family: FamilyDetail["family"];
+  teaching: TeachingListStore;
 }
 
 function display(value: unknown): string {
@@ -45,6 +60,66 @@ function DetailRow({ label, value }: { label: string; value: unknown }) {
         {display(value)}
       </Text>
     </View>
+  );
+}
+
+function FormTier({ title, description, forms, family, teaching }: FormTierProps) {
+  const [limit, setLimit] = useState(PROGRESSIVE_BATCH_SIZE);
+  const shown = visibleForms(forms, limit);
+  return (
+    <ProgressiveDisclosure
+      summary={`${forms.length.toLocaleString("en")} registered forms · ${description}`}
+      title={`${title} (${forms.length.toLocaleString("en")})`}
+    >
+      {forms.length ? (
+        <>
+          <Text style={styles.caution}>
+            Showing {shown.length.toLocaleString("en")} of {forms.length.toLocaleString("en")} in
+            this layer.
+          </Text>
+          <View style={styles.formRows}>
+            {shown.map((form, index) => {
+              const selected = teaching.items.some(
+                (item) =>
+                  item.basewordKey === family.baseword_key &&
+                  item.selectedForms.includes(form.form),
+              );
+              return (
+                <View
+                  key={form.form_key ?? `${form.normalized_form}-${index}`}
+                  style={styles.formRow}
+                >
+                  <View style={styles.formEvidence}>
+                    <SafeMorphologyForm form={form} />
+                    <Text style={styles.formNote}>
+                      Textbook: {display(form.first_seen_hk_textbooks)} · External:{" "}
+                      {display(form.external_level_reference)}
+                    </Text>
+                  </View>
+                  <ActionButton
+                    disabled={selected}
+                    kind="secondary"
+                    label={selected ? `${form.form} selected` : `Add ${form.form}`}
+                    onPress={() => teaching.add(family, form.form)}
+                  />
+                </View>
+              );
+            })}
+          </View>
+          {limit < forms.length ? (
+            <ActionButton
+              kind="secondary"
+              label={`Show ${Math.min(PROGRESSIVE_BATCH_SIZE, forms.length - limit)} more forms`}
+              onPress={() =>
+                setLimit((value) => nextBatchSize(value, forms.length, PROGRESSIVE_BATCH_SIZE))
+              }
+            />
+          ) : null}
+        </>
+      ) : (
+        <Text style={styles.caution}>No forms in this layer.</Text>
+      )}
+    </ProgressiveDisclosure>
   );
 }
 
@@ -121,7 +196,7 @@ export function WordDetailScreen({
       {
         key: "remaining",
         title: "Other registered family members",
-        description: "Remaining registered forms; missing evidence is not interpreted as absence.",
+        description: "Missing evidence is not interpreted as absence.",
         forms: remaining,
       },
     ];
@@ -130,9 +205,8 @@ export function WordDetailScreen({
   return (
     <View style={styles.content}>
       <View style={styles.back}>
-        <ActionButton kind="secondary" label="← Back" onPress={onBack} />
+        <ActionButton kind="secondary" label="← Back to results" onPress={onBack} />
       </View>
-      <DataModeNotice mode={dataMode} />
       {error ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
@@ -148,23 +222,35 @@ export function WordDetailScreen({
       {detail ? (
         <>
           <View style={styles.hero}>
-            <Text accessibilityRole="header" style={styles.heading}>
+            <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
               {detail.family.display_family}
             </Text>
-            <Text style={styles.key}>{detail.family.baseword_key}</Text>
-            <Text style={styles.badge}>{familySetLabel(detail.family)}</Text>
+            <View style={styles.badges}>
+              <Text style={styles.badge}>{familySetLabel(detail.family)}</Text>
+              <Text style={styles.rankBadge}>
+                Overall rank {display(detail.family.overall_frequency_order)}
+              </Text>
+              <Text style={styles.rankBadge}>
+                HK rank {display(detail.family.current_hk_frequency_rank)}
+              </Text>
+            </View>
+            <Text style={styles.gradeEvidence}>
+              HK textbooks: {display(detail.family.textbook_first_seen_level)} · External level:{" "}
+              {display(detail.family.external_level_reference_display)}
+            </Text>
             <ActionButton
               disabled={teaching.items.some(
                 (item) => item.basewordKey === detail.family.baseword_key,
               )}
               label={
                 teaching.items.some((item) => item.basewordKey === detail.family.baseword_key)
-                  ? "In teaching list"
-                  : "Add to teaching list"
+                  ? "In Teaching list"
+                  : "Add family to Teaching list"
               }
               onPress={() => teaching.add(detail.family)}
             />
           </View>
+          <DataModeNotice mode={dataMode} />
           {textEvidence ? (
             <AppCard title="In the checked text">
               <DetailRow
@@ -176,7 +262,20 @@ export function WordDetailScreen({
               <DetailRow label="Total occurrences" value={textEvidence.count} />
             </AppCard>
           ) : null}
-          <AppCard title="Current evidence">
+          {detail.family.general_evidence_status?.toLowerCase().includes("unavailable") ? (
+            <View style={styles.notice}>
+              <Text style={styles.noticeTitle}>General-source component unavailable</Text>
+              <Text style={styles.noticeText}>
+                This means the source component is unavailable. It does not mean zero frequency or
+                absence from the database.
+              </Text>
+            </View>
+          ) : null}
+          <ProgressiveDisclosure
+            summary="Set, frequency, grade, list and subject evidence."
+            title="Complete registered evidence"
+          >
+            <DetailRow label="Stable family identity" value={detail.family.baseword_key} />
             <DetailRow
               label="Set"
               value={detail.family.set_membership ?? familySetLabel(detail.family)}
@@ -202,78 +301,38 @@ export function WordDetailScreen({
               label="Earlier HK list"
               value={hasFlag(detail.family.earlier_hk) ? "Yes" : "No / not recorded"}
             />
-          </AppCard>
-          {detail.family.general_evidence_status?.toLowerCase().includes("unavailable") ? (
-            <View style={styles.notice}>
-              <Text style={styles.noticeTitle}>General-source component unavailable</Text>
-              <Text style={styles.noticeText}>
-                This means the source component is unavailable. It does not mean zero frequency or
-                absence from the database.
-              </Text>
-            </View>
-          ) : null}
-          <AppCard title="Recorded morphology">
+          </ProgressiveDisclosure>
+          <ProgressiveDisclosure
+            summary="Registered fields only; no morphology is inferred or rewritten."
+            title="Recorded morphology"
+          >
             <Text style={styles.caution}>
-              These are registered fields for teacher reference. This summary stays record-only; the
-              forms below are segmented only when exact registered boundaries can be proved.
+              Forms are segmented only when exact registered boundaries can be proved.
             </Text>
             <DetailRow label="Root" value={morphology?.root} />
             <DetailRow label="Root meaning" value={morphology?.meaning} />
             <DetailRow label="Prefix" value={morphology?.prefix} />
             <DetailRow label="Suffix" value={morphology?.suffix} />
-          </AppCard>
-          <AppCard title={`Registered forms (${detail.forms.length.toLocaleString("en")})`}>
-            <Text style={styles.caution}>
-              Colour segments appear only where the registered prefix/root/suffix concatenate
-              exactly to the normalized form. Other forms stay plain.
-            </Text>
             <MorphologyLegend />
-          </AppCard>
+          </ProgressiveDisclosure>
+          <View style={styles.formsIntro}>
+            <Text accessibilityRole="header" aria-level={2} style={styles.formsTitle}>
+              Registered forms ({detail.forms.length.toLocaleString("en")})
+            </Text>
+            <Text style={styles.caution}>
+              Three evidence layers are preserved. Open one layer to show forms in batches of{" "}
+              {PROGRESSIVE_BATCH_SIZE}.
+            </Text>
+          </View>
           {formTiers.map((tier) => (
-            <AppCard
+            <FormTier
+              description={tier.description}
+              family={detail.family}
+              forms={tier.forms}
               key={tier.key}
-              title={`${tier.title} (${tier.forms.length.toLocaleString("en")})`}
-            >
-              <Text style={styles.caution}>{tier.description}</Text>
-              <View style={styles.formRows}>
-                {tier.forms.length ? (
-                  tier.forms.map((form, index) => (
-                    <View
-                      key={form.form_key ?? `${form.normalized_form}-${index}`}
-                      style={styles.formRow}
-                    >
-                      <View style={styles.formEvidence}>
-                        <SafeMorphologyForm form={form} />
-                        <Text style={styles.formNote}>
-                          Textbook: {display(form.first_seen_hk_textbooks)} · External:{" "}
-                          {display(form.external_level_reference)}
-                        </Text>
-                      </View>
-                      <ActionButton
-                        disabled={teaching.items.some(
-                          (item) =>
-                            item.basewordKey === detail.family.baseword_key &&
-                            item.selectedForms.includes(form.form),
-                        )}
-                        kind="secondary"
-                        label={
-                          teaching.items.some(
-                            (item) =>
-                              item.basewordKey === detail.family.baseword_key &&
-                              item.selectedForms.includes(form.form),
-                          )
-                            ? "Selected"
-                            : "Add form"
-                        }
-                        onPress={() => teaching.add(detail.family, form.form)}
-                      />
-                    </View>
-                  ))
-                ) : (
-                  <Text style={styles.caution}>No forms in this layer.</Text>
-                )}
-              </View>
-            </AppCard>
+              teaching={teaching}
+              title={tier.title}
+            />
           ))}
         </>
       ) : null}
@@ -284,26 +343,27 @@ export function WordDetailScreen({
 const styles = StyleSheet.create({
   back: { alignSelf: "flex-start" },
   badge: {
-    alignSelf: "flex-start",
     backgroundColor: colors.primarySoft,
     borderRadius: 999,
     color: colors.primary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "800",
     overflow: "hidden",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
-  caution: { color: colors.muted, fontSize: 14, lineHeight: 21 },
+  badges: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  caution: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   content: { gap: spacing.md, padding: spacing.lg },
   error: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 10,
     color: colors.danger,
+    fontSize: 15,
     padding: spacing.md,
   },
   formEvidence: { flex: 1, gap: spacing.xs, minWidth: 220 },
-  formNote: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  formNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   formRow: {
     alignItems: "center",
     borderBottomColor: colors.border,
@@ -312,12 +372,22 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: spacing.sm,
     justifyContent: "space-between",
+    minHeight: 56,
     paddingVertical: spacing.sm,
   },
   formRows: { gap: spacing.xs },
-  heading: { color: colors.ink, fontSize: 34, fontWeight: "800" },
-  hero: { gap: spacing.sm },
-  key: { color: colors.muted, fontSize: 13 },
+  formsIntro: { gap: spacing.xs, paddingTop: spacing.sm },
+  formsTitle: { color: colors.ink, fontSize: 22, fontWeight: "800", lineHeight: 29 },
+  gradeEvidence: { color: colors.ink, fontSize: 16, lineHeight: 24 },
+  heading: { color: colors.ink, fontSize: 34, fontWeight: "800", lineHeight: 41 },
+  hero: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
   notice: {
     backgroundColor: colors.warningSoft,
     borderRadius: 14,
@@ -325,13 +395,23 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   noticeText: { color: colors.ink, fontSize: 15, lineHeight: 23 },
-  noticeTitle: { color: colors.ink, fontSize: 16, fontWeight: "800" },
+  noticeTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
+  rankBadge: {
+    backgroundColor: colors.subdued,
+    borderRadius: 999,
+    color: colors.ink,
+    fontSize: 14,
+    fontWeight: "700",
+    overflow: "hidden",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
   row: {
     borderBottomColor: colors.border,
     borderBottomWidth: StyleSheet.hairlineWidth,
     gap: spacing.xs,
     paddingVertical: spacing.sm,
   },
-  rowLabel: { color: colors.muted, fontSize: 13, fontWeight: "700" },
+  rowLabel: { color: colors.muted, fontSize: 15, fontWeight: "700" },
   rowValue: { color: colors.ink, fontSize: 16, lineHeight: 23 },
 });

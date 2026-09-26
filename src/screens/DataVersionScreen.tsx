@@ -28,14 +28,14 @@ const rows: ReadonlyArray<[string, string]> = [
 export function DataVersionScreen({ repository }: { repository: HkeleRepository }) {
   return (
     <View style={styles.content}>
-      <Text accessibilityRole="header" style={styles.heading}>
-        Data version
+      <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
+        About &amp; data version
       </Text>
       <Text style={styles.intro}>
         The app checks schema compatibility and frozen population controls before loading a data
         release.
       </Text>
-      <DataModeNotice mode={repository.getDataMode()} />
+      <DataModeNotice detailed mode={repository.getDataMode()} />
       <AppCard title="Current bundled release">
         {rows.map(([label, value]) => (
           <View key={label} style={styles.row}>
@@ -55,9 +55,16 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
       <DataUpdatePanel />
       <AppCard title="Privacy at a glance">
         <Text style={styles.note}>
-          Text analysis, teaching lists and OCR remain on the device. Images are used only to create
-          editable text and are not retained by the App. Data-update requests do not include
-          classroom content. See PRIVACY_ZH.md in this release for the full statement.
+          Text analysis and teaching lists remain on the device. The Web/PWA uses pasted or typed
+          text and does not show camera controls. On-device image OCR appears only in a native build
+          that actually supports it; images are not retained by the App. Data-update requests do not
+          include classroom content. See PRIVACY_ZH.md for the full statement.
+        </Text>
+      </AppCard>
+      <AppCard title="Licence and data sources">
+        <Text style={styles.note}>
+          Licence notices and source attribution remain part of this release in
+          THIRD_PARTY_NOTICES.md and DATA_PROVENANCE.md. Full privacy terms remain in PRIVACY_ZH.md.
         </Text>
       </AppCard>
     </View>

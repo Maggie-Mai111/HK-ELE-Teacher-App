@@ -2,7 +2,7 @@
   "expo": {
     "name": "HK-ELE Teacher",
     "slug": "hkele-teacher-mobile",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "orientation": "default",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -45,11 +45,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.hkele.teacher",
-      "buildNumber": "3"
+      "buildNumber": "4"
     },
     "android": {
       "package": "org.hkele.teacher",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F5F7F2"

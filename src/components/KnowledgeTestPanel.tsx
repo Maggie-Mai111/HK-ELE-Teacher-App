@@ -49,7 +49,7 @@ export function KnowledgeTestPanel({
 
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
         Test Word Knowledge
       </Text>
       <Text style={styles.intro}>
@@ -181,16 +181,16 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
     borderRadius: 9,
     color: colors.ink,
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 20,
     padding: spacing.sm,
   },
-  context: { color: colors.muted, fontSize: 13, fontStyle: "italic", lineHeight: 20 },
-  family: { color: colors.muted, fontSize: 13, lineHeight: 20 },
+  context: { color: colors.muted, fontSize: 15, fontStyle: "italic", lineHeight: 22 },
+  family: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   form: { color: colors.ink, fontSize: 23, fontWeight: "800" },
   guidance: { color: colors.ink, fontSize: 14, fontWeight: "700", lineHeight: 21 },
   intro: { color: colors.muted, fontSize: 14, lineHeight: 21 },
-  note: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
   prompt: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
   question: {
     backgroundColor: colors.canvas,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.md,
   },
-  questionNumber: { color: colors.primary, fontSize: 12, fontWeight: "800" },
+  questionNumber: { color: colors.primary, fontSize: 14, fontWeight: "800" },
   resultLine: { color: colors.ink, fontSize: 15, lineHeight: 22 },
   results: {
     backgroundColor: colors.primarySoft,
