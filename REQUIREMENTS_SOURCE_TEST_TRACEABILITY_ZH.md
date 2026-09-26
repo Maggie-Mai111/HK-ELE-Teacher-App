@@ -1,0 +1,22 @@
+# 需求—源码—测试追踪
+
+| 需求                                                                          | 主要源码/配置                                                             | 自动化或验收证据                                                                                                             |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 每请求新 Turnstile token；Siteverify；hostname/action；失败闭锁               | `TurnstileGate.web.tsx`、`AiFilterAssistant.tsx`、`worker/src/index.ts`   | `ai-filter-client-worker.test.ts`；Wrangler runtime success/missing/invalid/expired-or-duplicate/wrong-hostname/wrong-action |
+| 匿名 session + 独立全局限流，集中配置                                         | `anonymousSession.web.ts`、`worker/wrangler.jsonc`、`worker/src/index.ts` | unit security tests；Wrangler runtime local binding simulation                                                               |
+| 不新增账号/KV/D1/DO/计费状态服务                                              | `worker/wrangler.jsonc`                                                   | `package81-security-hardening.test.ts` forbidden-binding scan                                                                |
+| `deepseek-flash`、thinking disabled、JSON Output、最小安全 token 上限、无重试 | `worker/src/index.ts`、`worker/src/prompt.ts`                             | worst legal fixture test；provider setting/one-attempt tests；runtime provider failure matrix                                |
+| 严格 allowlist 与确定性本地执行                                               | `aiFilterSchema.ts`、`aiFilterExecutor.ts`、`worker/src/validate.ts`      | schema/executor tests；非法 JSON/unknown-field tests                                                                         |
+| local/staging/production 与 production exact CORS；缺配置闭锁                 | `runtime.ts`、`worker/wrangler.jsonc`、`worker/src/index.ts`              | environment/CORS tests；OPTIONS/evil-origin runtime tests                                                                    |
+| 不向 DeepSeek 发送 HK-ELE/课堂/学生/Teaching List/notes                       | `aiFilterClient.ts`、`worker/src/index.ts`                                | provider request body test；secret/privacy scan                                                                              |
+| 不记录 prompt/token/secret/Auth/provider raw response                         | `worker/src/index.ts`                                                     | source scan；Wrangler output scan                                                                                            |
+| Native AI 延期；Native 非 AI 保持                                             | `AiFilterAssistant.tsx`、`TurnstileGate.native.tsx`                       | native boundary test；完整回归                                                                                               |
+| 三个非零公开示例与合法零结果                                                  | `verifiedAiExamples.ts`                                                   | principal dataset deterministic test：1,213 / 996 / 7 / 0                                                                    |
+| AI 失败时手动筛选仍可用                                                       | `AiFilterAssistant.tsx` 与既有 Browse filter UI                           | unit fail-closed tests；宽/窄真实浏览器手动筛选回归                                                                          |
+| PWA 不预缓存完整数据库                                                        | `scripts/generate-service-worker.mjs`、`scripts/validate-pwa.mjs`         | PWA validator 与 public validator                                                                                            |
+| 保持 principal 控制量与核心教师功能                                           | `public/data/*`、既有应用源码                                             | 71 项 tests；Candidate/Reference validation；浏览器 Browse/Check/detail/Teaching List/selected forms/exports                 |
+| 不复制/追踪 secret、构建物、本机路径                                          | `.gitignore`、`.prettierignore`、manifest generator rules                 | secret/local-path scan；`TRACKED_FILE_MANIFEST.csv`                                                                          |
+
+## 官方外部约束来源
+
+Cloudflare Turnstile、Rate Limiting/Workers limits、GitHub Pages/repository limits 与 DeepSeek pricing 的直接链接登记在安全架构和低成本部署计划中。本任务只读取公开文档，没有操作外部账号或启用服务。

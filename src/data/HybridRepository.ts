@@ -7,6 +7,7 @@ import type {
   ResolvedOccurrence,
   SurfaceSearchResult,
   DataMode,
+  FamilyRecord,
 } from "../domain/hkele";
 
 export class HybridRepository implements HkeleRepository {
@@ -53,6 +54,19 @@ export class HybridRepository implements HkeleRepository {
     return this.withFallback(
       () => this.staticSource.browse(request),
       () => this.bundledSource.browse(request),
+    );
+  }
+
+  aiFilterFamilies(): Promise<FamilyRecord[]> {
+    const primary = this.staticSource.aiFilterFamilies;
+    const fallback = this.bundledSource.aiFilterFamilies;
+    if (!fallback) return Promise.reject(new Error("AI filter data is unavailable."));
+    return this.withFallback(
+      () =>
+        primary
+          ? primary.call(this.staticSource)
+          : Promise.reject(new Error("No static AI filter index")),
+      () => fallback.call(this.bundledSource),
     );
   }
 

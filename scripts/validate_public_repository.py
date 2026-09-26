@@ -3,7 +3,6 @@ from __future__ import annotations
 import gzip
 import json
 import re
-import subprocess
 import zipfile
 from pathlib import Path
 
@@ -13,6 +12,7 @@ EXCLUDED_ROOTS = {
     ".git",
     ".expo",
     ".test-dist",
+    ".wrangler",
     "android",
     "dist",
     "dist-android",
@@ -63,6 +63,7 @@ REQUIRED_GITIGNORE = {
     "android/",
     "ios/",
     "*.log",
+    ".wrangler/",
 }
 REQUIRED_FILES = {
     ".github/workflows/deploy-pages.yml",
@@ -94,7 +95,7 @@ def iter_repository_files() -> list[Path]:
         if not path.is_file():
             continue
         parts = path.relative_to(ROOT).parts
-        if parts and parts[0] in EXCLUDED_ROOTS:
+        if any(part in EXCLUDED_ROOTS for part in parts):
             continue
         output.append(path)
     return sorted(output)
@@ -137,11 +138,9 @@ def scan_file(path: Path, findings: list[dict[str, str]]) -> None:
 
 def main() -> None:
     findings: list[dict[str, str]] = []
-    tracked_files = subprocess.run(
-        ["git", "-C", str(ROOT), "ls-files", "-z"],
-        check=True,
-        capture_output=True,
-    ).stdout.decode("utf-8").split("\0")
+    # Package82 is deliberately prepared without copying Package81's .git directory.
+    # Treat the release-candidate file inventory as the prospective tracked set.
+    tracked_files = [relative(path) for path in iter_repository_files()]
     for path in tracked_files:
         if path and Path(path).parts[0] in EXCLUDED_ROOTS:
             findings.append({"type": "forbidden_tracked_path", "path": path})
@@ -159,7 +158,9 @@ def main() -> None:
         scan_file(path, findings)
 
     ui_files = [ROOT / "App.tsx", *(ROOT / "src" / "screens").glob("*.tsx"), *(ROOT / "src" / "components").glob("*.tsx")]
-    ui_pattern = re.compile(rb"(?i)(internal|release candidate|technical demonstration|[A-Z]:[\\/])")
+    ui_pattern = re.compile(
+        rb"(?i)(internal|release candidate|technical demonstration|(?:^|[^A-Za-z0-9])[A-Z]:[\\/])"
+    )
     for path in ui_files:
         if ui_pattern.search(path.read_bytes()):
             findings.append({"type": "teacher_ui_internal_marker", "path": relative(path)})

@@ -8,6 +8,7 @@ const columns = [
   "Order",
   "Family key",
   "Family",
+  "Selected forms",
   "Status",
   "Notes",
   "Connections",
@@ -25,6 +26,7 @@ function row(item: TeachingListItem, index: number): Array<string | number> {
     index + 1,
     item.basewordKey,
     item.displayFamily,
+    item.selectedForms.join(" | "),
     item.status,
     item.notes,
     item.connections,
@@ -52,12 +54,20 @@ function markdownCell(value: string | number | undefined): string {
 }
 
 export function teachingListToMarkdown(items: TeachingListItem[]): string {
-  const selected = ["Family", "Status", "Notes", "Connections", "Set", "Overall rank"];
+  const selected = [
+    "Family",
+    "Selected forms",
+    "Status",
+    "Notes",
+    "Connections",
+    "Set",
+    "Overall rank",
+  ];
   const header = `| ${selected.join(" | ")} |`;
   const separator = `| ${selected.map(() => "---").join(" | ")} |`;
   const lines = items.map((item) => {
     const values = row(item, item.customOrder);
-    const chosen = [values[2], values[3], values[4], values[5], values[6], values[7]];
+    const chosen = [values[2], values[3], values[4], values[5], values[6], values[7], values[8]];
     return `| ${chosen.map(markdownCell).join(" | ")} |`;
   });
   return ["# HK-ELE Teaching List", "", header, separator, ...lines, ""].join("\n");
@@ -102,9 +112,9 @@ function sheetXml(items: TeachingListItem[]): string {
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
-  <cols><col min="1" max="1" width="8" customWidth="1"/><col min="2" max="3" width="22" customWidth="1"/><col min="4" max="4" width="12" customWidth="1"/><col min="5" max="6" width="30" customWidth="1"/><col min="7" max="13" width="18" customWidth="1"/></cols>
+  <cols><col min="1" max="1" width="8" customWidth="1"/><col min="2" max="4" width="22" customWidth="1"/><col min="5" max="5" width="12" customWidth="1"/><col min="6" max="7" width="30" customWidth="1"/><col min="8" max="14" width="18" customWidth="1"/></cols>
   <sheetData>${rows}</sheetData>
-  <autoFilter ref="A1:M${endRow}"/>
+  <autoFilter ref="A1:N${endRow}"/>
 </worksheet>`;
 }
 

@@ -1,0 +1,85 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hkele-ai-filter-local-only",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-26",
+  "workers_dev": true,
+  "vars": {
+    "ENVIRONMENT": "local",
+    "ALLOWED_ORIGIN": "http://127.0.0.1:19078",
+    "TURNSTILE_EXPECTED_HOSTNAME": "127.0.0.1",
+    "TURNSTILE_EXPECTED_ACTION": "ai_filter",
+    "TURNSTILE_SITEVERIFY_URL": "http://127.0.0.1:18782/turnstile/v0/siteverify",
+    "DEEPSEEK_MODEL": "deepseek-flash",
+    "DEEPSEEK_API_URL": "http://127.0.0.1:18782/chat/completions",
+    "SESSION_RATE_LIMIT_MAX": "3",
+    "GLOBAL_RATE_LIMIT_MAX": "10",
+    "RATE_LIMIT_PERIOD_SECONDS": "60",
+  },
+  "ratelimits": [
+    {
+      "name": "AI_SESSION_RATE_LIMITER",
+      "namespace_id": "8101",
+      "simple": { "limit": 3, "period": 60 },
+    },
+    {
+      "name": "AI_GLOBAL_RATE_LIMITER",
+      "namespace_id": "8102",
+      "simple": { "limit": 10, "period": 60 },
+    },
+  ],
+  "env": {
+    "staging": {
+      "name": "hkele-ai-filter-staging",
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "ALLOWED_ORIGIN": "https://maggie-mai111.github.io",
+        "TURNSTILE_EXPECTED_HOSTNAME": "maggie-mai111.github.io",
+        "TURNSTILE_EXPECTED_ACTION": "ai_filter",
+        "DEEPSEEK_MODEL": "deepseek-flash",
+        "DEEPSEEK_API_URL": "https://api.deepseek.com/chat/completions",
+        "SESSION_RATE_LIMIT_MAX": "3",
+        "GLOBAL_RATE_LIMIT_MAX": "10",
+        "RATE_LIMIT_PERIOD_SECONDS": "60",
+      },
+      "ratelimits": [
+        {
+          "name": "AI_SESSION_RATE_LIMITER",
+          "namespace_id": "8103",
+          "simple": { "limit": 3, "period": 60 },
+        },
+        {
+          "name": "AI_GLOBAL_RATE_LIMITER",
+          "namespace_id": "8104",
+          "simple": { "limit": 10, "period": 60 },
+        },
+      ],
+    },
+    "production": {
+      "name": "hkele-ai-filter",
+      "vars": {
+        "ENVIRONMENT": "production",
+        "ALLOWED_ORIGIN": "https://maggie-mai111.github.io",
+        "TURNSTILE_EXPECTED_HOSTNAME": "maggie-mai111.github.io",
+        "TURNSTILE_EXPECTED_ACTION": "ai_filter",
+        "DEEPSEEK_MODEL": "deepseek-flash",
+        "DEEPSEEK_API_URL": "https://api.deepseek.com/chat/completions",
+        "SESSION_RATE_LIMIT_MAX": "3",
+        "GLOBAL_RATE_LIMIT_MAX": "10",
+        "RATE_LIMIT_PERIOD_SECONDS": "60",
+      },
+      "ratelimits": [
+        {
+          "name": "AI_SESSION_RATE_LIMITER",
+          "namespace_id": "8105",
+          "simple": { "limit": 3, "period": 60 },
+        },
+        {
+          "name": "AI_GLOBAL_RATE_LIMITER",
+          "namespace_id": "8106",
+          "simple": { "limit": 10, "period": 60 },
+        },
+      ],
+    },
+  },
+}

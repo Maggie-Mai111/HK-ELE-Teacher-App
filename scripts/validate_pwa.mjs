@@ -78,7 +78,7 @@ if (archiveSha256 !== "CB767B54582C8D37716BDE18FCD88768440715B7BCA03497532A13FAF
 
 const report = {
   schemaVersion: "HK_ELE_PWA_VALIDATION_1.0.0",
-  checkedOn: "2026-09-22",
+  checkedOn: "2026-09-26",
   status: "PASS",
   basePath: "/HK-ELE-Teacher-App/",
   checks,

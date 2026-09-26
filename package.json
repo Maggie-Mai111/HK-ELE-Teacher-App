@@ -1,6 +1,6 @@
 {
-  "name": "hkele-teacher-mobile-app",
-  "version": "0.3.0",
+  "name": "hkele-teacher-web-pwa-controlled-deployment",
+  "version": "0.5.0",
   "private": true,
   "main": "index.ts",
   "scripts": {
@@ -18,8 +18,9 @@
     "lint": "eslint .",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "test": "tsc -p tsconfig.tests.json && node --test --experimental-test-isolation=none .test-dist/tests/*.test.js",
+    "test": "tsc -p tsconfig.tests.json && node --test --test-isolation=none .test-dist/tests/*.test.js",
     "serve:subpath": "python scripts/serve_subpath.py --root dist --port 19078",
+    "runtime:acceptance": "node scripts/wrangler_runtime_acceptance.mjs",
     "validate:public": "python scripts/validate_public_repository.py",
     "validate": "pnpm run validate:public && pnpm run typecheck && pnpm run lint && pnpm test && pnpm run build:web && pnpm run validate:pwa"
   },
@@ -48,7 +49,8 @@
     "eslint": "^10.0.0",
     "prettier": "^3.6.2",
     "typescript": "~6.0.3",
-    "typescript-eslint": "^8.59.0"
+    "typescript-eslint": "^8.59.0",
+    "wrangler": "4.141.0"
   },
   "engines": {
     "node": ">=22.13.0"

@@ -5,6 +5,7 @@ export default tseslint.config(
     ignores: [
       "dist/**",
       ".test-dist/**",
+      "**/.wrangler/**",
       "data/releases/**",
       "node_modules/**",
       "reports/**",

@@ -95,6 +95,38 @@ export function WordDetailScreen({
     };
   }, [detail]);
 
+  const formTiers = useMemo(() => {
+    if (!detail) return [];
+    const textbook = detail.forms.filter((form) => Boolean(form.first_seen_hk_textbooks));
+    const external = detail.forms.filter(
+      (form) => !form.first_seen_hk_textbooks && Boolean(form.external_level_reference),
+    );
+    const remaining = detail.forms.filter(
+      (form) => !form.first_seen_hk_textbooks && !form.external_level_reference,
+    );
+    return [
+      {
+        key: "textbook",
+        title: "Observed in sampled HK textbooks",
+        description: "Forms with a registered textbook observation.",
+        forms: textbook,
+      },
+      {
+        key: "external",
+        title: "Supported by external level references",
+        description:
+          "Forms with external level evidence and no registered HK textbook observation.",
+        forms: external,
+      },
+      {
+        key: "remaining",
+        title: "Other registered family members",
+        description: "Remaining registered forms; missing evidence is not interpreted as absence.",
+        forms: remaining,
+      },
+    ];
+  }, [detail]);
+
   return (
     <View style={styles.content}>
       <View style={styles.back}>
@@ -196,15 +228,53 @@ export function WordDetailScreen({
               exactly to the normalized form. Other forms stay plain.
             </Text>
             <MorphologyLegend />
-            <View style={styles.forms}>
-              {detail.forms.map((form, index) => (
-                <SafeMorphologyForm
-                  form={form}
-                  key={form.form_key ?? `${form.normalized_form}-${index}`}
-                />
-              ))}
-            </View>
           </AppCard>
+          {formTiers.map((tier) => (
+            <AppCard
+              key={tier.key}
+              title={`${tier.title} (${tier.forms.length.toLocaleString("en")})`}
+            >
+              <Text style={styles.caution}>{tier.description}</Text>
+              <View style={styles.formRows}>
+                {tier.forms.length ? (
+                  tier.forms.map((form, index) => (
+                    <View
+                      key={form.form_key ?? `${form.normalized_form}-${index}`}
+                      style={styles.formRow}
+                    >
+                      <View style={styles.formEvidence}>
+                        <SafeMorphologyForm form={form} />
+                        <Text style={styles.formNote}>
+                          Textbook: {display(form.first_seen_hk_textbooks)} · External:{" "}
+                          {display(form.external_level_reference)}
+                        </Text>
+                      </View>
+                      <ActionButton
+                        disabled={teaching.items.some(
+                          (item) =>
+                            item.basewordKey === detail.family.baseword_key &&
+                            item.selectedForms.includes(form.form),
+                        )}
+                        kind="secondary"
+                        label={
+                          teaching.items.some(
+                            (item) =>
+                              item.basewordKey === detail.family.baseword_key &&
+                              item.selectedForms.includes(form.form),
+                          )
+                            ? "Selected"
+                            : "Add form"
+                        }
+                        onPress={() => teaching.add(detail.family, form.form)}
+                      />
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.caution}>No forms in this layer.</Text>
+                )}
+              </View>
+            </AppCard>
+          ))}
         </>
       ) : null}
     </View>
@@ -232,7 +302,19 @@ const styles = StyleSheet.create({
     color: colors.danger,
     padding: spacing.md,
   },
-  forms: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
+  formEvidence: { flex: 1, gap: spacing.xs, minWidth: 220 },
+  formNote: { color: colors.muted, fontSize: 12, lineHeight: 18 },
+  formRow: {
+    alignItems: "center",
+    borderBottomColor: colors.border,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+    paddingVertical: spacing.sm,
+  },
+  formRows: { gap: spacing.xs },
   heading: { color: colors.ink, fontSize: 34, fontWeight: "800" },
   hero: { gap: spacing.sm },
   key: { color: colors.muted, fontSize: 13 },

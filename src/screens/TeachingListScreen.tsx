@@ -52,6 +52,20 @@ function ListItem({
           />
         ))}
       </View>
+      <Text style={styles.label}>Selected forms</Text>
+      <View style={styles.chips}>
+        {item.selectedForms.map((form) => (
+          <View key={form} style={styles.formChip}>
+            <Text style={styles.formChipText}>{form}</Text>
+            <ActionButton
+              accessibilityLabel={`Remove selected form ${form}`}
+              kind="secondary"
+              label="×"
+              onPress={() => teaching.removeSelectedForm(item.basewordKey, form)}
+            />
+          </View>
+        ))}
+      </View>
       <Text style={styles.label}>Teaching notes</Text>
       <TextInput
         accessibilityLabel={`Teaching notes for ${item.displayFamily}`}
@@ -113,7 +127,7 @@ export function TeachingListScreen({ teaching, onOpenFamily }: Props) {
   return (
     <View style={styles.content}>
       <ScreenHeader
-        intro="Keep a stable, device-local list by family identity. Status, notes, connections, and order are saved automatically."
+        intro="Keep a stable, device-local list by family identity. Selected forms, status, notes, connections, and order are saved automatically."
         title="Teaching List"
       />
       {!teaching.ready ? (
@@ -209,6 +223,15 @@ const styles = StyleSheet.create({
   },
   exportNote: { color: colors.muted, fontSize: 14, lineHeight: 21 },
   exportTitle: { color: colors.primary, fontSize: 19, fontWeight: "800" },
+  formChip: {
+    alignItems: "center",
+    backgroundColor: colors.subdued,
+    borderRadius: 10,
+    flexDirection: "row",
+    gap: spacing.xs,
+    paddingLeft: spacing.sm,
+  },
+  formChipText: { color: colors.ink, fontSize: 14, fontWeight: "700" },
   input: {
     backgroundColor: colors.canvas,
     borderColor: colors.border,

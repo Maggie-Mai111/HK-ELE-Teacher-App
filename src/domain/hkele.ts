@@ -105,6 +105,7 @@ export interface ResolvedOccurrence extends TokenOccurrence {
 
 export interface HkeleRepository {
   browse(request: BrowseRequest): Promise<BrowsePage>;
+  aiFilterFamilies?(): Promise<FamilyRecord[]>;
   getFamily(basewordKey: string): Promise<FamilyDetail>;
   searchSurface(surface: string): Promise<SurfaceSearchResult>;
   resolveOccurrences(text: string, occurrences: TokenOccurrence[]): Promise<ResolvedOccurrence[]>;

@@ -1,6 +1,18 @@
 # HK-ELE Teacher 隐私说明
 
-版本：2026-09-22（Package77 Phase 5B1 公开仓库整理版）
+版本：2026-09-26（Package82 Web/PWA 受控部署版）
+
+## 可选 AI 筛选助手
+
+AI 助手只把教师在该输入框内键入的短筛选请求发送至独立 Cloudflare Worker，再由 Worker
+调用 DeepSeek。课堂全文、OCR 图片、学生资料、Teaching List、笔记以及 HK-ELE 数据行均不
+发送。DeepSeek 只解释为受控 JSON 条件；教师确认后，本地程序才以 principal 数据确定性筛选。
+
+Web/PWA 每次 AI 请求还会把一个新的 Turnstile token 与随机生成、无个人信息的本地 UUID
+session ID 交给 Worker，用于反滥用验证和限流；它们不属于登录或用户身份。Worker 不把 token
+或 session ID 转发给 DeepSeek。`DEEPSEEK_API_KEY` 和 Turnstile secret 只允许在获授权部署时
+作为 Worker Secret 设置，不得进入客户端、版本库、日志或报告；Package82 的本地 runtime 只
+使用 mock 值。AI/Turnstile/网络失败时只显示安全错误并保留手动筛选。
 
 ## GitHub Pages 网页数据公开边界
 
@@ -52,7 +64,6 @@ Android OCR 依赖设备的 Google Play Services 状态；平台供应商如何�
 
 ## 已知验证边界
 
-Package77 Phase 5B1 在 Windows 上完成实现、静态检查、单元测试、Web 浏览器验收及
-Android/iOS Hermes export。没有生成 APK/IPA，也没有 Android 或 iOS
-真机，因此本说明不声称已完成相机权限、系统照片选择器、设备 OCR、系统备份或设备端删除
-行为的真机验证。发布前必须在目标平台补做这些测试。
+Package82 在 Windows 上完成 Web/PWA 本地加固、静态检查、单元测试、Wrangler mock runtime
+与 Web 浏览器回归；没有部署或生成 APK/IPA，也没有 Android/iOS 真机验证。Native AI 仍为
+`NATIVE_AI_TRANSPORT_SECURITY_DECISION_PENDING`，不得从 Web/PWA 通过推断 Native AI 已通过。

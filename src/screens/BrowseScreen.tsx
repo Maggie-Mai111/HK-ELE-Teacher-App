@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
+import { AiFilterAssistant } from "../components/AiFilterAssistant";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { FamilyCard } from "../components/FamilyCard";
 import { ScreenHeader } from "../components/ScreenHeader";
+import { WebFamilyTable } from "../components/WebFamilyTable";
 import type {
   BrowsePage,
   BrowseScope,
@@ -16,6 +18,7 @@ import type {
   DataMode,
 } from "../domain/hkele";
 import { dataModePresentation } from "../services/dataModePresentation";
+import { describeAiFilterConditions, type AiFilterExecution } from "../services/aiFilterExecutor";
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 
@@ -47,6 +50,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState<SurfaceSearchResult | null>(null);
   const [searching, setSearching] = useState(false);
+  const [aiSelection, setAiSelection] = useState<AiFilterExecution | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -105,6 +109,57 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         title="Browse"
       />
       <DataModeNotice mode={dataMode} />
+      <AiFilterAssistant
+        onApply={(execution) => {
+          setAiSelection(execution);
+          setSearch(null);
+        }}
+        repository={repository}
+      />
+      {aiSelection ? (
+        <View style={styles.resultBox}>
+          <View style={styles.aiResultHeader}>
+            <View style={styles.aiResultTitleGroup}>
+              <Text style={styles.sectionTitle}>Confirmed AI-assisted filter</Text>
+              <Text style={styles.muted}>
+                {aiSelection.matchedBeforeLimit.toLocaleString("en")} matched principal records ·
+                showing {aiSelection.families.length.toLocaleString("en")}
+              </Text>
+              <Text style={styles.aiConditions}>
+                Actual conditions: {describeAiFilterConditions(aiSelection.filters).join(" · ")}
+              </Text>
+            </View>
+            <ActionButton
+              kind="secondary"
+              label="Undo AI filter"
+              onPress={() => setAiSelection(null)}
+            />
+          </View>
+          {aiSelection.families.length === 0 ? (
+            <Text style={styles.muted}>
+              No registered family meets every condition shown above. Use Undo AI filter or modify
+              the request in the AI assistant; no hidden condition was added.
+            </Text>
+          ) : Platform.OS === "web" ? (
+            <WebFamilyTable
+              families={aiSelection.families}
+              isAdded={isAdded}
+              onAdd={teaching.add}
+              onOpen={(family) => onOpenFamily(family.baseword_key)}
+            />
+          ) : (
+            aiSelection.families.map((family) => (
+              <FamilyCard
+                added={isAdded(family)}
+                family={family}
+                key={family.baseword_key}
+                onAdd={teaching.add}
+                onOpen={(item) => onOpenFamily(item.baseword_key)}
+              />
+            ))
+          )}
+        </View>
+      ) : null}
       <View style={styles.searchBox}>
         <TextInput
           accessibilityLabel="Search a word or form"
@@ -163,7 +218,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           ))}
         </View>
       ) : null}
-      <Text style={styles.label}>List</Text>
+      <Text style={styles.label}>Manual list filters</Text>
       <View style={styles.chips}>
         {scopes.map(([value, label]) => (
           <ChoiceChip
@@ -199,15 +254,24 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             {page.availableItems.toLocaleString("en")} families · page {page.page} ·{" "}
             {dataModePresentation(page.sourceMode).shortLabel}
           </Text>
-          {page.families.map((family) => (
-            <FamilyCard
-              added={isAdded(family)}
-              family={family}
-              key={family.baseword_key}
+          {Platform.OS === "web" ? (
+            <WebFamilyTable
+              families={page.families}
+              isAdded={isAdded}
               onAdd={teaching.add}
-              onOpen={(item) => onOpenFamily(item.baseword_key)}
+              onOpen={(family) => onOpenFamily(family.baseword_key)}
             />
-          ))}
+          ) : (
+            page.families.map((family) => (
+              <FamilyCard
+                added={isAdded(family)}
+                family={family}
+                key={family.baseword_key}
+                onAdd={teaching.add}
+                onOpen={(item) => onOpenFamily(item.baseword_key)}
+              />
+            ))
+          )}
           <View style={styles.pager}>
             <ActionButton
               disabled={pageNumber === 1}
@@ -268,4 +332,13 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     padding: spacing.sm,
   },
+  aiResultHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    justifyContent: "space-between",
+  },
+  aiResultTitleGroup: { flex: 1, gap: spacing.xs, minWidth: 240 },
+  aiConditions: { color: colors.ink, fontSize: 14, lineHeight: 21 },
 });

@@ -7,6 +7,13 @@
     "outDir": ".test-dist",
     "rootDir": "."
   },
-  "include": ["tests/**/*.ts", "src/data/**/*.ts", "src/domain/**/*.ts", "src/services/**/*.ts"],
+  "include": [
+    "tests/**/*.ts",
+    "src/data/**/*.ts",
+    "src/domain/**/*.ts",
+    "src/services/**/*.ts",
+    "src/config/**/*.ts",
+    "worker/src/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist", ".test-dist"]
 }

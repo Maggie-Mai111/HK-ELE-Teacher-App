@@ -1,6 +1,6 @@
 # HK-ELE Teacher 开发、验证与运行说明
 
-本公开仓库继承已验收的 Package77 Phase 5B1 实现。当前应用版本为 `0.3.0`，Android
+Package82 以 Package81 为唯一代码基线，并保持 Package77 Phase 5B1 的非 AI 产品实现。Native app 版本仍为 `0.3.0`，Android
 `versionCode` 为 `3`，iOS `buildNumber` 为 `3`。
 
 Package76/Phase 5A 的 0.2.0 与 build number 2 记录只属于未纳入本仓库的历史验收证据，不能
@@ -9,7 +9,7 @@ Package76/Phase 5A 的 0.2.0 与 build number 2 记录只属于未纳入本仓�
 ## 环境
 
 - Node.js 22.13 或以上。
-- pnpm 10.15.1；GitHub Actions 使用同一主版本和冻结 lockfile。
+- pnpm 11；应使用冻结 lockfile。Wrangler 锁定为 4.141.0。
 - Android 原生编译另需兼容 JDK、Android SDK/API 36、adb 及目标设备。
 - iOS 原生编译另需 macOS、Xcode 及目标设备或模拟器。
 
@@ -22,6 +22,8 @@ pnpm run lint
 pnpm test
 pnpm run build:web
 pnpm run validate:pwa
+pnpm run validate:public
+pnpm run runtime:acceptance
 ```
 
 `validate:pwa` 检查 `/HK-ELE-Teacher-App/` start URL/scope、manifest、品牌图标、service worker、刷新回退、
@@ -55,7 +57,20 @@ pnpm run serve:subpath
   `installed-full` 表示已经下载并经哈希验证的完整离线数据库。
 - 完整数据库查询失败不等于真正 unmatched；范围外词保持待重新检查。
 
-## 构建时配置
+## Web/PWA AI 构建时配置
+
+local 构建只可使用回环 Worker 与 Turnstile 官方测试 sitekey：
+
+- `EXPO_PUBLIC_HKELE_ENVIRONMENT=local`
+- `EXPO_PUBLIC_HKELE_AI_FILTER_URL=http://127.0.0.1:18781/api/ai/interpret-filter`
+- `EXPO_PUBLIC_HKELE_TURNSTILE_SITE_KEY=1x00000000000000000000AA`
+
+staging/production 必须分别显式配置 HTTPS Worker endpoint 和对应 widget sitekey；遗漏或错配时
+客户端 fail closed。Worker 的 production origin、Turnstile hostname/action、secret 与 DeepSeek
+secret 只在获授权部署任务中配置。`runtime:acceptance` 只使用回环 mock，不读取 `.dev.vars`，
+也不连接真实 DeepSeek。
+
+## 数据端点构建配置
 
 教师界面没有技术 URL 输入框。preview、android-apk 与 production profiles 使用：
 

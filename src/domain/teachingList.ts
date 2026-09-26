@@ -8,6 +8,7 @@ export interface TeachingListItem {
   status: TeachingStatus;
   notes: string;
   connections: string;
+  selectedForms: string[];
   customOrder: number;
   addedAt: string;
   updatedAt: string;
@@ -24,6 +25,6 @@ export interface TeachingListItem {
 }
 
 export interface TeachingListDocument {
-  schemaVersion: "1.0.0";
+  schemaVersion: "1.1.0";
   items: TeachingListItem[];
 }

@@ -1,9 +1,8 @@
 # HK-ELE Teacher 第三方资料与依赖说明
 
-更新日期：2026-09-22
+更新日期：2026-09-26
 
-本文件适用于 Package77 Phase 5B1 的公开仓库整理版，应用版本为 `0.3.0`。它不是法律意见，
-也不表示已经取得公开发布或再分发授权。
+本文件由 Package77 notice 延续至 Package82，Web/PWA 包版本为 `0.5.0`。它不是法律意见。
 
 ## CPB Sight Words
 
@@ -11,8 +10,9 @@
 - 来源登记名：`CPB Sight Words (1000) Final.xlsx`。
 - 来源 SHA-256：`AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787`。
 - App 内数据：`data/releases/2026-09-14-package67-v1/cpb/cpb-sight-words-100.json`，严格为唯一 rank 1–100。
-- **权限状态：尚未取得或登记可供公众再分发的许可。** 在得到书面确认前，CPB 内容仍是
-  公开分发 release gate；本项目不声称其属于公有领域或可自由再分发。
+- **权限状态：所有者于 2026-09-26 明确确认本次 Web/PWA 可公开分发 CPB 100。** 仓库中仍未登记
+  独立第三方书面许可文书；本项目不声称 CPB 属于公有领域或可自由再分发。若所属机构要求书面
+  证据，操作者应在 push 前补存该证据。
 
 ## App 直接运行依赖
 
@@ -64,4 +64,4 @@ MIT 类组件的版权和许可文本应随最终分发制品整理；本表不�
 - App 图标和启动图使用既有 HK-ELE 品牌标记与颜色 `#0e6550`。
 - 本地技术验收不授权 GitHub Pages、应用商店或其他第三方托管。
 
-Package76/Phase 5A 的 notices 是继承的历史证据；本文件已按当前 Package77 Phase 5B1 版本更新。
+Package76/Phase 5A 与 Package77 Phase 5B1 的 notices 是继承的历史证据；本文件已按 Package82 Web/PWA 范围更新。Native AI 与原生二进制不在本次公开范围。

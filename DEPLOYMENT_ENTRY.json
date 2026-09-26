@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "HK_ELE_PACKAGE82_DEPLOYMENT_ENTRY_1.0.0",
+  "createdOn": "2026-09-26",
+  "package": "Package82",
+  "codeBaseline": "Package81",
+  "status": "PACKAGE82_DEPLOYMENT_MATERIALS_READY_STAGING_NOT_EXECUTED",
+  "requestedPostStagingStatus": "PACKAGE82_STAGING_ACCEPTED_AWAITING_PRODUCTION_DEPLOYMENT_AUTHORIZATION",
+  "requestedPostProductionStatus": "PACKAGE82_WEB_PWA_PUBLIC_DEPLOYMENT_COMPLETE_NATIVE_AI_DEFERRED",
+  "currentGate": {
+    "stagingWorkerDeployed": false,
+    "stagingAccepted": false,
+    "productionWorkerDeployed": false,
+    "package82PagesPublished": false,
+    "reason": "WRANGLER_CLI_NOT_AUTHENTICATED_AND_GITHUB_CLI_UNAVAILABLE_MANUAL_HANDOFF_SELECTED"
+  },
+  "authorityControls": {
+    "identities": 163784,
+    "ranked": 163570,
+    "unranked": 214,
+    "candidate": 3185,
+    "inclusiveReference": 3430,
+    "referenceOnly": 245
+  },
+  "target": {
+    "repository": "Maggie-Mai111/HK-ELE-Teacher-App",
+    "pagesUrl": "https://maggie-mai111.github.io/HK-ELE-Teacher-App/",
+    "pagesBasePath": "/HK-ELE-Teacher-App",
+    "pagesOrigin": "https://maggie-mai111.github.io",
+    "stagingWorkerName": "hkele-ai-filter-staging",
+    "productionWorkerName": "hkele-ai-filter",
+    "turnstileHostname": "maggie-mai111.github.io",
+    "turnstileAction": "ai_filter",
+    "sessionLimit": "3_PER_60_SECONDS",
+    "globalLimit": "10_PER_60_SECONDS"
+  },
+  "localAcceptance": {
+    "tests": "PASS_75_OF_75",
+    "aiUsabilityCases": 17,
+    "runtime": "PASS_LOCAL_MOCK_ONLY",
+    "browser": "PASS_WIDE_AND_390_BY_844",
+    "consoleWarnings": 0,
+    "consoleErrors": 0,
+    "realDeepSeekRequests": 0,
+    "actualCostUsd": 0
+  },
+  "observedRemoteBeforePackage82": {
+    "repositoryPublic": true,
+    "pagesLiveHttp200": true,
+    "mainCommit": "e6ec63e3f13b13e6dda46b8ff4e6d43ebcdd55a8",
+    "workflowHadPushMainTrigger": true,
+    "modifiedByThisPackage": false
+  },
+  "reports": {
+    "accountAndLicensePreflight": "ACCOUNT_AND_LICENSE_PREFLIGHT_ZH.md",
+    "aiUsability": "AI_USABILITY_EVALUATION_ZH.md",
+    "staging": "STAGING_DEPLOYMENT_REPORT_ZH.md",
+    "security": "SECURITY_AND_SECRET_VERIFICATION_ZH.md",
+    "publicUrlsAndRollback": "PUBLIC_URLS_AND_ROLLBACK_ZH.md",
+    "manualRunbook": "MANUAL_DEPLOYMENT_RUNBOOK_ZH.md",
+    "production": null
+  },
+  "productionReportRule": "CREATE_PRODUCTION_DEPLOYMENT_REPORT_ZH_MD_ONLY_AFTER_VERIFIED_REAL_PRODUCTION_DEPLOYMENT"
+}

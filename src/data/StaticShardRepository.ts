@@ -105,6 +105,17 @@ export class StaticShardRepository implements HkeleRepository {
     };
   }
 
+  async aiFilterFamilies(): Promise<FamilyRecord[]> {
+    const first = await this.browse({ scope: "broader", sort: "overall", page: 1, pageSize: 100 });
+    const pageCount = Math.ceil(first.availableItems / first.pageSize);
+    const remaining = await Promise.all(
+      Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) =>
+        this.browse({ scope: "broader", sort: "overall", page: index + 2, pageSize: 100 }),
+      ),
+    );
+    return [first, ...remaining].flatMap((page) => page.families);
+  }
+
   private fnvBucket(value: string, count: number): number {
     let hash = 2166136261;
     for (const byte of new TextEncoder().encode(value)) {

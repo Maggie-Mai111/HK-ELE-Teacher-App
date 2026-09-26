@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, View } from "react-native";
+import { Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 
 import { NavigationBar, type AppRoute } from "./src/components/NavigationBar";
 import { repository } from "./src/data/repository";
@@ -81,7 +81,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   app: { backgroundColor: colors.canvas, flex: 1 },
-  page: { alignSelf: "center", maxWidth: 760, width: "100%" },
+  page: { alignSelf: "center", maxWidth: Platform.OS === "web" ? 1440 : 760, width: "100%" },
   safeArea: { backgroundColor: colors.canvas, flex: 1 },
   scroll: { flex: 1 },
   scrollContent: { flexGrow: 1 },

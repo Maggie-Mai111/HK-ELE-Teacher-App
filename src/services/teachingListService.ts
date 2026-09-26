@@ -9,9 +9,11 @@ import type {
   TeachingListItem,
   TeachingStatus,
 } from "../domain/teachingList";
+import { migratePackage72TeachingList } from "./teachingListMigration";
 
 const STORAGE_KEY = "hkele-teaching-list-v2";
-const EMPTY_DOCUMENT: TeachingListDocument = { schemaVersion: "1.0.0", items: [] };
+const LEGACY_WEB_STORAGE_KEY = "hkele-phase1v-teaching-list-v1";
+const EMPTY_DOCUMENT: TeachingListDocument = { schemaVersion: "1.1.0", items: [] };
 
 function derivedFields(family: FamilyRecord): TeachingListItem["derived"] {
   return {
@@ -27,23 +29,37 @@ function derivedFields(family: FamilyRecord): TeachingListItem["derived"] {
 function normalizeDocument(raw: string | null): TeachingListDocument {
   if (!raw) return EMPTY_DOCUMENT;
   const parsed = JSON.parse(raw) as Partial<TeachingListDocument>;
-  if (parsed.schemaVersion !== "1.0.0" || !Array.isArray(parsed.items)) return EMPTY_DOCUMENT;
+  if (!Array.isArray(parsed.items)) return EMPTY_DOCUMENT;
   const items = parsed.items
     .filter(
       (item): item is TeachingListItem =>
         typeof item?.basewordKey === "string" && typeof item?.displayFamily === "string",
     )
     .sort((left, right) => left.customOrder - right.customOrder)
-    .map((item, index) => ({ ...item, customOrder: index }));
-  return { schemaVersion: "1.0.0", items };
+    .map((item, index) => ({
+      ...item,
+      selectedForms:
+        Array.isArray(item.selectedForms) &&
+        item.selectedForms.every((form) => typeof form === "string")
+          ? [...new Set(item.selectedForms.map((form) => form.trim()).filter(Boolean))]
+          : [item.displayFamily],
+      customOrder: index,
+    }));
+  return { schemaVersion: "1.1.0", items };
+}
+
+export function normalizePackage72Document(raw: string | null): TeachingListDocument {
+  return migratePackage72TeachingList(raw, manifestJson.dataVersion);
 }
 
 async function readDocument(): Promise<TeachingListDocument> {
-  const raw =
-    Platform.OS === "web" && typeof localStorage !== "undefined"
-      ? localStorage.getItem(STORAGE_KEY)
-      : await AsyncStorage.getItem(STORAGE_KEY);
-  return normalizeDocument(raw);
+  if (Platform.OS === "web" && typeof localStorage !== "undefined") {
+    const current = localStorage.getItem(STORAGE_KEY);
+    return current
+      ? normalizeDocument(current)
+      : normalizePackage72Document(localStorage.getItem(LEGACY_WEB_STORAGE_KEY));
+  }
+  return normalizeDocument(await AsyncStorage.getItem(STORAGE_KEY));
 }
 
 async function writeDocument(document: TeachingListDocument): Promise<void> {
@@ -55,7 +71,11 @@ async function writeDocument(document: TeachingListDocument): Promise<void> {
   }
 }
 
-export function createTeachingItem(family: FamilyRecord, order: number): TeachingListItem {
+export function createTeachingItem(
+  family: FamilyRecord,
+  order: number,
+  selectedForm?: string,
+): TeachingListItem {
   const now = new Date().toISOString();
   return {
     basewordKey: family.baseword_key,
@@ -63,6 +83,7 @@ export function createTeachingItem(family: FamilyRecord, order: number): Teachin
     status: "Notice",
     notes: "",
     connections: "",
+    selectedForms: [selectedForm?.trim() || family.display_family],
     customOrder: order,
     addedAt: now,
     updatedAt: now,
@@ -103,7 +124,7 @@ export function useTeachingList(repository: HkeleRepository) {
       if (!active) return;
       setItems(refreshed);
       setReady(true);
-      await writeDocument({ schemaVersion: "1.0.0", items: refreshed });
+      await writeDocument({ schemaVersion: "1.1.0", items: refreshed });
     });
     return () => {
       active = false;
@@ -113,19 +134,51 @@ export function useTeachingList(repository: HkeleRepository) {
   const commit = useCallback((next: TeachingListItem[]) => {
     const ordered = next.map((item, index) => ({ ...item, customOrder: index }));
     setItems(ordered);
-    void writeDocument({ schemaVersion: "1.0.0", items: ordered });
+    void writeDocument({ schemaVersion: "1.1.0", items: ordered });
   }, []);
 
   const add = useCallback(
-    (family: FamilyRecord) => {
-      if (items.some((item) => item.basewordKey === family.baseword_key)) return;
-      commit([...items, createTeachingItem(family, items.length)]);
+    (family: FamilyRecord, selectedForm?: string) => {
+      const existing = items.find((item) => item.basewordKey === family.baseword_key);
+      const chosen = selectedForm?.trim() || family.display_family;
+      if (existing) {
+        if (!existing.selectedForms.includes(chosen)) {
+          commit(
+            items.map((item) =>
+              item.basewordKey === family.baseword_key
+                ? {
+                    ...item,
+                    selectedForms: [...item.selectedForms, chosen],
+                    updatedAt: new Date().toISOString(),
+                  }
+                : item,
+            ),
+          );
+        }
+        return;
+      }
+      commit([...items, createTeachingItem(family, items.length, chosen)]);
     },
     [commit, items],
   );
 
   const remove = useCallback(
     (basewordKey: string) => commit(items.filter((item) => item.basewordKey !== basewordKey)),
+    [commit, items],
+  );
+
+  const removeSelectedForm = useCallback(
+    (basewordKey: string, form: string) => {
+      commit(
+        items.flatMap((item) => {
+          if (item.basewordKey !== basewordKey) return [item];
+          const selectedForms = item.selectedForms.filter((value) => value !== form);
+          return selectedForms.length
+            ? [{ ...item, selectedForms, updatedAt: new Date().toISOString() }]
+            : [];
+        }),
+      );
+    },
     [commit, items],
   );
 
@@ -160,8 +213,8 @@ export function useTeachingList(repository: HkeleRepository) {
   );
 
   return useMemo(
-    () => ({ items, ready, add, remove, update, move }),
-    [add, items, move, ready, remove, update],
+    () => ({ items, ready, add, remove, removeSelectedForm, update, move }),
+    [add, items, move, ready, remove, removeSelectedForm, update],
   );
 }
 

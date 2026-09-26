@@ -3,6 +3,7 @@ dist
 dist-android
 dist-ios
 .test-dist
+.wrangler
 data/releases
 data/*.json
 audits/*.json
