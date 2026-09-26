@@ -2,8 +2,15 @@ name: Deploy HK-ELE Teacher to GitHub Pages
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
+    inputs:
+      environment:
+        description: "Deployment environment"
+        required: true
+        default: staging
+        type: choice
+        options:
+          - staging
+          - production
 
 permissions:
   contents: read
@@ -31,7 +38,14 @@ jobs:
       - run: pnpm run typecheck
       - run: pnpm run lint
       - run: pnpm test
-      - run: pnpm run build:web
+      - name: Build controlled Web/PWA deployment
+        run: pnpm run build:web
+        env:
+          EXPO_PUBLIC_HKELE_ENVIRONMENT: ${{ inputs.environment }}
+          EXPO_PUBLIC_HKELE_AI_FILTER_URL: ${{ inputs.environment == 'production' && vars.HKELE_PRODUCTION_AI_FILTER_URL || vars.HKELE_STAGING_AI_FILTER_URL }}
+          EXPO_PUBLIC_HKELE_TURNSTILE_SITE_KEY: ${{ inputs.environment == 'production' && vars.HKELE_PRODUCTION_TURNSTILE_SITE_KEY || vars.HKELE_STAGING_TURNSTILE_SITE_KEY }}
+          EXPO_PUBLIC_HKELE_RELEASE_CHANNEL: web-${{ inputs.environment }}
+          EXPO_PUBLIC_HKELE_ENDPOINT_STATUS: CONFIGURED_BY_MANUAL_GITHUB_ACTIONS_DEPLOYMENT
       - run: pnpm run validate:pwa
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
