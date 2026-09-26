@@ -8,7 +8,7 @@ Package76/Phase 5A 的 0.2.0 与 build number 2 记录只属于未纳入本仓�
 
 ## 环境
 
-- Node.js 22.13 或以上。
+- Node.js 24.3 或以上。
 - pnpm 11；应使用冻结 lockfile。Wrangler 锁定为 4.141.0。
 - Android 原生编译另需兼容 JDK、Android SDK/API 36、adb 及目标设备。
 - iOS 原生编译另需 macOS、Xcode 及目标设备或模拟器。
