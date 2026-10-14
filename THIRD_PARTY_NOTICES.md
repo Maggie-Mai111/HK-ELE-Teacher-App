@@ -1,6 +1,13 @@
 # HK-ELE Teacher 第三方资料与依赖说明
 
-更新日期：2026-09-26
+更新日期：2026-10-12（本地 OCR 候选补充，既有数据和原生依赖 notices 保留）
+
+## 本地 PWA OCR 新增资源
+
+- Tesseract.js 6.0.1 与 tesseract.js-core 6.0.0 按固定版本提供；完整许可文本分别保存于 public/ocr/LICENSE-tesseract.txt 与 public/ocr/core/LICENSE.txt。
+- English LSTM 模型固定来自 @tesseract.js-data/eng 1.0.0；全部下载源、大小与 SHA-256 在 public/ocr/ASSET_MANIFEST.json 登记。
+- vendor 文件未修改、未重新格式化；运行时只加载同源资源，不在浏览器运行时依赖 CDN 或云端 OCR。
+- 这些资产属于本地候选，原生二进制和应用商店验收仍按下文既有边界处理。
 
 本文件由 Package77 notice 延续至 Package82，Web/PWA 包版本为 `0.5.0`。它不是法律意见。
 

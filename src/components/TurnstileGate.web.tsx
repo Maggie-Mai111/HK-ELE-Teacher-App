@@ -59,7 +59,7 @@ function loadTurnstile(): Promise<TurnstileApi> {
 export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
   const host = useRef<HTMLDivElement | null>(null);
   const widgetId = useRef<string | null>(null);
-  const [message, setMessage] = useState("Preparing anti-abuse check…");
+  const [message, setMessage] = useState("Preparing search…");
 
   useEffect(() => {
     let active = true;
@@ -67,12 +67,12 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
     const sitekey = aiRuntimeConfiguration.turnstileSiteKey;
     if (aiRuntimeConfiguration.fixtureMode) {
       onTokenChange("local-browser-acceptance-fixture");
-      setMessage("Local acceptance fixture ready; no provider request will be sent.");
+      setMessage("");
       return;
     }
     if (!element || !aiRuntimeConfiguration.configured || !sitekey) {
       onTokenChange(null);
-      setMessage("AI is not configured for this environment; manual filters remain available.");
+      setMessage("");
       return;
     }
     void loadTurnstile()
@@ -84,19 +84,19 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
           callback: (token) => {
             if (!active) return;
             onTokenChange(token);
-            setMessage("Anti-abuse check ready for one AI request.");
+            setMessage("");
           },
           "error-callback": () => {
             onTokenChange(null);
-            setMessage("Anti-abuse check failed; use manual filters or try again.");
+            setMessage("Please try the verification again, or choose word filters below.");
           },
           "expired-callback": () => {
             onTokenChange(null);
-            setMessage("Anti-abuse check expired; a new check is required.");
+            setMessage("Please complete the verification again.");
           },
           "timeout-callback": () => {
             onTokenChange(null);
-            setMessage("Anti-abuse check timed out; use manual filters or try again.");
+            setMessage("Please try the verification again, or choose word filters below.");
           },
           theme: "auto",
         });
@@ -104,7 +104,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
       .catch(() => {
         if (!active) return;
         onTokenChange(null);
-        setMessage("Anti-abuse check is unavailable; manual filters remain available.");
+        setMessage("Search couldn't get ready. Please try again or choose word filters below.");
       });
     return () => {
       active = false;
@@ -116,7 +116,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
   useEffect(() => {
     if (!widgetId.current || !window.turnstile || resetNonce === 0) return;
     onTokenChange(null);
-    setMessage("Preparing a new anti-abuse check…");
+    setMessage("Preparing search…");
     window.turnstile.reset(widgetId.current);
   }, [onTokenChange, resetNonce]);
 

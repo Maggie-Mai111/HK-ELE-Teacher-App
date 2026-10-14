@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import type { PendingFullCheckSummary } from "../services/textResultPresentation";
+import { BUNDLED_REFERENCE_COUNT } from "../services/dataModePresentation";
 import { colors, spacing } from "../theme/tokens";
 import { AppCard } from "./AppCard";
 
@@ -9,9 +10,9 @@ export function PendingFullCheckPanel({ items }: { items: PendingFullCheckSummar
   return (
     <AppCard title="Full database check unavailable">
       <Text style={styles.note}>
-        These forms were not found in the built-in 3,430-family set, but the full database could not
-        be checked. They are not counted as unmatched. Recheck when online, or after installing the
-        verified full database.
+        These forms were not found in the built-in {BUNDLED_REFERENCE_COUNT.toLocaleString("en")}
+        -family set, but the full database could not be checked. They are not counted as unmatched.
+        Recheck when online, or after installing the verified full database.
       </Text>
       {items.map((item) => (
         <View key={item.normalizedForm} style={styles.row}>

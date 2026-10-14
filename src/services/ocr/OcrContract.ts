@@ -9,7 +9,10 @@ export interface OcrAdapter {
   readonly provider: string;
   readonly processedOnDevice: boolean;
   isSupported(): boolean;
-  recognizeImage(uri: string): Promise<OcrRecognitionResult>;
+  recognizeImage(
+    uri: string,
+    options?: { signal?: AbortSignal; onProgress?: (message: string) => void },
+  ): Promise<OcrRecognitionResult>;
 }
 
 export function linesToEditableText(lines: readonly string[]): string {
@@ -22,12 +25,13 @@ export function linesToEditableText(lines: readonly string[]): string {
 export async function recognizeToEditableText(
   adapter: OcrAdapter,
   uri: string,
+  options?: { signal?: AbortSignal; onProgress?: (message: string) => void },
 ): Promise<OcrRecognitionResult> {
   if (!adapter.isSupported()) {
     throw new Error("On-device OCR is not supported in this build.");
   }
   if (!uri.trim()) throw new Error("The selected image has no local URI.");
-  const result = await adapter.recognizeImage(uri);
+  const result = await adapter.recognizeImage(uri, options);
   if (!result.text.trim()) throw new Error("No text was recognized. Try a clearer image.");
   return result;
 }

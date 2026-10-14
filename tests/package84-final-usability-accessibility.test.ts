@@ -154,22 +154,22 @@ test("193 forms and 500 occurrences are exposed progressively rather than render
   assert.match(check, /groupOccurrences\(visible\)/);
 });
 
-test("Web hides OCR while summary-first text results keep advanced evidence collapsed", () => {
+test("photo OCR and advanced text evidence stay behind collapsed disclosures", () => {
   const check = source("src/screens/CheckTextScreen.tsx");
-  assert.match(check, /Platform\.OS !== "web" \? <OcrInputPanel/);
+  assert.match(check, /title="Scan text from a photo"[\s\S]*<OcrInputPanel/);
   assert.ok(check.indexOf('title="Text complexity"') > check.indexOf("<PreteachPanel"));
   assert.ok(check.indexOf("Check word knowledge") < check.indexOf("<PreteachPanel"));
   for (const title of [
     "Text highlighting",
     "Text complexity",
-    "Detailed status and grouped results",
+    "All word results",
     "All occurrences",
   ])
     assert.match(check, new RegExp(`title="${title}"`));
   const disclosure = source("src/components/ProgressiveDisclosure.tsx");
   assert.match(disclosure, /defaultOpen = false/);
   const about = source("src/screens/DataVersionScreen.tsx");
-  assert.match(about, /Web\/PWA uses pasted or typed/);
+  assert.match(about, /Photo\s+recognition\s+runs\s+on\s+this\s+device/);
 });
 
 test("typography, touch targets, names, headings and expanded state meet source-level floors", () => {

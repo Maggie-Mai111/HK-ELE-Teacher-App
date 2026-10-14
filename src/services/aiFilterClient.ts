@@ -41,7 +41,7 @@ export async function interpretAiFilter(
   } catch {
     throw new AiFilterClientError(
       "NOT_CONFIGURED",
-      "AI anti-abuse protection is not ready. Manual filters remain available.",
+      "Please complete the verification and try again.",
     );
   }
   const endpoint =
@@ -49,7 +49,7 @@ export async function interpretAiFilter(
   if (!endpoint)
     throw new AiFilterClientError(
       "NOT_CONFIGURED",
-      "AI search is not configured. Manual filters remain available.",
+      "We couldn't start this search. Use the word filters below.",
     );
   const controller = new AbortController();
   const timer = setTimeout(
@@ -66,26 +66,26 @@ export async function interpretAiFilter(
     if (response.status === 429)
       throw new AiFilterClientError(
         "RATE_LIMITED",
-        "AI search is busy. Try manual filters or retry later.",
+        "Search is busy. Try again shortly or use the word filters below.",
       );
     if (!response.ok)
       throw new AiFilterClientError(
         "SERVICE_UNAVAILABLE",
-        "AI search is unavailable. Manual filters remain available.",
+        "We couldn't complete the search. Try again or use the word filters below.",
       );
     try {
       return validateAiFilterResult(await response.json());
     } catch {
       throw new AiFilterClientError(
         "INVALID_RESPONSE",
-        "AI returned an invalid filter. Nothing was applied.",
+        "We couldn't understand that request. Try one of the examples.",
       );
     }
   } catch (error) {
     if (error instanceof AiFilterClientError) throw error;
     throw new AiFilterClientError(
       "OFFLINE",
-      "AI search could not connect. Manual filters remain available.",
+      "We couldn't connect. Check your connection and try again, or use word filters.",
     );
   } finally {
     clearTimeout(timer);

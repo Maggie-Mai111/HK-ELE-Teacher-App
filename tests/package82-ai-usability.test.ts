@@ -120,7 +120,7 @@ test("zero result reports confirmed conditions and remains clearable in the Brow
   assert.match(browse, /label="Clear results"/);
   assert.match(browse, /label="Edit AI request"/);
   assert.match(browse, /label="Adjust manual filters"/);
-  assert.match(browse, /no hidden condition was added/);
+  assert.match(browse, /No words match all your filters/);
 });
 
 test("two unsupported requests are rejected without executable filters or guessed fields", () => {

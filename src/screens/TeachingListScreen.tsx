@@ -34,11 +34,10 @@ function ListItem({
         <View style={styles.titleText}>
           <Text style={styles.order}>#{index + 1}</Text>
           <Text style={styles.title}>{item.displayFamily}</Text>
-          <Text style={styles.key}>{item.basewordKey}</Text>
         </View>
         <ActionButton
           kind="secondary"
-          label="Detail"
+          label="View word"
           onPress={() => onOpenFamily(item.basewordKey)}
         />
       </View>
@@ -158,8 +157,7 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords }: Prop
             <View style={styles.exportBox}>
               <Text style={styles.exportTitle}>Export ({teaching.items.length} families)</Text>
               <Text style={styles.exportNote}>
-                CSV and Markdown are lightweight; Excel includes Selected forms, a frozen header row
-                and filters. Export important work before changing devices or clearing storage.
+                Download your selected words and notes. Excel is useful for editing and sharing.
               </Text>
               <View style={styles.actions}>
                 <ActionButton

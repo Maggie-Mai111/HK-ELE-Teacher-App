@@ -9,4 +9,5 @@ data/*.json
 audits/*.json
 INPUT_LOCK.json
 reports
+public/ocr
 pnpm-lock.yaml

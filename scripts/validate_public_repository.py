@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import json
+import os
 import re
 import zipfile
 from pathlib import Path
@@ -91,13 +93,12 @@ def relative(path: Path) -> str:
 
 def iter_repository_files() -> list[Path]:
     output: list[Path] = []
-    for path in ROOT.rglob("*"):
-        if not path.is_file():
-            continue
-        parts = path.relative_to(ROOT).parts
-        if any(part in EXCLUDED_ROOTS for part in parts):
-            continue
-        output.append(path)
+    for directory, subdirectories, filenames in os.walk(ROOT, followlinks=False):
+        subdirectories[:] = [name for name in subdirectories if name not in EXCLUDED_ROOTS]
+        for filename in filenames:
+            path = Path(directory) / filename
+            if filename not in EXCLUDED_ROOTS and path.is_file():
+                output.append(path)
     return sorted(output)
 
 
@@ -107,9 +108,15 @@ def scan_bytes(label: str, payload: bytes, findings: list[dict[str, str]]) -> No
             findings.append({"type": name, "path": label})
 
 
-def scan_file(path: Path, findings: list[dict[str, str]]) -> None:
+def scan_file(path: Path, findings: list[dict[str, str]], vendor_assets: dict[str, str]) -> None:
     rel = relative(path)
     if rel == "scripts/validate_public_repository.py":
+        return
+    if rel in vendor_assets:
+        # Pinned upstream WASM wrappers contain encoded binaries and upstream build paths.
+        # Verify their byte identity rather than treating binary patterns as project secrets.
+        if hashlib.sha256(path.read_bytes()).hexdigest() != vendor_assets[rel]:
+            findings.append({"type": "third_party_asset_hash_mismatch", "path": rel})
         return
     lower_name = path.name.lower()
     if path.suffix.lower() in FORBIDDEN_SECRET_SUFFIXES or lower_name in FORBIDDEN_SECRET_NAMES:
@@ -154,8 +161,17 @@ def main() -> None:
         findings.append({"type": "missing_gitignore_rule", "path": entry})
 
     files = iter_repository_files()
+    vendor_assets: dict[str, str] = {}
+    vendor_manifest = ROOT / "public/ocr/ASSET_MANIFEST.json"
+    if vendor_manifest.is_file():
+        for item in json.loads(vendor_manifest.read_text(encoding="utf-8"))["files"]:
+            path = (ROOT / "public/ocr" / item["path"]).resolve()
+            if not path.is_relative_to((ROOT / "public/ocr").resolve()) or not path.is_file():
+                findings.append({"type": "invalid_third_party_asset", "path": item["path"]})
+            else:
+                vendor_assets[relative(path)] = item["sha256"]
     for path in files:
-        scan_file(path, findings)
+        scan_file(path, findings, vendor_assets)
 
     ui_files = [ROOT / "App.tsx", *(ROOT / "src" / "screens").glob("*.tsx"), *(ROOT / "src" / "components").glob("*.tsx")]
     ui_pattern = re.compile(
@@ -190,6 +206,8 @@ def main() -> None:
         "repository": "Maggie-Mai111/HK-ELE-Teacher-App",
         "basePath": "/HK-ELE-Teacher-App/",
         "files": len(files),
+        "pinnedThirdPartyAssets": len(vendor_assets),
+        "thirdPartyPolicy": "Pinned OCR assets verified by SHA-256; project-owned text retains path and secret scanning",
         "bytes": sum(size for _, size in sizes),
         "largestFile": {"path": largest[0], "bytes": largest[1]},
         "localAbsolutePathFindings": [

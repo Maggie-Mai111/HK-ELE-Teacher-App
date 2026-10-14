@@ -7,10 +7,10 @@ import { AppCard } from "./AppCard";
 export function UnmatchedWordsPanel({ items }: { items: UnmatchedWordSummary[] }) {
   if (items.length === 0) return null;
   return (
-    <AppCard title="Unmatched words to review">
+    <AppCard title="Words without a data match">
       <Text style={styles.note}>
-        These forms stay separate from family results and the suggested pre-teach list. The App does
-        not guess their family, rank or teaching value.
+        These words aren't in the current wordlist. They may still be common or familiar to your
+        students, including compound words such as classroom.
       </Text>
       {items.map((item) => (
         <View
@@ -24,7 +24,6 @@ export function UnmatchedWordsPanel({ items }: { items: UnmatchedWordSummary[] }
               {item.count} occurrence{item.count === 1 ? "" : "s"}
             </Text>
           </View>
-          <Text style={styles.explanation}>{item.explanation}</Text>
         </View>
       ))}
     </AppCard>

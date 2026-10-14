@@ -90,8 +90,10 @@ export function DataUpdatePanel() {
     }
   };
 
+  if (!dataUpdateManager.supported || !releaseConfiguration.updateManifestUrl) return null;
+
   return (
-    <AppCard title="Verified offline data updates">
+    <AppCard title="Wordlist updates">
       <Text style={styles.note}>
         The App downloads one versioned data package only after you ask. It checks the package and
         every included file before replacing active data. A failed or incompatible update is refused

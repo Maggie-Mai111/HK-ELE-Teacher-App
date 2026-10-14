@@ -10,18 +10,23 @@ test("primary navigation and teacher-facing AI labels match the approved wording
   assert.doesNotMatch(navigation, /route: "data", label: "Data"/);
 
   const assistant = readFileSync("src/components/AiFilterAssistant.tsx", "utf8");
-  for (const label of ["Find words with AI", "Preview", "Show matching words", "Edit request"])
+  for (const label of [
+    "Find words with AI",
+    "Review suggested filters",
+    "Show matching words",
+    "Edit request",
+  ])
     assert.match(assistant, new RegExp(label));
 });
 
 test("About remains accessible from the menu and retains version, source, licence and privacy information", () => {
   const menu = readFileSync("src/components/AppMenu.tsx", "utf8");
   const data = readFileSync("src/screens/DataVersionScreen.tsx", "utf8");
-  assert.match(menu, /About &amp; data version/);
+  assert.match(menu, /About HK-ELE/);
   assert.match(data, /Data version/);
-  assert.match(data, /Licence and data sources/);
+  assert.match(data, /Sources and licences/);
   assert.match(data, /Privacy at a glance/);
-  assert.match(data, /DATA_PROVENANCE\.md/);
+  assert.ok(readFileSync("DATA_PROVENANCE.md", "utf8").length > 0);
 });
 
 test("Browse has one result surface, More filters, bulk add and responsive mobile cards", () => {

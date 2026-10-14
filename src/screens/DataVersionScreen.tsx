@@ -5,7 +5,7 @@ import { APP_VERSION } from "../config/release";
 import { AppCard } from "../components/AppCard";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { DataUpdatePanel } from "../components/DataUpdatePanel";
-import { BUNDLED_DATA_FILE_COUNT } from "../data/bundledAssets";
+import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import type { DataManifest } from "../domain/contracts";
 import type { HkeleRepository } from "../domain/hkele";
 import { assertCompatibleManifest } from "../domain/manifest";
@@ -16,27 +16,28 @@ assertCompatibleManifest(manifest, APP_VERSION);
 
 const rows: ReadonlyArray<[string, string]> = [
   ["Data version", manifest.dataVersion],
-  ["Schema version", manifest.schemaVersion],
   ["Released", manifest.releaseDate],
   ["Candidate", manifest.counts.candidate.toLocaleString("en")],
   ["Candidate + Reference", manifest.counts.inclusiveReference.toLocaleString("en")],
   ["Full database families", manifest.counts.totalFamilies.toLocaleString("en")],
-  ["Registered forms", manifest.counts.forms.toLocaleString("en")],
-  ["Bundled offline data files", String(BUNDLED_DATA_FILE_COUNT)],
+  ["Word forms", manifest.counts.forms.toLocaleString("en")],
 ];
 
 export function DataVersionScreen({ repository }: { repository: HkeleRepository }) {
   return (
     <View style={styles.content}>
       <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
-        About &amp; data version
+        About HK-ELE
       </Text>
       <Text style={styles.intro}>
-        The app checks schema compatibility and frozen population controls before loading a data
-        release.
+        Find vocabulary for your lessons using word information and evidence from English corpora
+        and Hong Kong teaching materials.
       </Text>
       <DataModeNotice detailed mode={repository.getDataMode()} />
-      <AppCard title="Current bundled release">
+      <ProgressiveDisclosure
+        title="Wordlist information"
+        summary={`Updated ${manifest.releaseDate}`}
+      >
         {rows.map(([label, value]) => (
           <View key={label} style={styles.row}>
             <Text style={styles.label}>{label}</Text>
@@ -45,28 +46,22 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
             </Text>
           </View>
         ))}
-      </AppCard>
-      <AppCard title="Interpretation">
-        <Text style={styles.note}>
-          “General unavailable” means that the General-source component is unavailable. It does not
-          mean that the family is absent or has a frequency of zero.
-        </Text>
-      </AppCard>
+      </ProgressiveDisclosure>
       <DataUpdatePanel />
       <AppCard title="Privacy at a glance">
         <Text style={styles.note}>
-          Text analysis and teaching lists remain on the device. The Web/PWA uses pasted or typed
-          text and does not show camera controls. On-device image OCR appears only in a native build
-          that actually supports it; images are not retained by the App. Data-update requests do not
-          include classroom content. See PRIVACY_ZH.md for the full statement.
+          Text analysis and teaching lists remain on the device. Photo recognition runs on this
+          device; review and edit the text before using it. Photos are not uploaded or saved by the
+          App. Linked forms receive only what you submit; AI search sends your request when used.
+          Review your agreement from Menu → Your data choices.
         </Text>
       </AppCard>
-      <AppCard title="Licence and data sources">
+      <ProgressiveDisclosure title="Sources and licences">
         <Text style={styles.note}>
-          Licence notices and source attribution remain part of this release in
-          THIRD_PARTY_NOTICES.md and DATA_PROVENANCE.md. Full privacy terms remain in PRIVACY_ZH.md.
+          The wordlist brings together word-family records, corpus frequency information and
+          textbook observations. Source attributions and licence notices are included with HK-ELE.
         </Text>
-      </AppCard>
+      </ProgressiveDisclosure>
     </View>
   );
 }

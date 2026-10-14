@@ -1,0 +1,14 @@
+{
+  "supportedSchemaMajors": [1],
+  "releases": {
+    "2026-09-14-package67-v1": {
+      "totalFamilies": 163784,
+      "forms": 319924,
+      "ranked": 163570,
+      "unranked": 214,
+      "candidate": 3185,
+      "inclusiveReference": 3430,
+      "referenceOnly": 245
+    }
+  }
+}

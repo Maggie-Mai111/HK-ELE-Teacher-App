@@ -6,9 +6,12 @@ import { colors, spacing } from "../theme/tokens";
 
 export function DataModeNotice({ mode, detailed = false }: { mode: DataMode; detailed?: boolean }) {
   const value = dataModePresentation(mode);
+  if (!detailed && value.fullDatabaseAvailable) return null;
   return (
     <View accessibilityLabel={`Available data: ${value.title}`} style={styles.box}>
-      <Text style={styles.title}>Database status: {value.title}</Text>
+      <Text style={styles.title}>
+        {detailed ? value.title : "Using saved words. Connect to check the full wordlist."}
+      </Text>
       {detailed ? <Text style={styles.note}>{value.explanation}</Text> : null}
     </View>
   );
@@ -16,11 +19,11 @@ export function DataModeNotice({ mode, detailed = false }: { mode: DataMode; det
 
 const styles = StyleSheet.create({
   box: {
-    backgroundColor: colors.primarySoft,
+    backgroundColor: "transparent",
     borderRadius: 12,
     gap: spacing.xs,
-    padding: spacing.md,
+    paddingVertical: spacing.xs,
   },
   note: { color: colors.ink, fontSize: 14, lineHeight: 21 },
-  title: { color: colors.primary, fontSize: 16, fontWeight: "800" },
+  title: { color: colors.primary, fontSize: 14, fontWeight: "500" },
 });

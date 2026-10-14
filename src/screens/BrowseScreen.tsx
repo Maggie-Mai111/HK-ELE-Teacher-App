@@ -26,7 +26,6 @@ import type {
   SurfaceSearchResult,
 } from "../domain/hkele";
 import { browseResultState, type BrowseResultMode } from "../services/browseResultState";
-import { dataModePresentation } from "../services/dataModePresentation";
 import { describeAiFilterConditions, type AiFilterExecution } from "../services/aiFilterExecutor";
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
@@ -49,11 +48,11 @@ const sorts: Array<[BrowseSort, string]> = [
 ];
 
 function searchStatus(result: SurfaceSearchResult): string {
-  if (result.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "Full database check unavailable";
-  if (result.status === "UNMATCHED") return "Not found after a full database check";
+  if (result.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "Connect to check more words";
+  if (result.status === "UNMATCHED") return "No match in the current wordlist";
   if (result.status === "RESOLVED") return "Family found";
   if (result.status === "AMBIGUOUS") return "More than one family — review";
-  if (result.status === "REGISTERED_GRAMMATICAL_RELATION") return "Registered grammatical relation";
+  if (result.status === "REGISTERED_GRAMMATICAL_RELATION") return "Grammar word";
   return "Context review required";
 }
 
@@ -78,6 +77,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
+  const currentQuery = useRef("");
   const [search, setSearch] = useState<SurfaceSearchResult | null>(null);
   const [searching, setSearching] = useState(false);
   const [aiSelection, setAiSelection] = useState<AiFilterExecution | null>(null);
@@ -108,7 +108,8 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       .catch((reason: unknown) => {
         if (active) {
           setDataMode(repository.getDataMode());
-          setError(reason instanceof Error ? reason.message : String(reason));
+          void reason;
+          setError("We couldn't load the words. Check your connection and try again.");
         }
       })
       .finally(() => active && setLoading(false));
@@ -142,18 +143,21 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     setBatchMessage("");
     try {
       const result = await repository.searchSurface(query);
+      if (currentQuery.current !== query) return;
       setSearch(result);
       setAiSelection(null);
       setResultMode("search");
       setDataMode(result.dataMode);
       focusAndReveal(resultSummaryRef.current);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason));
+      void reason;
+      setError("We couldn't complete the search. Check your connection and try again.");
     } finally {
       setSearching(false);
     }
   };
   const clearSearch = () => {
+    currentQuery.current = "";
     setQuery("");
     setSearch(null);
     setResultMode("browse");
@@ -183,15 +187,19 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
 
   return (
     <View style={styles.content}>
-      <ScreenHeader
-        intro="Search an exact form first, or use AI and manual filters to work from registered principal data."
-        title="Find words"
-      />
+      <ScreenHeader intro="Find words for your lesson." title="Find words" />
       <View style={styles.searchBox}>
         <TextInput
           accessibilityLabel="Search a word or form"
           autoCapitalize="none"
-          onChangeText={setQuery}
+          onChangeText={(value) => {
+            currentQuery.current = value;
+            setQuery(value);
+            if (resultMode === "search") {
+              setSearch(null);
+              setResultMode("browse");
+            }
+          }}
           onSubmitEditing={() => void searchNow()}
           placeholder="Search a word or exact form"
           returnKeyType="search"
@@ -271,10 +279,10 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             {search.owners.length === 0 ? (
               <Text style={styles.muted}>
                 {search.status === "FULL_DATABASE_CHECK_UNAVAILABLE"
-                  ? "This form is outside the built-in set. Recheck when the online full database is available."
+                  ? "This word isn't in the saved wordlist. Connect to the internet and search again."
                   : search.status === "UNMATCHED"
-                    ? "The full database was checked and no registered family owner was found."
-                    : "No ranked family owner is assigned to this registered relation or review state."}
+                    ? "Check the spelling, or try another word form. Common words can also be missing from this wordlist."
+                    : "Read the word in context before choosing a family."}
               </Text>
             ) : null}
             <ActionButton kind="secondary" label="Clear search" onPress={clearSearch} />
@@ -287,9 +295,6 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             </Text>
             <Text style={styles.aiConditions}>
               {describeAiFilterConditions(aiSelection.filters).join(" · ")}
-            </Text>
-            <Text style={styles.muted}>
-              Principal Candidate/Reference data · deterministic filtering
             </Text>
             <View style={styles.actions}>
               <ActionButton
@@ -344,8 +349,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             ) : null}
             {aiSelection.families.length === 0 ? (
               <Text style={styles.muted}>
-                No registered family meets every confirmed condition. Edit the request, adjust
-                manual filters, or clear the result; no hidden condition was added.
+                No words match all your filters. Try a broader search or remove a filter.
               </Text>
             ) : null}
           </>
@@ -354,7 +358,6 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
               {page.availableItems.toLocaleString("en")} families · page {page.page}
             </Text>
-            <Text style={styles.muted}>{dataModePresentation(page.sourceMode).shortLabel}</Text>
           </>
         ) : null}
       </View>

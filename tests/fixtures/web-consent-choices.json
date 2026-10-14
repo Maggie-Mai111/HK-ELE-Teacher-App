@@ -1,0 +1,129 @@
+{
+  "now": "2026-10-12T09:00:00+08:00",
+  "choice": {
+    "noticeVersion": "teacher-preview-consent-20261012-v2",
+    "consentedAt": "2026-10-12T09:00:00+08:00",
+    "feedbackConsent": true,
+    "ratingConsent": true,
+    "usageConsent": true,
+    "collectionEnabled": false,
+    "scope": "local-preview-choice"
+  },
+  "cases": [
+    {
+      "id": "absent",
+      "record": null,
+      "valid": false
+    },
+    {
+      "id": "old-string",
+      "record": "local-preview-20261012-v1",
+      "valid": false
+    },
+    {
+      "id": "empty",
+      "record": {},
+      "valid": false
+    },
+    {
+      "id": "old-acknowledgement",
+      "record": {
+        "noticeVersion": "local-preview-20261012-v1",
+        "acknowledgedAt": "2026-10-12T09:00:00+08:00",
+        "usageConsent": false
+      },
+      "valid": false
+    },
+    {
+      "id": "feedbackConsent",
+      "record": {
+        "noticeVersion": "teacher-preview-consent-20261012-v2",
+        "consentedAt": "2026-10-12T09:00:00+08:00",
+        "feedbackConsent": false,
+        "ratingConsent": true,
+        "usageConsent": true,
+        "collectionEnabled": false,
+        "scope": "local-preview-choice"
+      },
+      "valid": false
+    },
+    {
+      "id": "ratingConsent",
+      "record": {
+        "noticeVersion": "teacher-preview-consent-20261012-v2",
+        "consentedAt": "2026-10-12T09:00:00+08:00",
+        "feedbackConsent": true,
+        "ratingConsent": false,
+        "usageConsent": true,
+        "collectionEnabled": false,
+        "scope": "local-preview-choice"
+      },
+      "valid": false
+    },
+    {
+      "id": "usageConsent",
+      "record": {
+        "noticeVersion": "teacher-preview-consent-20261012-v2",
+        "consentedAt": "2026-10-12T09:00:00+08:00",
+        "feedbackConsent": true,
+        "ratingConsent": true,
+        "usageConsent": false,
+        "collectionEnabled": false,
+        "scope": "local-preview-choice"
+      },
+      "valid": false
+    },
+    {
+      "id": "future-version",
+      "record": {
+        "noticeVersion": "future-notice",
+        "consentedAt": "2026-10-12T09:00:00+08:00",
+        "feedbackConsent": true,
+        "ratingConsent": true,
+        "usageConsent": true,
+        "collectionEnabled": false,
+        "scope": "local-preview-choice"
+      },
+      "valid": false
+    },
+    {
+      "id": "invalid-date",
+      "record": {
+        "noticeVersion": "teacher-preview-consent-20261012-v2",
+        "consentedAt": "invalid",
+        "feedbackConsent": true,
+        "ratingConsent": true,
+        "usageConsent": true,
+        "collectionEnabled": false,
+        "scope": "local-preview-choice"
+      },
+      "valid": false
+    },
+    {
+      "id": "collection-enabled",
+      "record": {
+        "noticeVersion": "teacher-preview-consent-20261012-v2",
+        "consentedAt": "2026-10-12T09:00:00+08:00",
+        "feedbackConsent": true,
+        "ratingConsent": true,
+        "usageConsent": true,
+        "collectionEnabled": true,
+        "scope": "local-preview-choice"
+      },
+      "valid": false
+    },
+    {
+      "id": "research-scope",
+      "record": {
+        "noticeVersion": "teacher-preview-consent-20261012-v2",
+        "consentedAt": "2026-10-12T09:00:00+08:00",
+        "feedbackConsent": true,
+        "ratingConsent": true,
+        "usageConsent": true,
+        "collectionEnabled": false,
+        "scope": "research"
+      },
+      "valid": false
+    }
+  ]
+}

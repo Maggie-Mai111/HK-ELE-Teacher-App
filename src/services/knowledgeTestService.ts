@@ -11,6 +11,18 @@ export interface KnowledgeFamily {
 
 export type KnowledgeResponses = Record<string, boolean | undefined>;
 
+export function knowledgeCheckScope(results: ResolvedOccurrence[]) {
+  const eligibleOccurrences = collectEligibleFamilies(results).reduce(
+    (sum, family) => sum + family.tokenCount,
+    0,
+  );
+  return {
+    totalOccurrences: results.length,
+    eligibleOccurrences,
+    excludedOccurrences: results.length - eligibleOccurrences,
+  };
+}
+
 export function collectEligibleFamilies(results: ResolvedOccurrence[]): KnowledgeFamily[] {
   const grouped = new Map<string, KnowledgeFamily>();
   for (const result of results) {

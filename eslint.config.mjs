@@ -9,6 +9,7 @@ export default tseslint.config(
       "data/releases/**",
       "node_modules/**",
       "reports/**",
+      "public/ocr/**",
       "metro.config.js",
     ],
   },

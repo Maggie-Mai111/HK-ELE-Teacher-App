@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, spacing } from "../theme/tokens";
 
-export type AppRoute = "browse" | "check" | "list" | "data";
+export type AppRoute = "home" | "browse" | "check" | "list" | "data";
 
 interface NavigationBarProps {
   activeRoute: AppRoute;
@@ -10,6 +10,7 @@ interface NavigationBarProps {
 }
 
 const items: ReadonlyArray<{ route: AppRoute; label: string }> = [
+  { route: "home", label: "Home" },
   { route: "browse", label: "Find words" },
   { route: "check", label: "Check a text" },
   { route: "list", label: "Teaching list" },
@@ -63,6 +64,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
   },
   label: {
+    textAlign: "center",
     color: colors.muted,
     fontSize: 14,
     lineHeight: 20,

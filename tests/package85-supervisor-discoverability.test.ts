@@ -131,15 +131,15 @@ test("knowledge UI distinguishes sample estimates, exact checked results and pro
     "Larger sample (20)",
     "Full check",
     "Sample estimate",
-    "Exact checked result",
+    "Result for matched families only",
     "Known",
     "Not known",
     "Unfamiliar families",
-    "Unfamiliar token rate",
+    "Unfamiliar occurrences in this check",
   ])
     assert.match(panel, new RegExp(label.replace(/[()]/g, "\\$&")));
   assert.match(panel, /coverage\.complete \? \(/);
-  assert.match(panel, /eligible resolved families and their eligible tokens only/);
+  assert.match(panel, /matched words included in this check/);
   assert.match(panel, /Vocabulary coverage is not the same as[\s\S]*reading comprehension/);
 });
 
@@ -186,8 +186,8 @@ test("pre-teach suggestions remain deterministic, excluded and visibly reasoned"
 test("pre-teach UI separates direct marks from registered system reasons", () => {
   const panel = source("src/components/PreteachPanel.tsx");
   assert.match(panel, /Learner\/teacher marked as Not known/);
-  assert.match(panel, /System-suggested words with registered reasons/);
-  assert.match(panel, /No LLM selects, orders or explains them/);
+  assert.match(panel, /Suggested words to review/);
+  assert.match(panel, /Choose the ones your class needs/);
   assert.match(
     panel,
     /Earliest observed.*sampled textbook evidence[\s\S]*not a[\s\S]*prescribed teaching year/,

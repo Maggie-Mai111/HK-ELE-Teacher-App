@@ -67,9 +67,6 @@ export function OccurrenceCard({
           </Text>
         ) : null}
       </View>
-      <Text style={styles.offset}>
-        Characters {item.startOffset}–{item.endOffset}
-      </Text>
       <Text style={styles.context}>{item.context}</Text>
       {owner ? (
         <View accessibilityLabel="Text form and HK-ELE family" style={styles.mapping}>
@@ -81,13 +78,12 @@ export function OccurrenceCard({
       ) : null}
       {relation ? (
         <View style={styles.relation}>
-          <Text style={styles.mappingLabel}>Registered relation</Text>
+          <Text style={styles.mappingLabel}>Grammar form</Text>
           <Text style={styles.relationValue}>
             {item.surface} → {grammaticalRelationDisplay(relation)}
           </Text>
           <Text style={styles.relationNote}>
-            This is a language relation, not a ranked HK-ELE family. Context decides between
-            alternatives where more than one is shown.
+            Read the sentence to choose the meaning when more than one full form is shown.
           </Text>
         </View>
       ) : null}
@@ -96,7 +92,7 @@ export function OccurrenceCard({
       ) : null}
       {item.status === "AMBIGUOUS" ? (
         <Text style={styles.warning}>
-          Possible owners: {item.owners.map((value) => value.display_family).join(", ")}
+          Possible word families: {item.owners.map((value) => value.display_family).join(", ")}
         </Text>
       ) : null}
       {owner ? (

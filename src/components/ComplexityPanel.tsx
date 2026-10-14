@@ -26,8 +26,7 @@ export function ComplexityPanel({
       </Text>
       {value.status === "TOO_SHORT" ? (
         <Text style={styles.notice}>
-          Enter at least {READABILITY_MIN_WORDS} recognized English words for a less unstable
-          estimate.
+          Add at least {READABILITY_MIN_WORDS} English words for a more useful estimate.
         </Text>
       ) : (
         <View style={styles.metrics}>
@@ -42,8 +41,8 @@ export function ComplexityPanel({
         </View>
       )}
       <Text style={styles.note}>
-        Transparent formula estimate only—not Lexile or a Lexile proxy. Sentence splitting and
-        syllable counting are heuristic; suitability still depends on the reader, text and task.
+        These are approximate reading measures, not Lexile scores or Hong Kong school levels. Use
+        them alongside your knowledge of the class and lesson.
       </Text>
     </View>
   );

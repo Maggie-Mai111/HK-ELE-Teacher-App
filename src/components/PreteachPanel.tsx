@@ -75,18 +75,14 @@ export function PreteachPanel({
         ))}
       </View>
       <Text style={styles.note}>
-        Suggestions exclude CPB 100, capitalized name-like items, unresolved, ambiguous, blocked and
-        unsupported items. Ordering uses the number of displayed reasons, repetition and HK rank—no
-        hidden composite score.
+        Use these suggestions to plan your lesson. You can add, reorder or remove words to suit your
+        students.
       </Text>
       <View style={styles.evidenceSection}>
         <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
           Learner/teacher marked as Not known
         </Text>
-        <Text style={styles.note}>
-          Direct marks from the current Knowledge check session are kept separate from system
-          suggestions and are not turned into a score.
-        </Text>
+        <Text style={styles.note}>Words marked in your current word knowledge check.</Text>
         {notKnownFamilies.length ? (
           notKnownFamilies.map((item) => {
             const inList = teaching.items.some((entry) => entry.basewordKey === item.basewordKey);
@@ -116,16 +112,15 @@ export function PreteachPanel({
       </View>
       <View style={styles.evidenceSection}>
         <Text accessibilityRole="header" aria-level={3} style={styles.sectionTitle}>
-          System-suggested words with registered reasons
+          Suggested words to review
         </Text>
         <Text style={styles.note}>
-          These are deterministic review suggestions, not predictions of what a learner does not
-          know. No LLM selects, orders or explains them.
+          Each word has a reason for review. Choose the ones your class needs.
         </Text>
       </View>
       {items.length === 0 ? (
         <Text style={styles.empty}>
-          No eligible suggestion has a registered reason for this text and class level.
+          No extra words are suggested for this class level. You can still add words yourself.
         </Text>
       ) : null}
       {items.map((item, index) => {
@@ -175,7 +170,7 @@ export function PreteachPanel({
       })}
       {manualOptions.length ? (
         <View style={styles.manual}>
-          <Text style={styles.manualTitle}>Add another resolved family manually</Text>
+          <Text style={styles.manualTitle}>Add another word to review</Text>
           <View style={styles.actions}>
             {manualOptions.map((option) => (
               <ActionButton

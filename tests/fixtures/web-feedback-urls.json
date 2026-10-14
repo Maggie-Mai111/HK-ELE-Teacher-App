@@ -1,0 +1,8 @@
+{
+  "source": "Web feedback_contract.js",
+  "sourceSha256": "7097a1869549b146d1f4bbcf7fa327a95736fb3bc7c05e8a2082beabee98d744",
+  "report": "https://docs.google.com/forms/d/e/test-form/viewform?usp=pp_url&entry.1=App%2FPWA&entry.2=Word+detail&entry.3=happily&entry.4=happy&entry.5=happy&entry.6=test-version&entry.7=Package67-20260914",
+  "rating": "https://docs.google.com/forms/d/e/test-rating/viewform?usp=pp_url&entry.3=happily&entry.4=happy&entry.5=happy",
+  "reference": "https://docs.google.com/forms/d/e/test-rating/viewform?usp=pp_url&entry.42=Word%3A+happily+%7C+Family%3A+happy+%7C+Family+key%3A+happy+%7C+Product%3A+App%2FPWA+%7C+Page%3A+Word+detail+%7C+Product+version%3A+test-version+%7C+Data+version%3A+Package67-20260914",
+  "pendingReference": null
+}

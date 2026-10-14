@@ -3,7 +3,15 @@ import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, spacing } from "../theme/tokens";
 
-export function AppMenu({ onOpenAbout }: { onOpenAbout: () => void }) {
+export function AppMenu({
+  onOpenAbout,
+  onFeedback,
+  onPrivacy,
+}: {
+  onOpenAbout: () => void;
+  onFeedback: () => void;
+  onPrivacy: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<View>(null);
   useEffect(() => {
@@ -39,11 +47,32 @@ export function AppMenu({ onOpenAbout }: { onOpenAbout: () => void }) {
             accessibilityRole="button"
             onPress={() => {
               setOpen(false);
+              onFeedback();
+            }}
+            style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}
+          >
+            <Text style={styles.menuTitle}>Report a problem</Text>
+            <Text style={styles.menuNote}>Help us improve HK-ELE</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              setOpen(false);
+              onPrivacy();
+            }}
+            style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}
+          >
+            <Text style={styles.menuTitle}>Your data choices</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              setOpen(false);
               onOpenAbout();
             }}
             style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}
           >
-            <Text style={styles.menuTitle}>About &amp; data version</Text>
+            <Text style={styles.menuTitle}>About HK-ELE</Text>
             <Text style={styles.menuNote}>Version, sources, licence and privacy</Text>
           </Pressable>
         </View>

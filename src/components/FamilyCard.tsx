@@ -33,10 +33,7 @@ export function FamilyCard({ family, onOpen, onAdd, added, matchNote }: Props) {
           Overall rank {shown(family.overall_frequency_order)} · HK rank{" "}
           {shown(family.current_hk_frequency_rank)}
         </Text>
-        <Text style={styles.meta}>
-          Earliest observed {shown(family.textbook_first_seen_level)} · Level{" "}
-          {shown(family.external_level_reference_display)}
-        </Text>
+        <Text style={styles.meta}>HK textbooks · {shown(family.textbook_first_seen_level)}</Text>
       </Pressable>
       <ActionButton
         disabled={added}
@@ -70,6 +67,6 @@ const styles = StyleSheet.create({
   match: { color: colors.accent, fontSize: 14, fontWeight: "700" },
   meta: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: spacing.xs },
   pressed: { opacity: 0.72 },
-  title: { color: colors.ink, flex: 1, fontSize: 22, fontWeight: "800" },
+  title: { color: colors.ink, flex: 1, fontSize: 22, fontWeight: "700" },
   titleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },
 });

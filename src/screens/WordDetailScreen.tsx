@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
 import { AppCard } from "../components/AppCard";
+import type { FeedbackRequest } from "../components/FeedbackPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { MorphologyLegend, SafeMorphologyForm } from "../components/SafeMorphologyForm";
@@ -32,6 +33,7 @@ interface Props {
   repository: HkeleRepository;
   teaching: TeachingListStore;
   onBack: () => void;
+  onFeedback: (request: FeedbackRequest) => void;
   textEvidence?: TextEvidence;
 }
 
@@ -68,7 +70,7 @@ function FormTier({ title, description, forms, family, teaching }: FormTierProps
   const shown = visibleForms(forms, limit);
   return (
     <ProgressiveDisclosure
-      summary={`${forms.length.toLocaleString("en")} registered forms · ${description}`}
+      summary={`${forms.length.toLocaleString("en")} word forms · ${description}`}
       title={`${title} (${forms.length.toLocaleString("en")})`}
     >
       {forms.length ? (
@@ -128,6 +130,7 @@ export function WordDetailScreen({
   repository,
   teaching,
   onBack,
+  onFeedback,
   textEvidence,
 }: Props) {
   const [detail, setDetail] = useState<FamilyDetail | null>(null);
@@ -148,7 +151,8 @@ export function WordDetailScreen({
       .catch((reason: unknown) => {
         if (active) {
           setDataMode(repository.getDataMode());
-          setError(reason instanceof Error ? reason.message : String(reason));
+          void reason;
+          setError("We couldn't load this word. Check your connection and open it again.");
         }
       });
     return () => {
@@ -183,19 +187,19 @@ export function WordDetailScreen({
       {
         key: "textbook",
         title: "Observed in sampled HK textbooks",
-        description: "Forms with a registered textbook observation.",
+        description: "Forms observed in the sampled textbooks.",
         forms: textbook,
       },
       {
         key: "external",
         title: "Supported by external level references",
         description:
-          "Forms with external level evidence and no registered HK textbook observation.",
+          "Forms with external level references. No HK textbook observation is recorded.",
         forms: external,
       },
       {
         key: "remaining",
-        title: "Other registered family members",
+        title: "Other word forms",
         description: "Missing evidence is not interpreted as absence.",
         forms: remaining,
       },
@@ -249,6 +253,53 @@ export function WordDetailScreen({
               }
               onPress={() => teaching.add(detail.family)}
             />
+            <View style={styles.feedbackActions}>
+              <ActionButton
+                kind="secondary"
+                label="Rate this word"
+                onPress={() =>
+                  onFeedback({
+                    kind: "rating",
+                    context: {
+                      product: "App/PWA",
+                      page: "Word detail",
+                      family: detail.family.display_family,
+                      familyKey: detail.family.baseword_key,
+                      word:
+                        textEvidence?.members.find((member) =>
+                          detail.forms.some(
+                            (form) => form.form.toLowerCase() === member.surface.toLowerCase(),
+                          ),
+                        )?.surface ??
+                        detail.forms.find(
+                          (form) =>
+                            form.form.toLowerCase() === detail.family.display_family.toLowerCase(),
+                        )?.form ??
+                        detail.forms[0]?.form ??
+                        "",
+                      registeredForms: detail.forms.map((form) => form.form),
+                    },
+                  })
+                }
+              />
+              <ActionButton
+                kind="secondary"
+                label="Report a problem"
+                onPress={() =>
+                  onFeedback({
+                    kind: "report",
+                    context: {
+                      product: "App/PWA",
+                      page: "Word detail",
+                      family: detail.family.display_family,
+                      familyKey: detail.family.baseword_key,
+                      word: detail.family.display_family,
+                      registeredForms: detail.forms.map((form) => form.form),
+                    },
+                  })
+                }
+              />
+            </View>
           </View>
           <DataModeNotice mode={dataMode} />
           {textEvidence ? (
@@ -264,18 +315,17 @@ export function WordDetailScreen({
           ) : null}
           {detail.family.general_evidence_status?.toLowerCase().includes("unavailable") ? (
             <View style={styles.notice}>
-              <Text style={styles.noticeTitle}>General-source component unavailable</Text>
+              <Text style={styles.noticeTitle}>Some frequency information is missing</Text>
               <Text style={styles.noticeText}>
-                This means the source component is unavailable. It does not mean zero frequency or
-                absence from the database.
+                This word is still in the wordlist. A missing value doesn't mean the word is never
+                used.
               </Text>
             </View>
           ) : null}
           <ProgressiveDisclosure
             summary="Set, frequency, grade, list and subject evidence."
-            title="Complete registered evidence"
+            title="Word information"
           >
-            <DetailRow label="Stable family identity" value={detail.family.baseword_key} />
             <DetailRow
               label="Set"
               value={detail.family.set_membership ?? familySetLabel(detail.family)}
@@ -303,12 +353,10 @@ export function WordDetailScreen({
             />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure
-            summary="Registered fields only; no morphology is inferred or rewritten."
+            summary="Explore roots, prefixes and suffixes."
             title="Recorded morphology"
           >
-            <Text style={styles.caution}>
-              Forms are segmented only when exact registered boundaries can be proved.
-            </Text>
+            <Text style={styles.caution}>Word parts are shown where recorded in the wordlist.</Text>
             <DetailRow label="Root" value={morphology?.root} />
             <DetailRow label="Root meaning" value={morphology?.meaning} />
             <DetailRow label="Prefix" value={morphology?.prefix} />
@@ -317,11 +365,10 @@ export function WordDetailScreen({
           </ProgressiveDisclosure>
           <View style={styles.formsIntro}>
             <Text accessibilityRole="header" aria-level={2} style={styles.formsTitle}>
-              Registered forms ({detail.forms.length.toLocaleString("en")})
+              Word forms ({detail.forms.length.toLocaleString("en")})
             </Text>
             <Text style={styles.caution}>
-              Three evidence layers are preserved. Open one layer to show forms in batches of{" "}
-              {PROGRESSIVE_BATCH_SIZE}.
+              Open a group to explore its word forms and add the ones you want to teach.
             </Text>
           </View>
           {formTiers.map((tier) => (
@@ -341,13 +388,14 @@ export function WordDetailScreen({
 }
 
 const styles = StyleSheet.create({
+  feedbackActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   back: { alignSelf: "flex-start" },
   badge: {
     backgroundColor: colors.primarySoft,
     borderRadius: 999,
     color: colors.primary,
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
@@ -377,9 +425,9 @@ const styles = StyleSheet.create({
   },
   formRows: { gap: spacing.xs },
   formsIntro: { gap: spacing.xs, paddingTop: spacing.sm },
-  formsTitle: { color: colors.ink, fontSize: 22, fontWeight: "800", lineHeight: 29 },
+  formsTitle: { color: colors.ink, fontSize: 22, fontWeight: "700", lineHeight: 29 },
   gradeEvidence: { color: colors.ink, fontSize: 16, lineHeight: 24 },
-  heading: { color: colors.ink, fontSize: 34, fontWeight: "800", lineHeight: 41 },
+  heading: { color: colors.ink, fontSize: 34, fontWeight: "700", lineHeight: 41 },
   hero: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -395,7 +443,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   noticeText: { color: colors.ink, fontSize: 15, lineHeight: 23 },
-  noticeTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
+  noticeTitle: { color: colors.ink, fontSize: 17, fontWeight: "700" },
   rankBadge: {
     backgroundColor: colors.subdued,
     borderRadius: 999,

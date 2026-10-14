@@ -204,7 +204,7 @@ test("native AI stays disabled while stable native modules remain present", asyn
     "utf8",
   );
   assert.match(assistant, /Platform\.OS !== "web"/);
-  assert.match(nativeGate, /Native AI is not enabled/);
+  assert.match(nativeGate, /return null/);
   for (const path of [
     "src/services/ocr/ocrAdapter.native.ts",
     "src/services/dataUpdate/dataUpdateManager.native.ts",

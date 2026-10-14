@@ -1,14 +1,13 @@
-import type { DataManifest } from "./contracts";
+import type { DataCounts, DataManifest } from "./contracts";
+import policyJson from "../config/approvedDataReleases.json";
+import currentManifest from "../../data/current-manifest.json";
 
-const REQUIRED_COUNTS = {
-  totalFamilies: 163_784,
-  forms: 319_924,
-  ranked: 163_570,
-  unranked: 214,
-  candidate: 3_185,
-  inclusiveReference: 3_430,
-  referenceOnly: 245,
-} as const;
+export interface DataReleasePolicy {
+  supportedSchemaMajors: readonly number[];
+  releases: Readonly<Record<string, DataCounts>>;
+}
+export const APPROVED_DATA_RELEASES: DataReleasePolicy = policyJson;
+const REQUIRED_COUNTS = APPROVED_DATA_RELEASES.releases[currentManifest.dataVersion]!;
 
 export function schemaMajor(version: string): number {
   const match = /^(\d+)\./.exec(version);
@@ -18,16 +17,26 @@ export function schemaMajor(version: string): number {
   return Number(match[1]);
 }
 
-export function assertCompatibleManifest(manifest: DataManifest, appVersion: string): void {
+export function assertCompatibleManifest(
+  manifest: DataManifest,
+  appVersion: string,
+  policy: DataReleasePolicy = APPROVED_DATA_RELEASES,
+): void {
   const expectedMajor = manifest.compatibilityRules.compatibleSchemaMajor;
-  if (schemaMajor(manifest.schemaVersion) !== expectedMajor) {
+  if (
+    schemaMajor(manifest.schemaVersion) !== expectedMajor ||
+    !policy.supportedSchemaMajors.includes(expectedMajor)
+  ) {
     throw new Error("Incompatible data schema. Refusing to load the data package.");
   }
   if (compareVersions(appVersion, manifest.minimumAppVersion) < 0) {
     throw new Error(`App ${appVersion} is older than required ${manifest.minimumAppVersion}.`);
   }
-  for (const [field, expected] of Object.entries(REQUIRED_COUNTS)) {
-    const actual = manifest.counts[field as keyof typeof REQUIRED_COUNTS];
+  const required = policy.releases[manifest.dataVersion];
+  if (!required)
+    throw new Error("Unregistered data release. Register the approved release before loading it.");
+  for (const [field, expected] of Object.entries(required)) {
+    const actual = manifest.counts[field as keyof DataCounts];
     if (actual !== expected) {
       throw new Error(`Frozen control mismatch for ${field}: ${actual} != ${expected}`);
     }

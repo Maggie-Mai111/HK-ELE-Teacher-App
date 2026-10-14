@@ -16,6 +16,38 @@ export interface UnmatchedWordSummary {
 }
 
 export type PendingFullCheckSummary = Omit<UnmatchedWordSummary, "explanation">;
+export interface ContextReviewSummary {
+  key: string;
+  displayForm: string;
+  count: number;
+  explanation: string;
+}
+
+export function groupContextReviews(results: ResolvedOccurrence[]): ContextReviewSummary[] {
+  const grouped = new Map<string, ContextReviewSummary>();
+  for (const item of results) {
+    if (textResultKind(item) !== "review") continue;
+    const key = `${item.normalizedToken ?? item.surface.toLowerCase()}:${item.status}`;
+    const existing = grouped.get(key);
+    if (existing) existing.count += 1;
+    else
+      grouped.set(key, {
+        key,
+        displayForm: item.surface,
+        count: 1,
+        explanation:
+          item.identityException?.teacherDisplay ??
+          (item.status === "AMBIGUOUS"
+            ? "More than one recorded family is possible. Check the meaning in this sentence before choosing."
+            : "This word needs a context or spelling check before a family can be assigned."),
+      });
+  }
+  return [...grouped.values()];
+}
+
+export function textResultsAreCurrent(text: string, checkedText: string | null): boolean {
+  return checkedText !== null && text === checkedText;
+}
 
 export function isCompoundMatch(item: ResolvedOccurrence): boolean {
   return item.owners.some((owner) =>
@@ -37,7 +69,7 @@ export function textResultStatusLabel(item: ResolvedOccurrence): string {
   if (kind === "compound-family") return "Compound match";
   if (kind === "ordinary-family") return "Ordinary family match";
   if (kind === "full-check-unavailable") return "Full database check unavailable";
-  if (kind === "unmatched") return "Unmatched — review";
+  if (kind === "unmatched") return "Not matched in this data release";
   if (item.status === "AMBIGUOUS") return "More than one owner — review";
   if (item.status === "BLOCKED") return "Context review required";
   return "Unsupported token — review";
@@ -86,7 +118,7 @@ export function groupUnmatchedWords(results: ResolvedOccurrence[]): UnmatchedWor
         displayForm: item.surface,
         count: 1,
         explanation:
-          "No current HK-ELE family owner is registered. Review this form without guessing a family, rank or teaching value.",
+          "No recorded family match in this data release. Keep it separate without guessing a family, rank or teaching value.",
       });
     }
   }

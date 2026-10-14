@@ -1,6 +1,12 @@
 # HK-ELE Teacher 隐私说明
 
-版本：2026-09-26（Package82 Web/PWA 受控部署版）
+版本：2026-10-12（本地反馈与 PWA OCR 候选）
+
+## 本候选的声明与反馈
+
+首次使用要求明确勾选同意所述反馈/词项评价/基本功能使用用途，成功保存设备上的选择后进入首页。新版 noticeVersion 为 teacher-preview-consent-20261012-v2；旧阅读确认失效。菜单 Your data choices 可以查看和撤回，存储失败不放行。此本地选择不登记为研究参与，collectionEnabled 固定 false；点击与功能使用记录不发送，也没有账号服务。实际研究采集前必须提供正式资料并再次确认。两端反馈入口尚缺真实 Google Form URL 与字段映射，界面会说明尚未发送。
+
+表单接通后，只有老师主动打开才将登记词形、词族、稳定键、页面、产品和版本放入 Google 预填链接；老师在 Google 端填写和提交。App 不将原文、照片、邮箱、账号标识或令牌放入链接。“打开”不代表已提交。正式收集说明须登记负责机构、用途、访问者、保存期限与联系/撤回路径，再依机构要求接入 consent 和真实服务。
 
 ## 可选 AI 筛选助手
 
@@ -18,7 +24,7 @@ session ID 交给 Worker，用于反滥用验证和限流；它们不属于登�
 
 拟用的 GitHub Pages 是公开静态托管。网页完整数据库会按需读取公开数据分片；虽然界面不提供“下载数据库”按钮，具备技术能力的访客仍可查看或读取网页运行所需的数据分片和更新归档。公开部署前必须由项目所有者确认 HK-ELE 数据、CPB、品牌及相关第三方材料的公开分发权限。
 
-PWA 只缓存应用壳层与使用时请求到的普通界面资源，不预缓存完整数据库、全部数据分片或 63 MB 更新归档。网页支持在线完整数据库查询，但不声称具有原生 OCR；网页端只保留粘贴和手动编辑文本。
+PWA 预缓存应用壳层与 Candidate + Reference 紧凑包，不预缓存完整数据库、全部数据分片或更新归档。支持在线完整数据库查询。新增 PWA OCR 使用同源 Tesseract.js / WASM 与 English 模型，在设备内识别；识别软件首次使用时仍需可访问资源，不承诺首次断网可用。原生实现仍需真机验收。
 
 ## 核心原则
 
@@ -31,6 +37,7 @@ HK-ELE Teacher 默认在设备内处理教师输入。App 本身不建立用户�
 - 只有教师主动点击“Take photo”或“Choose image”时，App 才请求相机或照片权限。
 - 所选图片只交给设备端 OCR adapter。Android 实现使用 Google ML Kit（Google Play
   Services 组件），iOS 实现使用 Apple Vision。
+- Web/PWA 使用本机 Tesseract.js，English 模型只从与 App 相同的来源下载。选择图片、缩放和识别都在浏览器中进行。识别完成后可编辑、取消或丢弃；替换已有输入须再次确认。
 - App 不把原始图片上传到自建服务器或云端 OCR 服务，也不把图片复制到 HK-ELE 数据目录。
 - OCR 输出只是可编辑文字，不会自动选择词族。教师必须确认“使用”或“追加”后，文字才进入
   与手动粘贴完全相同的分析流程。
@@ -64,6 +71,4 @@ Android OCR 依赖设备的 Google Play Services 状态；平台供应商如何�
 
 ## 已知验证边界
 
-Package82 在 Windows 上完成 Web/PWA 本地加固、静态检查、单元测试、Wrangler mock runtime
-与 Web 浏览器回归；没有部署或生成 APK/IPA，也没有 Android/iOS 真机验证。Native AI 仍为
-`NATIVE_AI_TRANSPORT_SECURITY_DECISION_PENDING`，不得从 Web/PWA 通过推断 Native AI 已通过。
+本候选在 Windows 完成本地构建、110 项测试与浏览器印刷英文 OCR、编辑/追加/原文保护检查；没有 push、部署、生成 APK/IPA 或 Android/iOS 真机验证。拍照方向、HEIC、复杂教材页面和识别精度仍需目标设备检查。既有 Native AI 的安全决策边界保留，不能从 PWA 验收推断原生 AI 或商店发布已完成。

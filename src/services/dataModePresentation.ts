@@ -1,7 +1,8 @@
 import type { DataMode } from "../domain/hkele";
+import currentManifest from "../../data/current-manifest.json";
 
-export const BUNDLED_REFERENCE_COUNT = 3430;
-export const FULL_DATABASE_COUNT = 163784;
+export const BUNDLED_REFERENCE_COUNT = currentManifest.counts.inclusiveReference;
+export const FULL_DATABASE_COUNT = currentManifest.counts.totalFamilies;
 
 export interface DataModePresentation {
   title: string;
@@ -16,8 +17,7 @@ export function dataModePresentation(mode: DataMode): DataModePresentation {
     return {
       title: "Installed full database",
       shortLabel: "installed full database",
-      explanation:
-        "All 163,784 HK-ELE family records have been installed and verified on this device, so full searches remain available offline.",
+      explanation: `All ${FULL_DATABASE_COUNT.toLocaleString("en")} HK-ELE family records have been installed and verified on this device, so full searches remain available offline.`,
       fullDatabaseAvailable: true,
       worksOffline: true,
     };
@@ -26,8 +26,7 @@ export function dataModePresentation(mode: DataMode): DataModePresentation {
     return {
       title: "Online full database",
       shortLabel: "online full database",
-      explanation:
-        "The app is checking all 163,784 HK-ELE family records online. This is not a complete local copy and requires the data service to remain available.",
+      explanation: `The app is checking all ${FULL_DATABASE_COUNT.toLocaleString("en")} HK-ELE family records online. This requires the data service to remain available.`,
       fullDatabaseAvailable: true,
       worksOffline: false,
     };
@@ -35,8 +34,7 @@ export function dataModePresentation(mode: DataMode): DataModePresentation {
   return {
     title: "Built-in Candidate + Reference",
     shortLabel: "built-in Candidate + Reference",
-    explanation:
-      "The built-in 3,430-family reference set works offline. A word outside this set is held for a later full-database check, not labelled unmatched.",
+    explanation: `The built-in ${BUNDLED_REFERENCE_COUNT.toLocaleString("en")}-family reference set works offline. A word outside this set is held for a later full-database check, not labelled unmatched.`,
     fullDatabaseAvailable: false,
     worksOffline: true,
   };

@@ -5,6 +5,7 @@ import type { ResolvedOccurrence } from "../domain/hkele";
 import {
   calculateCoverage,
   collectEligibleFamilies,
+  knowledgeCheckScope,
   seededKnowledgeSample,
   tokenCoverageGuidance,
   type KnowledgeFamily,
@@ -32,6 +33,7 @@ export function KnowledgeTestPanel({
   onNotKnownChange?: (families: KnowledgeFamily[]) => void;
 }) {
   const eligible = useMemo(() => collectEligibleFamilies(results), [results]);
+  const scope = useMemo(() => knowledgeCheckScope(results), [results]);
   const [mode, setMode] = useState<Mode>(null);
   const [responses, setResponses] = useState<KnowledgeResponses>({});
   const seed = useMemo(() => `hkele:${text.length}:${text}`, [text]);
@@ -65,8 +67,14 @@ export function KnowledgeTestPanel({
       </Text>
       <Text style={styles.intro}>
         A teacher or learner can mark words as Known or Not known to estimate an unfamiliar-word
-        rate. {eligible.length} unique resolved families are eligible; answers stay only in this
-        current session.
+        rate. Check up to {eligible.length} matched word families. Answers stay in this session.
+      </Text>
+      <Text style={styles.caution}>
+        This check includes {scope.eligibleOccurrences} of {scope.totalOccurrences} word
+        occurrences.
+        {scope.excludedOccurrences
+          ? ` The other ${scope.excludedOccurrences} are outside this check; they are not marked Known or Not known.`
+          : ""}
       </Text>
       <Text style={styles.caution}>
         Unfamiliar words depend on the individual learner. Vocabulary coverage is not the same as
@@ -176,7 +184,9 @@ export function KnowledgeTestPanel({
             {coverage.complete ? (
               <>
                 <Text style={styles.resultLabel}>
-                  {mode === "full" ? "Exact checked result" : "Sample estimate"}
+                  {mode === "full"
+                    ? "Result for matched families only"
+                    : "Sample estimate for matched families"}
                 </Text>
                 <Text style={styles.resultLine}>
                   Known families: {coverage.knownFamilies}/{coverage.totalFamilies} (
@@ -187,20 +197,24 @@ export function KnowledgeTestPanel({
                   {percent(coverage.familyUnfamiliarPercent)})
                 </Text>
                 <Text style={styles.resultLine}>
-                  Known token coverage: {percent(coverage.tokenCoveragePercent)}
+                  Known occurrences in this check: {coverage.knownTokens}/{coverage.totalTokens} (
+                  {percent(coverage.tokenCoveragePercent)})
                 </Text>
                 <Text style={styles.resultLine}>
-                  Unfamiliar token rate: {percent(coverage.unfamiliarTokenRatePercent)}
+                  Unfamiliar occurrences in this check:{" "}
+                  {percent(coverage.unfamiliarTokenRatePercent)}
                 </Text>
-                {coverage.tokenCoveragePercent !== null ? (
+                {coverage.tokenCoveragePercent !== null &&
+                mode === "full" &&
+                !scope.excludedOccurrences ? (
                   <Text style={styles.guidance}>
                     {tokenCoverageGuidance(coverage.tokenCoveragePercent)}
                   </Text>
                 ) : null}
                 <Text style={styles.note}>
                   {mode === "full"
-                    ? "This exact checked result covers eligible resolved families and their eligible tokens only. It is not an absolute unfamiliar-word rate for every item in the text."
-                    : "This is an estimate from the sampled eligible families, weighted by their token occurrences in this text. It is not an exact full-text result."}
+                    ? "These percentages cover the matched words included in this check, not every word in the passage."
+                    : "This sample gives a rough estimate for the matched words. Choose Full check to review all matched families."}
                 </Text>
               </>
             ) : (

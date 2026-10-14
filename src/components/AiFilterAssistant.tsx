@@ -14,7 +14,7 @@ import type { AiFilterResult } from "../domain/aiFilterSchema";
 import { VERIFIED_AI_QUICK_EXAMPLES } from "../domain/verifiedAiExamples";
 import type { HkeleRepository } from "../domain/hkele";
 import { getAnonymousSessionId } from "../services/anonymousSession";
-import { interpretAiFilter } from "../services/aiFilterClient";
+import { AiFilterClientError, interpretAiFilter } from "../services/aiFilterClient";
 import {
   describeAiFilterConditions,
   executeAiFilter,
@@ -59,7 +59,7 @@ export function AiFilterAssistant({
   const interpret = async () => {
     if (!query.trim()) return;
     if (!aiRuntimeConfiguration.configured || !turnstileToken || !anonymousSessionId) {
-      setError("AI anti-abuse protection is not ready. Manual filters remain available.");
+      setError("Please finish the verification below, then try again.");
       return;
     }
     setBusy(true);
@@ -78,9 +78,9 @@ export function AiFilterAssistant({
       );
     } catch (reason) {
       setError(
-        reason instanceof Error
+        reason instanceof AiFilterClientError
           ? reason.message
-          : "AI search is unavailable. Manual filters remain available.",
+          : "We couldn't complete the search. Try again or use the word filters below.",
       );
     } finally {
       setTurnstileToken(null);
@@ -98,26 +98,13 @@ export function AiFilterAssistant({
       onApply(executeAiFilter(context, interpretation.filters));
       setExpanded(false);
     } catch {
-      setError(
-        "The controlled filter could not be applied. Nothing changed; manual filters remain available.",
-      );
+      setError("We couldn't show these results. Try again or adjust the word filters below.");
     } finally {
       setBusy(false);
     }
   };
 
-  if (Platform.OS !== "web") {
-    return (
-      <View style={styles.panel}>
-        <Text style={styles.title}>Find words with AI</Text>
-        <Text style={styles.description}>
-          AI is not available in this native build. Exact search, manual filters, Check a text,
-          Teaching list, detail and exports remain available.
-        </Text>
-        <ActionButton kind="secondary" label="Use manual filters" onPress={onUseManualFilters} />
-      </View>
-    );
-  }
+  if (Platform.OS !== "web" || !aiRuntimeConfiguration.configured) return null;
 
   return (
     <View style={styles.panel}>
@@ -133,24 +120,18 @@ export function AiFilterAssistant({
             Find words with AI
           </Text>
           <Text style={styles.compactDescription}>
-            Optional request interpreter · teacher confirmation required
+            Describe the words you need for your lesson.
           </Text>
         </View>
         <Text aria-hidden style={styles.chevron}>
           {expanded ? "Close −" : "Open +"}
         </Text>
       </Pressable>
-      {!aiRuntimeConfiguration.configured && !expanded ? (
-        <View style={styles.unavailableRow}>
-          <Text style={styles.unavailableText}>AI is offline or not configured.</Text>
-          <ActionButton kind="secondary" label="Use manual filters" onPress={onUseManualFilters} />
-        </View>
-      ) : null}
       {expanded ? (
         <View style={styles.expandedBody}>
           <Text style={styles.description}>
-            Only this short request is sent. Classroom text, notes and lists stay local. Confirmed
-            conditions are applied deterministically to registered principal data.
+            Describe your lesson needs, then review the suggested filters before seeing the words.
+            Only this request is shared with the AI service.
           </Text>
           <TextInput
             accessibilityLabel="Describe the words to find"
@@ -163,7 +144,7 @@ export function AiFilterAssistant({
             style={styles.input}
             value={query}
           />
-          <Text style={styles.quickTitle}>Verified quick examples</Text>
+          <Text style={styles.quickTitle}>Try an example</Text>
           <View style={styles.actions}>
             {VERIFIED_AI_QUICK_EXAMPLES.map((example) => (
               <ActionButton
@@ -179,14 +160,11 @@ export function AiFilterAssistant({
               />
             ))}
           </View>
-          <Text style={styles.verifiedNote}>
-            Verified against the 3,430-family principal payload; no example hard-codes a result.
-          </Text>
           <TurnstileGate onTokenChange={setTurnstileToken} resetNonce={turnstileResetNonce} />
           <View style={styles.actions}>
             <ActionButton
               disabled={busy || !query.trim() || !turnstileToken || !anonymousSessionId}
-              label="Preview"
+              label={busy ? "Finding filters…" : "Review suggested filters"}
               onPress={() => void interpret()}
             />
             {interpretation ? (
@@ -209,7 +187,7 @@ export function AiFilterAssistant({
               </Text>
               <ActionButton
                 kind="secondary"
-                label="Use manual filters"
+                label="Choose filters yourself"
                 onPress={onUseManualFilters}
               />
             </View>
@@ -217,7 +195,7 @@ export function AiFilterAssistant({
           {interpretation ? (
             <View style={styles.summary}>
               <Text accessibilityRole="header" aria-level={3} style={styles.summaryTitle}>
-                Confirm the AI interpretation
+                Review your search
               </Text>
               <Text style={styles.summaryText}>{interpretation.summary}</Text>
               {interpretation.filters
@@ -237,8 +215,8 @@ export function AiFilterAssistant({
               ))}
               {interpretation.status === "unsupported" ? (
                 <Text style={styles.error}>
-                  This request needs a field that is not authoritative in the current data. No
-                  filter was applied.
+                  We can't search for that information yet. Try one of the examples or choose
+                  filters yourself.
                 </Text>
               ) : null}
               {interpretation.status === "ready" ? (

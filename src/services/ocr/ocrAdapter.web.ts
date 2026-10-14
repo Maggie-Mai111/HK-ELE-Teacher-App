@@ -1,12 +1,17 @@
 import type { OcrAdapter } from "./OcrContract";
+import { recognizeBrowserImage } from "./browserOcr";
 
 export const ocrAdapter: OcrAdapter = {
-  provider: "Native OCR unavailable on Web",
+  provider: "On-device English photo recognition",
   processedOnDevice: true,
-  isSupported: () => false,
-  async recognizeImage() {
-    throw new Error(
-      "On-device OCR is available only in the Android and iOS development or release builds.",
-    );
+  isSupported: () => typeof document !== "undefined" && typeof Worker !== "undefined",
+  async recognizeImage(uri, options) {
+    const text = await recognizeBrowserImage(uri, options);
+    return {
+      text,
+      lineCount: text.split(/\r?\n/).filter((line) => line.trim()).length,
+      provider: this.provider,
+      processedOnDevice: true,
+    };
   },
 };

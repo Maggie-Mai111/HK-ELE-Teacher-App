@@ -1,9 +1,10 @@
 import { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Platform, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { ComplexityPanel } from "../components/ComplexityPanel";
+import { ContextReviewPanel } from "../components/ContextReviewPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { HighlightedText } from "../components/HighlightedText";
 import { KnowledgeTestPanel } from "../components/KnowledgeTestPanel";
@@ -25,7 +26,9 @@ import {
 } from "../services/progressiveResults";
 import {
   groupPendingFullDatabaseChecks,
+  groupContextReviews,
   groupUnmatchedWords,
+  textResultsAreCurrent,
   textResultKind,
 } from "../services/textResultPresentation";
 import type { TeachingListStore } from "../services/teachingListService";
@@ -33,7 +36,15 @@ import { scan, TokenizerError } from "../services/tokenizer";
 import { colors, spacing } from "../theme/tokens";
 
 type ResultFilter =
-  "all" | "candidate" | "reference" | "other" | "grammar" | "cpb" | "unavailable" | "review";
+  | "all"
+  | "candidate"
+  | "reference"
+  | "other"
+  | "grammar"
+  | "cpb"
+  | "unavailable"
+  | "unmatched"
+  | "review";
 type ResultSort = "occurrence" | "family";
 type MembershipCategory =
   "candidate" | "reference" | "other" | "grammar" | "unavailable" | "unmatched" | "review";
@@ -73,6 +84,7 @@ function focusAndReveal(target: View | null) {
 export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
   const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
   const [text, setText] = useState("");
+  const [checkedText, setCheckedText] = useState<string | null>(null);
   const [results, setResults] = useState<ResolvedOccurrence[]>([]);
   const [filter, setFilter] = useState<ResultFilter>("all");
   const [sort, setSort] = useState<ResultSort>("occurrence");
@@ -97,24 +109,26 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
       const tokenScan = scan(text);
       const next = await repository.resolveOccurrences(text, tokenScan.occurrences);
       setResults(next);
+      setCheckedText(text);
       setFilter("all");
       setSort("occurrence");
       setGroupLimit(OCCURRENCE_BATCH_SIZE);
       setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
       setKnowledgeNotKnown([]);
+      setKnowledgeOpen(false);
       setDataMode(next[0]?.dataMode ?? repository.getDataMode());
       focusAndReveal(summaryRef.current);
     } catch (reason) {
       setResults([]);
       if (reason instanceof TokenizerError) {
+        const offset = reason.issues[0]?.offset ?? 0;
         setError(
-          `${reason.message} ${reason.issues
-            .slice(0, 3)
-            .map((issue) => `${issue.codePoint} at ${issue.offset}`)
-            .join("; ")}`,
+          `Check the text near “${text.slice(Math.max(0, offset - 12), offset + 12)}” and remove any unusual symbols, then try again.`,
         );
+      } else if (reason instanceof Error && reason.message.startsWith("The technical limit is")) {
+        setError("Please check up to 500 words at a time. Split a longer passage into sections.");
       } else {
-        setError(reason instanceof Error ? reason.message : String(reason));
+        setError("We couldn't check the text. Check your connection and try again.");
       }
     } finally {
       setLoading(false);
@@ -141,7 +155,7 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
   const visible = useMemo(() => {
     const selected =
       filter === "all"
-        ? results.filter((item) => category(item) !== "unmatched")
+        ? [...results]
         : results.filter((item) =>
             filter === "cpb" ? Boolean(matchCpb100(item.surface)) : category(item) === filter,
           );
@@ -156,10 +170,21 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
   }, [filter, results, sort]);
   const groups = useMemo(() => groupOccurrences(visible), [visible]);
   const uniqueFamilies = useMemo(
-    () => new Set(results.flatMap((item) => item.owners.map((owner) => owner.baseword_key))).size,
+    () =>
+      new Set(
+        results
+          .filter((item) => item.status === "RESOLVED" && item.owners.length === 1)
+          .flatMap((item) =>
+            item.owners
+              .filter((owner) => !owner.blocked && !owner.display_blocked)
+              .map((owner) => owner.baseword_key),
+          ),
+      ).size,
     [results],
   );
   const unmatched = useMemo(() => groupUnmatchedWords(results), [results]);
+  const contextReviews = useMemo(() => groupContextReviews(results), [results]);
+  const resultsCurrent = textResultsAreCurrent(text, checkedText);
   const pendingFullCheck = useMemo(() => groupPendingFullDatabaseChecks(results), [results]);
   const familyEvidence = (basewordKey: string) => {
     const countsBySurface = new Map<string, number>();
@@ -191,10 +216,12 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
   return (
     <View style={styles.content}>
       <ScreenHeader
-        intro="Paste or type classroom text. Analysis uses registered identity routes and stays in this session."
+        intro="Paste text or scan a photo, then check the words."
         title="Check a text"
       />
-      {Platform.OS !== "web" ? <OcrInputPanel currentText={text} onApplyText={setText} /> : null}
+      <ProgressiveDisclosure title="Scan text from a photo">
+        <OcrInputPanel currentText={text} onApplyText={setText} />
+      </ProgressiveDisclosure>
       <TextInput
         accessibilityLabel="Text to check"
         multiline
@@ -218,7 +245,12 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
       {loading ? (
         <ActivityIndicator accessibilityLabel="Checking text" color={colors.primary} size="large" />
       ) : null}
-      {results.length ? (
+      {results.length && !resultsCurrent ? (
+        <Text accessibilityLiveRegion="polite" style={styles.rangeError}>
+          Text changed. Choose Check text to update the results.
+        </Text>
+      ) : null}
+      {results.length && resultsCurrent && !loading ? (
         <>
           <View
             accessibilityLabel="Text check summary"
@@ -231,15 +263,40 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
               Text summary
             </Text>
             <Text style={styles.summaryLead}>
-              {results.length} occurrences · {uniqueFamilies} registered families
+              {results.length} word occurrences · {uniqueFamilies} matched families
             </Text>
             <Text style={styles.summaryText}>
-              Candidate {counts.candidate} · Reference {counts.reference} · Other ranked{" "}
-              {counts.other}
-              {" · "}Grammar {counts.grammar} · Needs review{" "}
-              {counts.unavailable + counts.unmatched + counts.review}
+              {(
+                [
+                  ["Candidate", counts.candidate],
+                  ["Reference", counts.reference],
+                  ["Other matches", counts.other],
+                  ["Grammar", counts.grammar],
+                  ["Not matched", counts.unmatched],
+                  ["Context check", counts.review],
+                  ["Check when online", counts.unavailable],
+                ] as const
+              )
+                .filter(([, count]) => count > 0)
+                .map(([label, count]) => `${label} ${count}`)
+                .join(" · ")}
             </Text>
+            {counts.unmatched ? (
+              <Text style={styles.summaryText}>
+                Not matched describes the current data, not what your students know.
+              </Text>
+            ) : null}
           </View>
+          {unmatched.length || contextReviews.length || pendingFullCheck.length ? (
+            <ProgressiveDisclosure
+              title="Words to review"
+              summary="Words without a match or with more than one possible reading."
+            >
+              <UnmatchedWordsPanel items={unmatched} />
+              <ContextReviewPanel items={contextReviews} />
+              <PendingFullCheckPanel items={pendingFullCheck} />
+            </ProgressiveDisclosure>
+          ) : null}
           <View style={styles.knowledgeEntry}>
             <View style={styles.knowledgeEntryText}>
               <Text accessibilityRole="header" aria-level={2} style={styles.knowledgeEntryTitle}>
@@ -264,13 +321,15 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
               text={text}
             />
           ) : null}
-          <PreteachPanel
-            notKnownFamilies={knowledgeNotKnown}
-            repository={repository}
-            results={results}
-            teaching={teaching}
-            text={text}
-          />
+          <ProgressiveDisclosure title="Words to review for pre-teaching">
+            <PreteachPanel
+              notKnownFamilies={knowledgeNotKnown}
+              repository={repository}
+              results={results}
+              teaching={teaching}
+              text={text}
+            />
+          </ProgressiveDisclosure>
           <ProgressiveDisclosure
             summary="CPB, HK frequency and custom-range highlighting controls."
             title="Text highlighting"
@@ -325,17 +384,15 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
             />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure
-            summary="Readability indicators and transparent calculation notes."
+            summary="See how the passage reads and what the measures mean."
             title="Text complexity"
           >
             <ComplexityPanel results={results} text={text} />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure
-            summary="Filter status categories and review repeated forms as grouped rows."
-            title="Detailed status and grouped results"
+            summary="Browse word families, repeated words and matches."
+            title="All word results"
           >
-            <UnmatchedWordsPanel items={unmatched} />
-            <PendingFullCheckPanel items={pendingFullCheck} />
             <Text style={styles.label}>Show</Text>
             <View style={styles.chips}>
               {(
@@ -347,6 +404,7 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
                   ["grammar", `Grammar (${counts.grammar})`],
                   ["cpb", `CPB/common (${counts.cpb})`],
                   ["unavailable", `Full check unavailable (${counts.unavailable})`],
+                  ["unmatched", `Not matched (${counts.unmatched})`],
                   ["review", `Review (${counts.review})`],
                 ] as Array<[ResultFilter, string]>
               ).map(([value, label]) => (
@@ -407,7 +465,7 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
             ) : null}
           </ProgressiveDisclosure>
           <ProgressiveDisclosure
-            summary={`${visible.length} individual records, shown ${OCCURRENCE_BATCH_SIZE} at a time.`}
+            summary="See each word in its original sentence."
             title="All occurrences"
           >
             {visible.slice(0, occurrenceLimit).map((item) => {

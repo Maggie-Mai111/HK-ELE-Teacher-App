@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { ocrAdapter } from "../services/ocr/ocrAdapter";
 import { recognizeToEditableText } from "../services/ocr/OcrContract";
@@ -11,98 +19,177 @@ interface Props {
   currentText: string;
   onApplyText: (text: string) => void;
 }
-
 export function OcrInputPanel({ currentText, onApplyText }: Props) {
+  const [image, setImage] = useState<string | null>(null);
   const [recognizedText, setRecognizedText] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [progress, setProgress] = useState("");
+  const [replaceConfirmed, setReplaceConfirmed] = useState(false);
+  const controller = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      controller.current?.abort();
+    };
+  }, []);
   const supported = ocrAdapter.isSupported();
-
-  const processResult = async (result: ImagePicker.ImagePickerResult) => {
-    if (result.canceled) {
-      setMessage("Image selection was cancelled. Existing text was not changed.");
-      return;
+  const choose = async (camera: boolean) => {
+    try {
+      if (Platform.OS !== "web") {
+        const permission = camera
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (!permission.granted) {
+          setMessage(
+            "Permission was not granted. You can still paste text or choose another source.",
+          );
+          return;
+        }
+      }
+      const result = camera
+        ? await ImagePicker.launchCameraAsync({
+            allowsEditing: false,
+            mediaTypes: ["images"],
+            quality: 1,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            allowsEditing: false,
+            mediaTypes: ["images"],
+            quality: 1,
+          });
+      if (result.canceled) {
+        setMessage("Selection cancelled. Your existing text is unchanged.");
+        return;
+      }
+      const asset = result.assets[0];
+      if (!asset?.uri)
+        throw new Error("This image could not be opened. Choose a JPG or PNG photo.");
+      if (asset.fileSize && asset.fileSize > 12 * 1024 * 1024)
+        throw new Error("Choose a photo smaller than 12 MB, or crop it first.");
+      setImage(asset.uri);
+      setRecognizedText("");
+      setReplaceConfirmed(false);
+      setMessage("Photo ready. Recognition works best with clear printed English.");
+    } catch (reason) {
+      setMessage(
+        reason instanceof Error
+          ? reason.message
+          : "Photo selection failed. Choose an existing image or paste text.",
+      );
     }
-    const asset = result.assets[0];
-    if (!asset?.uri) {
-      setMessage("The selected image did not provide a local file URI.");
-      return;
-    }
+  };
+  const recognize = async () => {
+    if (!image || busy) return;
+    const job = new AbortController();
+    controller.current = job;
     setBusy(true);
     setMessage("");
+    setProgress("Preparing photo…");
+    const timeout = setTimeout(() => job.abort(), 120_000);
     try {
-      const recognized = await recognizeToEditableText(ocrAdapter, asset.uri);
-      setRecognizedText(recognized.text);
-      setMessage(
-        `${recognized.lineCount} text line${recognized.lineCount === 1 ? "" : "s"} recognized on device. Review and edit before using it.`,
-      );
+      const result = await recognizeToEditableText(ocrAdapter, image, {
+        signal: job.signal,
+        onProgress: (value) => {
+          if (mounted.current && !job.signal.aborted) setProgress(value);
+        },
+      });
+      if (mounted.current && !job.signal.aborted) {
+        setRecognizedText(result.text);
+        setReplaceConfirmed(false);
+        setMessage("Review and edit the recognized text before using it.");
+      }
     } catch (reason) {
-      setMessage(reason instanceof Error ? reason.message : String(reason));
+      if (mounted.current)
+        setMessage(
+          job.signal.aborted
+            ? "Recognition stopped. Your existing text is unchanged."
+            : reason instanceof Error
+              ? reason.message
+              : "Recognition failed. Try a clearer photo or paste text.",
+        );
     } finally {
-      setBusy(false);
+      clearTimeout(timeout);
+      if (mounted.current) {
+        setBusy(false);
+        setProgress("");
+      }
+      if (controller.current === job) controller.current = null;
     }
   };
-
-  const takePhoto = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      setMessage("Camera permission was not granted. Paste text or choose an existing image.");
+  const replace = () => {
+    if (currentText.trim() && !replaceConfirmed) {
+      setReplaceConfirmed(true);
+      setMessage("Replace your existing text? Choose Confirm replacement, or Append to keep both.");
       return;
     }
-    await processResult(
-      await ImagePicker.launchCameraAsync({
-        allowsEditing: false,
-        mediaTypes: ["images"],
-        quality: 1,
-      }),
-    );
+    onApplyText(recognizedText);
+    setReplaceConfirmed(false);
+    setMessage("Text inserted. You can edit it above, then choose Check text.");
   };
-
-  const chooseImage = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setMessage("Photo-library permission was not granted. Paste text or use the camera.");
-      return;
-    }
-    await processResult(
-      await ImagePicker.launchImageLibraryAsync({
-        allowsEditing: false,
-        mediaTypes: ["images"],
-        quality: 1,
-      }),
-    );
-  };
-
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" aria-level={2} style={styles.title}>
-        Camera and on-device OCR
-      </Text>
       <Text style={styles.note}>
-        The image stays on this device and is not uploaded by the App. OCR creates editable source
-        text only; it never chooses a word family. Paste and manual editing remain available.
+        Take a photo or choose an image. Recognition happens on this device; your photo is not
+        uploaded.
       </Text>
       <View style={styles.actions}>
         <ActionButton
           disabled={!supported || busy}
           kind="secondary"
           label="Take photo"
-          onPress={() => void takePhoto()}
+          onPress={() => void choose(true)}
         />
         <ActionButton
           disabled={!supported || busy}
           kind="secondary"
           label="Choose image"
-          onPress={() => void chooseImage()}
+          onPress={() => void choose(false)}
         />
       </View>
-      {!supported ? (
-        <Text style={styles.notice}>
-          Native OCR is unavailable in this Web build. Use an Android or iOS development/release
-          build, or paste text below.
+      {Platform.OS === "web" ? (
+        <Text style={styles.note}>
+          If your browser does not open the camera, take a photo first and choose it from your
+          library.
         </Text>
       ) : null}
-      {busy ? <ActivityIndicator accessibilityLabel="Recognizing text on device" /> : null}
+      {!supported ? (
+        <Text style={styles.note}>
+          Photo recognition is unavailable in this browser. Paste text instead.
+        </Text>
+      ) : null}
+      {image ? (
+        <Image
+          accessibilityLabel="Selected photo preview"
+          source={{ uri: image }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      ) : null}
+      {image && !busy ? (
+        <ActionButton
+          label={recognizedText ? "Recognize again" : "Recognize text"}
+          onPress={() => void recognize()}
+        />
+      ) : null}
+      {busy ? (
+        <View style={styles.actions}>
+          <ActivityIndicator accessibilityLabel="Recognizing text on device" />
+          <Text accessibilityLiveRegion="polite" style={styles.note}>
+            {progress}
+          </Text>
+          <ActionButton
+            kind="secondary"
+            label="Cancel recognition"
+            onPress={() => {
+              controller.current?.abort();
+              setMessage("Stopping recognition…");
+            }}
+          />
+        </View>
+      ) : null}
       {message ? (
         <Text accessibilityLiveRegion="polite" style={styles.message}>
           {message}
@@ -110,33 +197,43 @@ export function OcrInputPanel({ currentText, onApplyText }: Props) {
       ) : null}
       {recognizedText ? (
         <View style={styles.review}>
-          <Text style={styles.reviewTitle}>Editable OCR result</Text>
+          <Text style={styles.title}>Review recognized text</Text>
           <TextInput
             accessibilityLabel="Editable OCR result"
             multiline
-            onChangeText={setRecognizedText}
+            onChangeText={(value) => {
+              setRecognizedText(value);
+              setReplaceConfirmed(false);
+            }}
             style={styles.textarea}
             textAlignVertical="top"
             value={recognizedText}
           />
           <View style={styles.actions}>
-            <ActionButton label="Use OCR text" onPress={() => onApplyText(recognizedText)} />
             <ActionButton
-              disabled={!currentText.trim()}
-              kind="secondary"
-              label="Append OCR text"
-              onPress={() =>
-                onApplyText(
-                  `${currentText.trimEnd()}${currentText.trim() ? "\n" : ""}${recognizedText}`,
-                )
-              }
+              disabled={!recognizedText.trim() || busy}
+              label={replaceConfirmed ? "Confirm replacement" : "Use OCR text"}
+              onPress={replace}
             />
             <ActionButton
-              kind="danger"
-              label="Discard OCR result"
+              disabled={!currentText.trim() || !recognizedText.trim() || busy}
+              kind="secondary"
+              label="Append OCR text"
               onPress={() => {
+                onApplyText(`${currentText.trimEnd()}\n${recognizedText}`);
+                setReplaceConfirmed(false);
+                setMessage("Text appended. Choose Check text when ready.");
+              }}
+            />
+            <ActionButton
+              disabled={busy}
+              kind="secondary"
+              label="Discard photo and result"
+              onPress={() => {
+                setImage(null);
                 setRecognizedText("");
-                setMessage("OCR result discarded. Existing text was not changed.");
+                setReplaceConfirmed(false);
+                setMessage("Photo and result discarded. Existing text is unchanged.");
               }}
             />
           </View>
@@ -145,39 +242,23 @@ export function OcrInputPanel({ currentText, onApplyText }: Props) {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  box: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: spacing.sm,
-    padding: spacing.md,
-  },
-  message: { color: colors.ink, fontSize: 14, lineHeight: 21 },
-  note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  notice: {
-    backgroundColor: colors.warningSoft,
-    borderRadius: 9,
-    color: colors.ink,
-    fontSize: 15,
-    lineHeight: 22,
-    padding: spacing.sm,
-  },
-  review: { gap: spacing.sm },
-  reviewTitle: { color: colors.ink, fontSize: 15, fontWeight: "800" },
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, alignItems: "center" },
+  box: { gap: spacing.md },
+  image: { width: "100%", height: 180, backgroundColor: colors.canvas, borderRadius: 10 },
+  message: { color: colors.ink, fontSize: 16, lineHeight: 24 },
+  note: { color: colors.muted, fontSize: 15, lineHeight: 23 },
+  review: { gap: spacing.md },
+  title: { color: colors.ink, fontSize: 19, fontWeight: "700" },
   textarea: {
     backgroundColor: colors.canvas,
     borderColor: colors.border,
-    borderRadius: 10,
     borderWidth: 1,
+    borderRadius: 10,
     color: colors.ink,
-    fontSize: 16,
-    lineHeight: 24,
-    minHeight: 130,
+    fontSize: 18,
+    lineHeight: 27,
+    minHeight: 160,
     padding: spacing.sm,
   },
-  title: { color: colors.ink, fontSize: 19, fontWeight: "800" },
 });
