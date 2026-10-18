@@ -18,6 +18,7 @@ import { BUNDLED_DATA_ASSETS } from "./bundledAssets";
 import { inflateRecord } from "./gzipJson";
 import { deriveAiFilterFamilies } from "../services/aiFilterFamilyProjection";
 import { registeredGrammaticalRelation } from "../services/grammaticalRelationService";
+import { registeredExternalLevel } from "../services/externalLevelPresentation";
 
 interface CompactTable {
   fields: string[];
@@ -46,10 +47,10 @@ function normalizeFamily(value: Record<string, unknown>): FamilyRecord {
     current_hk_frequency_rank: (value.current_hk_frequency_rank as number | null) ?? null,
     current_hk_frequency_band: (value.current_hk_frequency_band as string | null) ?? null,
     textbook_first_seen_level: (value.textbook_first_seen_level as string | null) ?? null,
-    external_level_reference_display:
-      (value.external_level_reference_teacher_display as string | null) ??
-      (value.external_level_reference_display as string | null) ??
-      null,
+    external_level_reference_display: registeredExternalLevel(
+      value,
+      "external_level_reference_display",
+    ),
     candidate_member: (value.candidate_member as number | boolean) ?? false,
     reference_member: (value.reference_member as number | boolean) ?? false,
     display_blocked: (value.display_blocked as number | boolean) ?? false,
@@ -68,10 +69,7 @@ function normalizeForm(value: Record<string, unknown>): FormRecord {
     form: String(value.form),
     normalized_form: String(value.normalized_form),
     first_seen_hk_textbooks: (value.first_seen_hk_textbooks as string | null) ?? null,
-    external_level_reference:
-      (value.external_level_reference_teacher_display as string | null) ??
-      (value.external_level_reference as string | null) ??
-      null,
+    external_level_reference: registeredExternalLevel(value, "external_level_reference"),
     academic_subject_evidence: (value.academic_subject_evidence as string | null) ?? null,
     awl: (value.awl as number | boolean | null) ?? null,
     msvl: (value.msvl as string | number | null) ?? null,
@@ -104,25 +102,40 @@ export class BundledReferenceRepository implements HkeleRepository {
   }
 
   private async families(): Promise<FamilyRecord[]> {
-    this.familiesPromise ??= loadAssetTable(BUNDLED_DATA_ASSETS.families).then((table) =>
-      table.rows.map((row) =>
-        normalizeFamily(inflateRecord<Record<string, unknown>>(table.fields, row)),
-      ),
-    );
+    this.familiesPromise ??= loadAssetTable(BUNDLED_DATA_ASSETS.families)
+      .then((table) =>
+        table.rows.map((row) =>
+          normalizeFamily(inflateRecord<Record<string, unknown>>(table.fields, row)),
+        ),
+      )
+      .catch((error: unknown) => {
+        this.familiesPromise = null;
+        throw error;
+      });
     return this.familiesPromise;
   }
 
   private async forms(): Promise<FormRecord[]> {
-    this.formsPromise ??= loadAssetTable(BUNDLED_DATA_ASSETS.forms).then((table) =>
-      table.rows.map((row) =>
-        normalizeForm(inflateRecord<Record<string, unknown>>(table.fields, row)),
-      ),
-    );
+    this.formsPromise ??= loadAssetTable(BUNDLED_DATA_ASSETS.forms)
+      .then((table) =>
+        table.rows.map((row) =>
+          normalizeForm(inflateRecord<Record<string, unknown>>(table.fields, row)),
+        ),
+      )
+      .catch((error: unknown) => {
+        this.formsPromise = null;
+        throw error;
+      });
     return this.formsPromise;
   }
 
   private routes(): Promise<CompactTable> {
-    this.routesPromise ??= loadAssetTable(BUNDLED_DATA_ASSETS.searchRoutes);
+    this.routesPromise ??= loadAssetTable(BUNDLED_DATA_ASSETS.searchRoutes).catch(
+      (error: unknown) => {
+        this.routesPromise = null;
+        throw error;
+      },
+    );
     return this.routesPromise;
   }
 
@@ -154,7 +167,8 @@ export class BundledReferenceRepository implements HkeleRepository {
     };
   }
 
-  async aiFilterFamilies(): Promise<FamilyRecord[]> {
+  async aiFilterFamilies(scope?: import("../domain/hkele").BrowseScope): Promise<FamilyRecord[]> {
+    if (scope === "full") throw new Error("Connect to load the full database for AI filtering.");
     const [families, forms] = await Promise.all([this.families(), this.forms()]);
     return deriveAiFilterFamilies(families, forms);
   }
@@ -162,7 +176,7 @@ export class BundledReferenceRepository implements HkeleRepository {
   async getFamily(basewordKey: string): Promise<FamilyDetail> {
     const normalized = normalize(basewordKey);
     const family = (await this.families()).find((item) => item.baseword_key === normalized);
-    if (!family) throw new Error("This family is not in the bundled Candidate + Reference data.");
+    if (!family) throw new Error("This family is not in the saved word data.");
     const forms = (await this.forms()).filter((item) => item.baseword_key === normalized);
     return { family, forms };
   }

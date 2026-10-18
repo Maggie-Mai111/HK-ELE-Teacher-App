@@ -12,9 +12,14 @@ import {
 import { aiRuntimeConfiguration } from "../config/runtime";
 import type { AiFilterResult } from "../domain/aiFilterSchema";
 import { VERIFIED_AI_QUICK_EXAMPLES } from "../domain/verifiedAiExamples";
-import type { HkeleRepository } from "../domain/hkele";
+import type { BrowseScope, HkeleRepository } from "../domain/hkele";
 import { getAnonymousSessionId } from "../services/anonymousSession";
 import { AiFilterClientError, interpretAiFilter } from "../services/aiFilterClient";
+import {
+  teacherAiResult,
+  teacherAiScope,
+  teacherAiInterpreterQuery,
+} from "../services/teacherAiPresentation";
 import {
   describeAiFilterConditions,
   executeAiFilter,
@@ -27,6 +32,7 @@ import { TurnstileGate } from "./TurnstileGate";
 
 interface Props {
   repository: HkeleRepository;
+  scope?: BrowseScope;
   onApply: (execution: AiFilterExecution) => void;
   onUseManualFilters: () => void;
   editRequestNonce: number;
@@ -34,6 +40,7 @@ interface Props {
 
 export function AiFilterAssistant({
   repository,
+  scope = "full",
   onApply,
   onUseManualFilters,
   editRequestNonce,
@@ -47,6 +54,13 @@ export function AiFilterAssistant({
   const [anonymousSessionId] = useState(() => getAnonymousSessionId());
   const [expanded, setExpanded] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  const latestScope = useRef(scope);
+  latestScope.current = scope;
+
+  useEffect(() => {
+    setInterpretation(null);
+    setError("");
+  }, [scope]);
 
   useEffect(() => {
     if (editRequestNonce === 0) return;
@@ -67,13 +81,16 @@ export function AiFilterAssistant({
     setInterpretation(null);
     try {
       setInterpretation(
-        await interpretAiFilter(
-          {
-            query,
-            locale: /[\u3400-\u9fff]/u.test(query) ? "zh-HK" : "en-HK",
-            surface: "browse",
-          },
-          { turnstileToken, anonymousSessionId },
+        teacherAiResult(
+          await interpretAiFilter(
+            {
+              query: teacherAiInterpreterQuery(query),
+              locale: /[\u3400-\u9fff]/u.test(query) ? "zh-HK" : "en-HK",
+              surface: "browse",
+            },
+            { turnstileToken, anonymousSessionId },
+          ),
+          teacherAiScope(query, latestScope.current),
         ),
       );
     } catch (reason) {
@@ -94,11 +111,18 @@ export function AiFilterAssistant({
     setBusy(true);
     setError("");
     try {
-      const context = await prepareAiFilterContext(repository);
+      const context = await prepareAiFilterContext(
+        repository,
+        interpretation.filters.scope === "full" ? "full" : "core",
+      );
       onApply(executeAiFilter(context, interpretation.filters));
       setExpanded(false);
     } catch {
-      setError("We couldn't show these results. Try again or adjust the word filters below.");
+      setError(
+        interpretation.filters.scope === "full"
+          ? "We couldn't load the full database for these filters. Reconnect and try again, or choose Core list."
+          : "We couldn't show these results. Try again or adjust the word filters below.",
+      );
     } finally {
       setBusy(false);
     }
@@ -120,7 +144,7 @@ export function AiFilterAssistant({
             Find words with AI
           </Text>
           <Text style={styles.compactDescription}>
-            Describe the words you need for your lesson.
+            Find words for your lesson in the selected list.
           </Text>
         </View>
         <Text aria-hidden style={styles.chevron}>
@@ -130,8 +154,8 @@ export function AiFilterAssistant({
       {expanded ? (
         <View style={styles.expandedBody}>
           <Text style={styles.description}>
-            Describe your lesson needs, then review the suggested filters before seeing the words.
-            Only this request is shared with the AI service.
+            Search {scope === "core" ? "Core list" : "Full database"}. Review the suggested filters
+            before seeing the words. Only this request is shared with the AI service.
           </Text>
           <TextInput
             accessibilityLabel="Describe the words to find"

@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { familySetLabel, hasFlag, type FamilyRecord } from "../domain/hkele";
 import { colors, spacing } from "../theme/tokens";
 import { ChoiceChip } from "./ChoiceChip";
+import { ProgressiveDisclosure } from "./ProgressiveDisclosure";
 
 const STORAGE_KEY = "hkele-phase1v-columns-v1";
 const columns = [
   ["family", "Word family", 170],
-  ["status", "Candidate/reference status", 150],
+  ["status", "Word list", 150],
   ["overall", "Overall frequency rank", 125],
   ["hk", "HK frequency rank / band", 155],
   ["first_seen", "Earliest observed in HK textbooks", 155],
@@ -25,18 +26,6 @@ const columns = [
 ] as const;
 type ColumnKey = (typeof columns)[number][0];
 const fixed = new Set<ColumnKey>(["family", "view", "add"]);
-const teacherColumns = new Set<ColumnKey>([
-  "family",
-  "status",
-  "overall",
-  "hk",
-  "first_seen",
-  "root",
-  "view",
-  "add",
-]);
-type TableView = "teacher" | "detailed";
-
 function defaults(): Record<ColumnKey, boolean> {
   return Object.fromEntries(columns.map(([key]) => [key, true])) as Record<ColumnKey, boolean>;
 }
@@ -52,11 +41,6 @@ function initialVisibility(): Record<ColumnKey, boolean> {
   } catch {
     return defaults();
   }
-}
-
-function initialView(): TableView {
-  if (Platform.OS !== "web" || typeof localStorage === "undefined") return "teacher";
-  return localStorage.getItem(STORAGE_KEY) ? "detailed" : "teacher";
 }
 
 function display(value: unknown): string {
@@ -113,60 +97,31 @@ interface Props {
 
 export function WebFamilyTable({ families, isAdded, onAdd, onOpen }: Props) {
   const [visible, setVisible] = useState(initialVisibility);
-  const [view, setView] = useState<TableView>(initialView);
-  useEffect(() => {
-    if (Platform.OS === "web" && typeof localStorage !== "undefined") {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(visible));
-    }
-  }, [visible]);
-  const shown = useMemo(
-    () =>
-      view === "teacher"
-        ? columns.filter(([key]) => teacherColumns.has(key))
-        : columns.filter(([key]) => visible[key]),
-    [view, visible],
-  );
+  const shown = useMemo(() => columns.filter(([key]) => visible[key]), [visible]);
   if (Platform.OS !== "web") return null;
   return (
     <View style={styles.wrapper}>
-      <View style={styles.viewRow}>
-        <Text style={styles.settingsTitle}>Table view</Text>
+      <Text style={styles.settingsTitle}>Full word information · {shown.length} columns</Text>
+      <ProgressiveDisclosure title="Choose columns" summary="All evidence is shown by default.">
         <View style={styles.settings}>
-          <ChoiceChip
-            label="Teacher view"
-            onPress={() => setView("teacher")}
-            selected={view === "teacher"}
-          />
-          <ChoiceChip
-            label="Detailed view"
-            onPress={() => setView("detailed")}
-            selected={view === "detailed"}
-          />
+          {columns.map(([key, label]) => (
+            <ChoiceChip
+              key={key}
+              label={label}
+              onPress={() => {
+                if (fixed.has(key)) return;
+                setVisible((current) => {
+                  const next = { ...current, [key]: !current[key] };
+                  if (typeof localStorage !== "undefined")
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+                  return next;
+                });
+              }}
+              selected={visible[key]}
+            />
+          ))}
         </View>
-      </View>
-      {view === "teacher" ? (
-        <Text style={styles.viewNote}>
-          A focused set of teaching columns. Switch to Detailed view for all 15 columns and your
-          saved column choices.
-        </Text>
-      ) : (
-        <>
-          <Text style={styles.settingsTitle}>Columns ({shown.length} of 15 shown)</Text>
-          <View style={styles.settings}>
-            {columns.map(([key, label]) => (
-              <ChoiceChip
-                key={key}
-                label={label}
-                onPress={() => {
-                  if (!fixed.has(key))
-                    setVisible((current) => ({ ...current, [key]: !current[key] }));
-                }}
-                selected={visible[key]}
-              />
-            ))}
-          </View>
-        </>
-      )}
+      </ProgressiveDisclosure>
       <ScrollView horizontal nestedScrollEnabled style={styles.scroll}>
         <View style={styles.table}>
           <View style={[styles.row, styles.headerRow]}>
@@ -176,8 +131,11 @@ export function WebFamilyTable({ families, isAdded, onAdd, onOpen }: Props) {
               </Text>
             ))}
           </View>
-          {families.map((family) => (
-            <View key={family.baseword_key} style={styles.row}>
+          {families.map((family, index) => (
+            <View
+              key={family.baseword_key}
+              style={[styles.row, index % 2 === 1 && styles.alternateRow]}
+            >
               {shown.map(([key, _label, width]) => {
                 if (key === "view" || key === "add") {
                   const disabled = key === "add" && isAdded(family);
@@ -196,7 +154,17 @@ export function WebFamilyTable({ families, isAdded, onAdd, onOpen }: Props) {
                   );
                 }
                 return (
-                  <Text key={key} style={[styles.cell, { width }]}>
+                  <Text
+                    key={key}
+                    style={[
+                      styles.cell,
+                      { width },
+                      key === "family" && styles.wordCell,
+                      (key === "overall" || key === "hk") && styles.rankCell,
+                      key === "first_seen" && styles.textbookCell,
+                      key === "external" && styles.externalCell,
+                    ]}
+                  >
                     {cellValue(key, family)}
                   </Text>
                 );
@@ -222,11 +190,16 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     borderBottomWidth: StyleSheet.hairlineWidth,
     color: colors.ink,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 23,
     minHeight: 54,
     padding: spacing.sm,
   },
+  alternateRow: { backgroundColor: "#F5F9F6" },
+  wordCell: { color: colors.primary, fontSize: 19, fontWeight: "800" },
+  rankCell: { fontWeight: "700" },
+  textbookCell: { color: colors.hkTop, backgroundColor: "#EFF8F7", fontWeight: "700" },
+  externalCell: { color: colors.cpb, backgroundColor: "#F6F2FC", fontWeight: "700" },
   disabled: { opacity: 0.45 },
   headerCell: { color: colors.surface, fontSize: 14, fontWeight: "800", padding: spacing.sm },
   headerRow: { backgroundColor: colors.primary },

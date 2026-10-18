@@ -1,11 +1,14 @@
 import type { FamilyRecord } from "./hkele";
 
 export type TeachingStatus = "Notice" | "Practise" | "Master";
+export type TeachingFocus = "focus" | "mention" | "";
 
 export interface TeachingListItem {
   basewordKey: string;
   displayFamily: string;
   status: TeachingStatus;
+  teachingFocus?: TeachingFocus;
+  sourceLabels?: string[];
   notes: string;
   connections: string;
   selectedForms: string[];
@@ -26,5 +29,6 @@ export interface TeachingListItem {
 
 export interface TeachingListDocument {
   schemaVersion: "1.1.0";
+  lessonTitle?: string;
   items: TeachingListItem[];
 }

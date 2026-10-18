@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
 import { AppCard } from "../components/AppCard";
+import { EvidenceBadge } from "../components/EvidenceBadge";
 import type { FeedbackRequest } from "../components/FeedbackPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
@@ -238,10 +239,18 @@ export function WordDetailScreen({
                 HK rank {display(detail.family.current_hk_frequency_rank)}
               </Text>
             </View>
-            <Text style={styles.gradeEvidence}>
-              HK textbooks: {display(detail.family.textbook_first_seen_level)} · External level:{" "}
-              {display(detail.family.external_level_reference_display)}
-            </Text>
+            <View style={styles.badges}>
+              <EvidenceBadge
+                label="Family · earliest HK textbook"
+                value={detail.family.textbook_first_seen_level}
+                tone="textbook"
+              />
+              <EvidenceBadge
+                label="External level"
+                value={detail.family.external_level_reference_display}
+                tone="external"
+              />
+            </View>
             <ActionButton
               disabled={teaching.items.some(
                 (item) => item.basewordKey === detail.family.baseword_key,
@@ -326,10 +335,7 @@ export function WordDetailScreen({
             summary="Set, frequency, grade, list and subject evidence."
             title="Word information"
           >
-            <DetailRow
-              label="Set"
-              value={detail.family.set_membership ?? familySetLabel(detail.family)}
-            />
+            <DetailRow label="Word list" value={familySetLabel(detail.family)} />
             <DetailRow label="Overall rank" value={detail.family.overall_frequency_order} />
             <DetailRow label="HK frequency rank" value={detail.family.current_hk_frequency_rank} />
             <DetailRow label="HK frequency band" value={detail.family.current_hk_frequency_band} />

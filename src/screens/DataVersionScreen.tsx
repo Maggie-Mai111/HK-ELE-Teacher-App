@@ -17,8 +17,7 @@ assertCompatibleManifest(manifest, APP_VERSION);
 const rows: ReadonlyArray<[string, string]> = [
   ["Data version", manifest.dataVersion],
   ["Released", manifest.releaseDate],
-  ["Candidate", manifest.counts.candidate.toLocaleString("en")],
-  ["Candidate + Reference", manifest.counts.inclusiveReference.toLocaleString("en")],
+  ["Core list families", manifest.counts.candidate.toLocaleString("en")],
   ["Full database families", manifest.counts.totalFamilies.toLocaleString("en")],
   ["Word forms", manifest.counts.forms.toLocaleString("en")],
 ];

@@ -1,6 +1,7 @@
 import type { TokenOccurrence } from "../domain/contracts";
 import type {
   BrowsePage,
+  BrowseScope,
   BrowseRequest,
   FamilyDetail,
   FamilyRecord,
@@ -13,6 +14,7 @@ import type {
 } from "../domain/hkele";
 import { inflateRecord, loadGzipJson } from "./gzipJson";
 import { registeredGrammaticalRelation } from "../services/grammaticalRelationService";
+import { teacherFamilyRecord, teacherFormRecord } from "../services/externalLevelPresentation";
 
 interface StaticManifest {
   api_version: string;
@@ -24,6 +26,17 @@ interface StaticManifest {
   browse: Record<string, Record<string, { total_items: number; available_items: number }>>;
   special_surfaces: Record<string, unknown[]>;
   identity_exceptions: Record<string, { teacher_display: string; current_classification: string }>;
+  metadata: Record<string, string>;
+}
+
+interface FullAiProjection {
+  schemaVersion: string;
+  apiVersion: string;
+  sourceResultEntrySha256: string;
+  familyCount: number;
+  fields: string[];
+  rows: unknown[][];
+  cpb100FamilyKeys: string[];
 }
 
 type SearchRow = [
@@ -42,7 +55,6 @@ function contextFor(text: string, occurrence: TokenOccurrence, radius = 36): str
 
 export class StaticShardRepository implements HkeleRepository {
   private readonly cache = new Map<string, Promise<unknown>>();
-  private manifestPromise: Promise<StaticManifest> | null = null;
 
   constructor(
     private readonly baseUrl = "/hkele-data",
@@ -60,14 +72,16 @@ export class StaticShardRepository implements HkeleRepository {
   private load<T>(path: string): Promise<T> {
     const existing = this.cache.get(path);
     if (existing) return existing as Promise<T>;
-    const request = loadGzipJson<T>(this.url(path));
+    const request = loadGzipJson<T>(this.url(path)).catch((error: unknown) => {
+      this.cache.delete(path);
+      throw error;
+    });
     this.cache.set(path, request);
     return request;
   }
 
   private manifest(): Promise<StaticManifest> {
-    this.manifestPromise ??= this.load<StaticManifest>("manifest.json.gz");
-    return this.manifestPromise;
+    return this.load<StaticManifest>("manifest.json.gz");
   }
 
   async browse(request: BrowseRequest): Promise<BrowsePage> {
@@ -89,7 +103,9 @@ export class StaticShardRepository implements HkeleRepository {
         families.push(
           ...rows
             .slice(from, to)
-            .map((row) => inflateRecord<FamilyRecord>(manifest.browse_fields, row)),
+            .map((row) =>
+              teacherFamilyRecord(inflateRecord<FamilyRecord>(manifest.browse_fields, row)),
+            ),
         );
       }
     }
@@ -105,7 +121,32 @@ export class StaticShardRepository implements HkeleRepository {
     };
   }
 
-  async aiFilterFamilies(): Promise<FamilyRecord[]> {
+  private async fullAiProjection(): Promise<FullAiProjection> {
+    const [manifest, projection] = await Promise.all([
+      this.manifest(),
+      this.load<FullAiProjection>("ai_full_projection.json.gz"),
+    ]);
+    if (
+      projection.schemaVersion !== "HK_ELE_AI_FULL_PROJECTION_V1" ||
+      projection.apiVersion !== manifest.api_version ||
+      projection.sourceResultEntrySha256 !==
+        manifest.metadata.final_candidate_result_entry_sha256 ||
+      projection.familyCount !== manifest.browse.full?.overall?.available_items ||
+      projection.rows.length !== projection.familyCount
+    ) {
+      this.cache.delete("ai_full_projection.json.gz");
+      throw new Error("The full AI projection does not match this database release.");
+    }
+    return projection;
+  }
+
+  async aiFilterFamilies(scope: BrowseScope = "broader"): Promise<FamilyRecord[]> {
+    if (scope === "full") {
+      const projection = await this.fullAiProjection();
+      return projection.rows.map((row) =>
+        teacherFamilyRecord(inflateRecord<FamilyRecord>(projection.fields, row)),
+      );
+    }
     const first = await this.browse({ scope: "broader", sort: "overall", page: 1, pageSize: 100 });
     const pageCount = Math.ceil(first.availableItems / first.pageSize);
     const remaining = await Promise.all(
@@ -114,6 +155,10 @@ export class StaticShardRepository implements HkeleRepository {
       ),
     );
     return [first, ...remaining].flatMap((page) => page.families);
+  }
+
+  async aiFilterCpbFamilyKeys(): Promise<ReadonlySet<string>> {
+    return new Set((await this.fullAiProjection()).cpb100FamilyKeys);
   }
 
   private fnvBucket(value: string, count: number): number {
@@ -135,8 +180,10 @@ export class StaticShardRepository implements HkeleRepository {
     const record = values[normalized];
     if (!record) throw new Error("No current family record");
     return {
-      family: inflateRecord<FamilyRecord>(manifest.family_fields, record[0]),
-      forms: record[1].map((row) => inflateRecord<FormRecord>(manifest.form_fields, row)),
+      family: teacherFamilyRecord(inflateRecord<FamilyRecord>(manifest.family_fields, record[0])),
+      forms: record[1].map((row) =>
+        teacherFormRecord(inflateRecord<FormRecord>(manifest.form_fields, row)),
+      ),
     };
   }
 
@@ -150,14 +197,16 @@ export class StaticShardRepository implements HkeleRepository {
     rows: Array<[unknown[], string[], string[], unknown[] | null]> = [],
   ): SearchFamilyOwner[] {
     return rows.map((row) => {
-      const family = inflateRecord<FamilyRecord>(manifest.family_fields, row[0]);
+      const family = teacherFamilyRecord(
+        inflateRecord<FamilyRecord>(manifest.family_fields, row[0]),
+      );
       return {
         ...family,
         blocked: family.display_blocked === true || family.display_blocked === 1,
         match_classes: row[1] ?? [],
         matched_forms: row[2] ?? [],
         matched_form_evidence: row[3]
-          ? inflateRecord<FormRecord>(manifest.form_fields, row[3])
+          ? teacherFormRecord(inflateRecord<FormRecord>(manifest.form_fields, row[3]))
           : null,
       };
     });
@@ -270,7 +319,7 @@ export class StaticShardRepository implements HkeleRepository {
   ): Promise<ResolvedOccurrence[]> {
     const unique = new Map<string, Promise<SurfaceSearchResult>>();
     for (const occurrence of occurrences) {
-      if (occurrence.tokenStatus === "SUPPORTED_TOKEN") {
+      if (occurrence.tokenStatus === "SUPPORTED_TOKEN" && !unique.has(occurrence.surface)) {
         unique.set(occurrence.surface, this.searchSurface(occurrence.surface));
       }
     }

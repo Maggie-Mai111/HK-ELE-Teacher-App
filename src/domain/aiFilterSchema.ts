@@ -29,7 +29,7 @@ export type AiFilterGrade = (typeof AI_FILTER_GRADES)[number];
 export type AiFilterHkBand = (typeof AI_FILTER_HK_BANDS)[number];
 export type AiFilterMsvlSubject = (typeof AI_FILTER_MSVL_SUBJECTS)[number];
 export type AiFilterStatus = "ready" | "needs_clarification" | "unsupported";
-export type AiFilterScope = "candidate" | "inclusive_reference";
+export type AiFilterScope = "full" | "candidate" | "inclusive_reference";
 export type AiFilterSort = "overall" | "hk" | "az";
 
 export interface AiFilterRequest {
@@ -255,7 +255,7 @@ export function validateAiFilterConditions(value: unknown): AiFilterConditions {
   const record = objectValue(value, "filters");
   rejectUnknown(record, filterKeys, "filters");
   const result: AiFilterConditions = {
-    scope: enumValue(record.scope, ["candidate", "inclusive_reference"] as const, "scope"),
+    scope: enumValue(record.scope, ["full", "candidate", "inclusive_reference"] as const, "scope"),
     limit: integer(record.limit, "limit", 1, AI_FILTER_MAX_RESULTS),
     sort: enumValue(record.sort, ["overall", "hk", "az"] as const, "sort"),
   };

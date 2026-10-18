@@ -35,7 +35,7 @@ test("browse, exact-search and AI result states are mutually exclusive", () => {
     assert.equal(state.aiActive, mode === "ai");
   }
   const browse = source("src/screens/BrowseScreen.tsx");
-  assert.match(browse, /state\.searchActive[\s\S]*search\?\.owners[\s\S]*state\.aiActive/);
+  assert.match(browse, /state\.searchActive[\s\S]*searchFamilies[\s\S]*state\.aiActive/);
   assert.match(browse, /Clear search/);
   assert.match(browse, /resultMode === "browse"/);
 });
@@ -105,15 +105,15 @@ test("bulk addition reports added/existing/total and all destructive list change
   assert.match(browse, /result\.added.*result\.existing.*result\.total/s);
   assert.match(browse, /Undo bulk addition/);
   const service = source("src/services/teachingListService.ts");
-  assert.match(service, /Bulk addition to Teaching list/);
-  assert.match(service, /Removed family/);
-  assert.match(service, /Removed selected form/);
+  assert.match(service, /Updated lesson words/);
+  assert.match(service, /Removed word family/);
+  assert.match(service, /Removed selected word/);
   assert.match(service, /const undo = useCallback/);
   const screen = source("src/screens/TeachingListScreen.tsx");
   assert.match(screen, /Undo last change/);
-  assert.match(screen, /teaching\.items\.length > 0 \? \([\s\S]*styles\.exportBox/);
-  assert.match(screen, /Your teaching list is empty/);
-  assert.match(screen, /Go to Find words/);
+  assert.match(screen, /Export to Excel/);
+  assert.match(screen, /Which words will you teach/);
+  assert.match(screen, /Choose words from a text/);
 });
 
 test("193 forms and 500 occurrences are exposed progressively rather than rendered at once", () => {

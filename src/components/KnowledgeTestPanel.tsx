@@ -156,11 +156,17 @@ export function KnowledgeTestPanel({
                     <Text style={styles.note}>Learner/teacher marked as Not known.</Text>
                     <ActionButton
                       disabled={teaching.items.some(
-                        (entry) => entry.basewordKey === item.basewordKey,
+                        (entry) =>
+                          entry.basewordKey === item.basewordKey &&
+                          entry.selectedForms.includes(item.actualForm),
                       )}
                       kind="secondary"
                       label={
-                        teaching.items.some((entry) => entry.basewordKey === item.basewordKey)
+                        teaching.items.some(
+                          (entry) =>
+                            entry.basewordKey === item.basewordKey &&
+                            entry.selectedForms.includes(item.actualForm),
+                        )
                           ? "In Teaching list"
                           : "Add marked word to Teaching list"
                       }

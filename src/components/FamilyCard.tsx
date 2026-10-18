@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { familySetLabel, type FamilyRecord } from "../domain/hkele";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
+import { EvidenceBadge } from "./EvidenceBadge";
 
 interface Props {
   family: FamilyRecord;
@@ -33,7 +34,20 @@ export function FamilyCard({ family, onOpen, onAdd, added, matchNote }: Props) {
           Overall rank {shown(family.overall_frequency_order)} · HK rank{" "}
           {shown(family.current_hk_frequency_rank)}
         </Text>
-        <Text style={styles.meta}>HK textbooks · {shown(family.textbook_first_seen_level)}</Text>
+        <View style={styles.evidence}>
+          <EvidenceBadge
+            label="Family · earliest HK textbook"
+            value={family.textbook_first_seen_level}
+            tone="textbook"
+          />
+          <EvidenceBadge
+            label="External level"
+            value={
+              family.browse_external_level_reference ?? family.external_level_reference_display
+            }
+            tone="external"
+          />
+        </View>
       </Pressable>
       <ActionButton
         disabled={added}
@@ -65,6 +79,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   match: { color: colors.accent, fontSize: 14, fontWeight: "700" },
+  evidence: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, marginTop: spacing.sm },
   meta: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: spacing.xs },
   pressed: { opacity: 0.72 },
   title: { color: colors.ink, flex: 1, fontSize: 22, fontWeight: "700" },

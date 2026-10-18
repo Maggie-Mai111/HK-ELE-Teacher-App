@@ -114,6 +114,11 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
   }, [onTokenChange]);
 
   useEffect(() => {
+    if (aiRuntimeConfiguration.fixtureMode) {
+      onTokenChange("local-browser-acceptance-fixture");
+      setMessage("");
+      return;
+    }
     if (!widgetId.current || !window.turnstile || resetNonce === 0) return;
     onTokenChange(null);
     setMessage("Preparing search…");

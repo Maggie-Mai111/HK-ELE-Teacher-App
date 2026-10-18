@@ -85,7 +85,11 @@ export function PreteachPanel({
         <Text style={styles.note}>Words marked in your current word knowledge check.</Text>
         {notKnownFamilies.length ? (
           notKnownFamilies.map((item) => {
-            const inList = teaching.items.some((entry) => entry.basewordKey === item.basewordKey);
+            const inList = teaching.items.some(
+              (entry) =>
+                entry.basewordKey === item.basewordKey &&
+                entry.selectedForms.includes(item.actualForm),
+            );
             return (
               <View key={item.basewordKey} style={styles.directItem}>
                 <Text style={styles.itemTitle}>
@@ -124,7 +128,10 @@ export function PreteachPanel({
         </Text>
       ) : null}
       {items.map((item, index) => {
-        const inList = teaching.items.some((entry) => entry.basewordKey === item.basewordKey);
+        const inList = teaching.items.some(
+          (entry) =>
+            entry.basewordKey === item.basewordKey && entry.selectedForms.includes(item.actualForm),
+        );
         return (
           <View key={item.basewordKey} style={styles.item}>
             <Text style={styles.itemTitle}>
@@ -141,7 +148,7 @@ export function PreteachPanel({
                 disabled={inList}
                 kind="secondary"
                 label={inList ? "In teaching list" : "Add to teaching list"}
-                onPress={() => teaching.add(item.family)}
+                onPress={() => teaching.add(item.family, item.actualForm, "Pre-teaching review")}
               />
               <ActionButton
                 disabled={index === 0}

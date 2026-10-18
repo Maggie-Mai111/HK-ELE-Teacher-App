@@ -29,6 +29,7 @@ import { browseResultState, type BrowseResultMode } from "../services/browseResu
 import { describeAiFilterConditions, type AiFilterExecution } from "../services/aiFilterExecutor";
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
+import { inTeacherWordScope } from "../services/wordListPresentation";
 
 interface Props {
   repository: HkeleRepository;
@@ -37,9 +38,8 @@ interface Props {
 }
 
 const scopes: Array<[BrowseScope, string]> = [
-  ["core", "Candidate"],
-  ["broader", "Candidate + Reference"],
   ["full", "Full database"],
+  ["core", "Core list"],
 ];
 const sorts: Array<[BrowseSort, string]> = [
   ["overall", "Overall"],
@@ -70,12 +70,14 @@ function focusAndReveal(target: View | null) {
 export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const viewport = useWindowDimensions();
   const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
-  const [scope, setScope] = useState<BrowseScope>("core");
+  const [scope, setScope] = useState<BrowseScope>("full");
   const [sort, setSort] = useState<BrowseSort>("overall");
   const [pageNumber, setPageNumber] = useState(1);
+  const [reload, setReload] = useState(0);
   const [page, setPage] = useState<BrowsePage | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const retrySearch = useRef(false);
   const [query, setQuery] = useState("");
   const currentQuery = useRef("");
   const [search, setSearch] = useState<SurfaceSearchResult | null>(null);
@@ -109,14 +111,20 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         if (active) {
           setDataMode(repository.getDataMode());
           void reason;
-          setError("We couldn't load the words. Check your connection and try again.");
+          setPage(null);
+          retrySearch.current = false;
+          setError(
+            scope === "full"
+              ? "Connect to load the full database, or browse the saved Core list."
+              : "We couldn't load the words. Check your connection and try again.",
+          );
         }
       })
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
-  }, [pageNumber, repository, scope, sort]);
+  }, [pageNumber, repository, scope, sort, reload]);
 
   const activateBrowse = () => {
     setResultMode("browse");
@@ -151,6 +159,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       focusAndReveal(resultSummaryRef.current);
     } catch (reason) {
       void reason;
+      retrySearch.current = true;
       setError("We couldn't complete the search. Check your connection and try again.");
     } finally {
       setSearching(false);
@@ -166,10 +175,15 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const isAdded = (family: FamilyRecord) =>
     teaching.items.some((item) => item.basewordKey === family.baseword_key);
   const useTable = Platform.OS === "web" && viewport.width >= 760;
+  const searchFamilies = (search?.owners ?? []).filter((family) =>
+    inTeacherWordScope(family, scope),
+  );
+  const outsideCore =
+    scope === "core" && Boolean(search?.owners.length) && searchFamilies.length === 0;
   const activeFamilies = state.aiActive
     ? (aiSelection?.families ?? [])
     : state.searchActive
-      ? (search?.owners ?? [])
+      ? searchFamilies
       : (page?.families ?? []);
 
   const showManualFilters = () => {
@@ -178,6 +192,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     focusAndReveal(manualFiltersRef.current);
   };
   const applyAi = (execution: AiFilterExecution) => {
+    setScope(execution.filters.scope === "full" ? "full" : "core");
     setAiSelection(execution);
     setSearch(null);
     setResultMode("ai");
@@ -212,8 +227,19 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           onPress={() => void searchNow()}
         />
       </View>
+      <View accessibilityLabel="Word list scope" style={styles.chips}>
+        {scopes.map(([value, label]) => (
+          <ChoiceChip
+            key={value}
+            label={label}
+            onPress={() => selectScope(value)}
+            selected={scope === value}
+          />
+        ))}
+      </View>
       <DataModeNotice mode={dataMode} />
       <AiFilterAssistant
+        scope={scope}
         editRequestNonce={editRequestNonce}
         onApply={applyAi}
         onUseManualFilters={showManualFilters}
@@ -227,17 +253,6 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         />
         {moreFiltersOpen ? (
           <View style={styles.filterBody}>
-            <Text style={styles.label}>List scope</Text>
-            <View style={styles.chips}>
-              {scopes.map(([value, label]) => (
-                <ChoiceChip
-                  key={value}
-                  label={label}
-                  onPress={() => selectScope(value)}
-                  selected={scope === value}
-                />
-              ))}
-            </View>
             <Text style={styles.label}>Sort</Text>
             <View style={styles.chips}>
               {sorts.map(([value, label]) => (
@@ -253,9 +268,28 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         ) : null}
       </View>
       {error ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          {error}
-        </Text>
+        <View style={styles.filterBody}>
+          <Text accessibilityRole="alert" style={styles.error}>
+            {error}
+          </Text>
+          <View style={styles.actions}>
+            <ActionButton
+              kind="secondary"
+              label="Try again"
+              onPress={() => {
+                if (retrySearch.current) void searchNow();
+                else setReload((value) => value + 1);
+              }}
+            />
+            {scope === "full" && dataMode === "bundled-reference" ? (
+              <ActionButton
+                kind="secondary"
+                label="Browse saved Core list"
+                onPress={() => selectScope("core")}
+              />
+            ) : null}
+          </View>
+        </View>
       ) : null}
       {loading && resultMode === "browse" ? (
         <ActivityIndicator accessibilityLabel="Loading words" color={colors.primary} size="large" />
@@ -269,10 +303,24 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         {state.searchActive && search ? (
           <>
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
-              {search.owners.length.toLocaleString("en")} result
-              {search.owners.length === 1 ? "" : "s"} for “{search.submittedQuery}”
+              {searchFamilies.length.toLocaleString("en")} result
+              {searchFamilies.length === 1 ? "" : "s"} for “{search.submittedQuery}”
             </Text>
-            <Text style={styles.resultStatus}>{searchStatus(search)}</Text>
+            <Text style={styles.resultStatus}>
+              {outsideCore ? "Outside the Core list" : searchStatus(search)}
+            </Text>
+            {outsideCore ? (
+              <>
+                <Text style={styles.muted}>
+                  This word is recorded in the full database. It is outside the Core list.
+                </Text>
+                <ActionButton
+                  kind="secondary"
+                  label="View in Full database"
+                  onPress={() => setScope("full")}
+                />
+              </>
+            ) : null}
             {search.identityException ? (
               <Text style={styles.warning}>{search.identityException.teacherDisplay}</Text>
             ) : null}
@@ -357,6 +405,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           <>
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
               {page.availableItems.toLocaleString("en")} families · page {page.page}
+            </Text>
+            <Text style={styles.resultStatus}>
+              {scopes.find(([value]) => value === page.scope)?.[1]}
             </Text>
           </>
         ) : null}

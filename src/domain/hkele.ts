@@ -105,7 +105,8 @@ export interface ResolvedOccurrence extends TokenOccurrence {
 
 export interface HkeleRepository {
   browse(request: BrowseRequest): Promise<BrowsePage>;
-  aiFilterFamilies?(): Promise<FamilyRecord[]>;
+  aiFilterFamilies?(scope?: BrowseScope): Promise<FamilyRecord[]>;
+  aiFilterCpbFamilyKeys?(scope?: BrowseScope): Promise<ReadonlySet<string>>;
   getFamily(basewordKey: string): Promise<FamilyDetail>;
   searchSurface(surface: string): Promise<SurfaceSearchResult>;
   resolveOccurrences(text: string, occurrences: TokenOccurrence[]): Promise<ResolvedOccurrence[]>;
@@ -115,7 +116,5 @@ export interface HkeleRepository {
 export const hasFlag = (value: unknown): boolean => value === true || value === 1;
 
 export function familySetLabel(family: FamilyRecord): string {
-  if (hasFlag(family.candidate_member)) return "Candidate";
-  if (hasFlag(family.reference_member)) return "Reference only";
-  return family.overall_frequency_order === null ? "Unranked database" : "Other ranked database";
+  return hasFlag(family.candidate_member) ? "Core list" : "Full database";
 }

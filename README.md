@@ -1,36 +1,33 @@
-# HK-ELE Teacher App/PWA
+# HK-ELE Teacher App and PWA
 
-HK-ELE helps teachers find vocabulary, check classroom passages and build teaching lists using word-family information and evidence from English corpora and Hong Kong textbooks.
+HK-ELE helps teachers look up vocabulary, check classroom texts, review word-family and form evidence, and build editable teaching lists. The PWA includes on-device English OCR with an editable preview, contextual Known/Not known responses, vocabulary-review suggestions, highlighting, text-complexity information and teaching-list exports. Problem reports and word ratings open the configured Google Forms with a prefilled product and word reference.
 
-## Teacher preview changes
+## Lesson planning update — 19 October 2026
 
-- An explicit data-choice screen opens before Home. The choice can be reviewed and withdrawn.
-- Home introduces the product and links to Find words, Check a text and Teaching list.
-- Problem-report and word-rating entry points connect to the owner's Google Forms. HK-ELE automatically fills one reference field with the current word, page and versions.
-- Clearer word and text results distinguish missing data matches from context checks.
-- Search and text edits invalidate stale results; advanced information opens on demand.
-- Photo OCR runs on the device and lets teachers review, edit, append or replace the recognized text.
+Teaching list now has one optional lesson name, compact rows showing the actual selected forms, and expandable editing. Teachers may leave the plan undecided, choose “Teach in depth”, or choose “Briefly introduce”. These describe teaching intentions, not learner attainment. Existing notes, related words, order, selected forms and legacy teaching-depth values are retained. The latter are kept separately and are not converted into the new plan.
 
-## Data and participation
+After checking a passage, teachers can search within its matched words, tick the families they want and add the observed forms in one action. Nothing is selected automatically. Unmatched, ambiguous and blocked records are excluded from batch addition. A generic source label is saved locally; the passage and Known/Not known responses are not added to the saved list. This version supports one active lesson; it does not claim multiple saved lessons or cross-device sync.
 
-Product data remains Package67, dated 14 September 2026: 163,784 identities, Candidate 3,185 and inclusive Reference 3,430. Later research repairs have not been imported. The supplementary expression contract is reserved for a future approved release; compound records have not been added.
+Excel is the main export, with CSV and Markdown under More formats. Exports include the lesson name, selected words, plan and notes. Existing storage keys and stable family identities are preserved, so later approved data updates can refresh evidence while retaining teacher work. Feedback submissions remain a separate, explicit action through the existing Forms links.
 
-The data-choice screen saves a choice on this device only. Usage-event collection and teacher accounts are not connected. Formal research participation requires its own information and confirmation. Feedback is sent only when the teacher submits the connected Google Form. Opening a form does not mean a response was received. Receipt in the owner's linked Sheets still needs a marked test submission.
+## Full database and Core list
 
-## Runtime configuration
+Browse, ordinary lookup and AI filtering default to **Full database**. Teachers can switch to **Core list**, which retains the existing product Candidate membership. Reference is a research comparison and is not a separate teacher-facing list. The desktop table keeps all 15 columns directly available; smaller screens use the existing responsive word cards. Older membership fields are retained internally for data and saved-list compatibility. Teaching-list exports translate those fields into the two teacher labels without rewriting teachers' notes or choices.
 
-The existing manual GitHub Actions workflow builds the PWA. Keep its `environment` input at `staging` to preserve the registered App/PWA Worker environment. The `production` option is a different environment and is not selected by this update.
+AI interprets filters and asks for confirmation. The App produces actual matches from registered records. A full search uses the complete form-enriched projection and cannot silently shrink to the smaller local cache if loading fails. Core searches can still use saved data. The existing deployed interpreter remains compatible through the teacher-scope query adapter; the reviewed Full/Core scope is applied locally. No model receives the database records or the teacher's passage through this feature.
 
-Configure feedback URLs and prefill mappings in `src/config/feedbackForms.json`.
+## Data and future refreshes
 
-## Development
+This local candidate retains Package67 from 14 September 2026: 163,784 family identities, 3,185 Core members, 163,570 ranked and 214 unranked. This teacher-facing Core label does not import the later manuscript's 3,179-family selection. BAWF repairs and compound resources require a separate approved data release. The existing supplemental-expression interface remains unconnected.
 
-Use Node.js 24 and pnpm 10.15.1. Install with `pnpm install --frozen-lockfile`, then run `pnpm run typecheck`, `pnpm run lint` and `pnpm test`. Use `pnpm run build:web` for the PWA build. Follow `.github/workflows/deploy-pages.yml` for the controlled deployment.
+`public/hkele-data/ai_full_projection.json.gz` is a product-derived view of those same records, with all 319,924 registered forms contributing available morphology. The view is identical to the website's and checks the source result identity and family count at load time. No frequency, membership or research result is recomputed.
 
-The App is a PWA and mobile development route. APK, IPA and app-store distribution are not part of this update.
+For an approved future release, use `scripts/build_ai_projection.py` with explicit `--data-root`, `--source-root`, `--manifest-sha256`, `--data-version`, `--cpb-index`, `--output` and `--report` arguments. Use a fresh output path. The producer verifies every detail shard against the selected frozen source and checks family/form/Core controls. Select compatible CPB mappings explicitly; regenerate them when family ownership changes. Ship the new view with its matching static manifest. Do not make the UI read an arbitrarily edited Excel workbook, or reuse the prior AI index with a new base version.
 
-## Validation and deployment status
+Full AI filtering requires this matching view online or in an installed data package. Historical native update archives may not include it; the App reports unavailability rather than presenting a partial search as complete. Native camera, OCR and update-package acceptance still require actual device checks; this product remains on the PWA/mobile route and is not an app-store release.
 
-The source candidate passed 118 App regression tests and its local PWA export on 14 October 2026. Four actual Google prefill initialization responses were checked for Web/App report/rating links. Local App rating entry and destination opening were checked; remote Google visual interaction timed out, so real submission and linked Sheets receipt are not claimed. This source update does not itself declare a successful public deployment. Use the actual GitHub Actions and Pages deployment record to identify the deployed commit.
+## Review and manual publication
 
-Licence and source attribution notices remain in the repository. Historical package and deployment records refer to their original versions.
+The consent choice is stored on the current device before Home. Remote usage-event collection and shared teacher authentication are not enabled. Feedback is sent only when the teacher submits a Google Form.
+
+Use the repository's existing build scripts with its pinned dependencies. A separate local fixture build can exercise AI confirmation without calling a model; it must not be used as the public build. The normal local build hides unconfigured AI controls. The existing Pages workflow is manual; keep its environment at **staging** to preserve the registered App/PWA Worker environment. This iteration does not commit, push, deploy or change backend environments.

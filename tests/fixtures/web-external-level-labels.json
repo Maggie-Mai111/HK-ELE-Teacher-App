@@ -1,0 +1,32 @@
+[
+  {
+    "input": {
+      "external_level_reference": "5.825",
+      "external_level_reference_teacher_display": "Grades 5–6"
+    },
+    "field": "external_level_reference",
+    "expected": "Grades 5–6"
+  },
+  {
+    "input": {
+      "external_level_reference_display": "0.1851851852–10.20383956",
+      "external_level_reference_teacher_display": "Kindergarten–Grade 1"
+    },
+    "field": "external_level_reference_display",
+    "expected": "Kindergarten–Grade 1"
+  },
+  {
+    "input": {
+      "external_level_reference": "5.825"
+    },
+    "field": "external_level_reference",
+    "expected": null
+  },
+  {
+    "input": {
+      "external_level_reference": "Grade 6"
+    },
+    "field": "external_level_reference",
+    "expected": "Grade 6"
+  }
+]

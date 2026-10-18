@@ -35,8 +35,8 @@ const items: TeachingListItem[] = [
 
 test("CSV export preserves stable keys and quotes teacher text", () => {
   const csv = teachingListToCsv(items);
-  assert.match(csv, /Family key,Family,Selected forms,Status/);
-  assert.match(csv, /analyse,analyse,analyse \| analysis,Practise/);
+  assert.match(csv, /Lesson,Order,Selected words,Teaching plan,Teaching notes/);
+  assert.match(csv, /analyse \| analysis,Not decided/);
   assert.match(csv, /"Use a comma, then ""compare""\."/);
   assert.match(csv, /"analysis\r?\nanalyser"/);
 });
@@ -55,7 +55,7 @@ test("Excel export is a valid OOXML package with filter and frozen header", () =
   assert.ok(workbook["xl/styles.xml"]);
   const sheet = strFromU8(workbook["xl/worksheets/sheet1.xml"]!);
   assert.match(sheet, /state="frozen"/);
-  assert.match(sheet, /autoFilter ref="A1:N2"/);
+  assert.match(sheet, /autoFilter ref="A1:Q2"/);
   assert.match(sheet, /analyse/);
   assert.match(strFromU8(workbook["xl/styles.xml"]!), /FF176B45/);
 });

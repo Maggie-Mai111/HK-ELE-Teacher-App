@@ -12,8 +12,9 @@ function toBytes(value: string | Uint8Array): Uint8Array {
 export async function exportTeachingList(
   items: TeachingListItem[],
   format: ExportFormat,
+  lessonTitle = "",
 ): Promise<string> {
-  const output = buildTeachingListExport(items, format);
+  const output = buildTeachingListExport(items, format, lessonTitle);
   if (Platform.OS === "web") {
     const bytes = toBytes(output.data);
     const blob = new Blob([bytes.slice().buffer], { type: output.mimeType });

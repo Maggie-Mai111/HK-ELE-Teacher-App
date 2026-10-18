@@ -210,6 +210,7 @@ export default function App() {
                 </View>
                 <View {...screenVisibility("check")}>
                   <CheckTextScreen
+                    onOpenTeachingList={() => navigate("list")}
                     onOpenFamily={openFamily}
                     repository={appRepository}
                     teaching={teaching}
@@ -217,6 +218,7 @@ export default function App() {
                 </View>
                 <View {...screenVisibility("list")}>
                   <TeachingListScreen
+                    onCheckText={() => navigate("check")}
                     onFindWords={() => navigate("browse")}
                     onOpenFamily={openFamily}
                     teaching={teaching}

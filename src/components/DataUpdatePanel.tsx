@@ -126,8 +126,8 @@ export function DataUpdatePanel() {
       ) : null}
       {dataUpdateManager.supported && !releaseConfiguration.updateManifestUrl ? (
         <Text style={styles.notice}>
-          Online data updates are not configured for this build. The bundled Candidate + Reference
-          data remains available offline.
+          Online data updates are not configured for this build. Saved word data remains available
+          offline.
         </Text>
       ) : null}
       {preview ? (

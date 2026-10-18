@@ -8,6 +8,7 @@ import { ContextReviewPanel } from "../components/ContextReviewPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { HighlightedText } from "../components/HighlightedText";
 import { KnowledgeTestPanel } from "../components/KnowledgeTestPanel";
+import { LessonWordPicker } from "../components/LessonWordPicker";
 import { OccurrenceCard } from "../components/OccurrenceCard";
 import { OcrInputPanel } from "../components/OcrInputPanel";
 import { PendingFullCheckPanel } from "../components/PendingFullCheckPanel";
@@ -36,20 +37,13 @@ import { scan, TokenizerError } from "../services/tokenizer";
 import { colors, spacing } from "../theme/tokens";
 
 type ResultFilter =
-  | "all"
-  | "candidate"
-  | "reference"
-  | "other"
-  | "grammar"
-  | "cpb"
-  | "unavailable"
-  | "unmatched"
-  | "review";
+  "all" | "candidate" | "other" | "grammar" | "cpb" | "unavailable" | "unmatched" | "review";
 type ResultSort = "occurrence" | "family";
 type MembershipCategory =
-  "candidate" | "reference" | "other" | "grammar" | "unavailable" | "unmatched" | "review";
+  "candidate" | "other" | "grammar" | "unavailable" | "unmatched" | "review";
 
 interface Props {
+  onOpenTeachingList: () => void;
   repository: HkeleRepository;
   teaching: TeachingListStore;
   onOpenFamily: (
@@ -66,7 +60,6 @@ function category(item: ResolvedOccurrence): MembershipCategory {
   if (item.status !== "RESOLVED" || item.owners.length !== 1) return "review";
   const owner = item.owners[0];
   if (owner?.candidate_member === true || owner?.candidate_member === 1) return "candidate";
-  if (owner?.reference_member === true || owner?.reference_member === 1) return "reference";
   return "other";
 }
 
@@ -81,7 +74,7 @@ function focusAndReveal(target: View | null) {
   }, 0);
 }
 
-export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
+export function CheckTextScreen({ repository, teaching, onOpenFamily, onOpenTeachingList }: Props) {
   const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
   const [text, setText] = useState("");
   const [checkedText, setCheckedText] = useState<string | null>(null);
@@ -116,7 +109,7 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
       setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
       setKnowledgeNotKnown([]);
       setKnowledgeOpen(false);
-      setDataMode(next[0]?.dataMode ?? repository.getDataMode());
+      setDataMode(repository.getDataMode());
       focusAndReveal(summaryRef.current);
     } catch (reason) {
       setResults([]);
@@ -138,7 +131,6 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
   const counts = useMemo(() => {
     const values = {
       candidate: 0,
-      reference: 0,
       other: 0,
       grammar: 0,
       unmatched: 0,
@@ -268,9 +260,8 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
             <Text style={styles.summaryText}>
               {(
                 [
-                  ["Candidate", counts.candidate],
-                  ["Reference", counts.reference],
-                  ["Other matches", counts.other],
+                  ["Core list", counts.candidate],
+                  ["Other database words", counts.other],
                   ["Grammar", counts.grammar],
                   ["Not matched", counts.unmatched],
                   ["Context check", counts.review],
@@ -287,6 +278,12 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
               </Text>
             ) : null}
           </View>
+          <LessonWordPicker
+            key={checkedText}
+            results={results}
+            teaching={teaching}
+            onOpenList={onOpenTeachingList}
+          />
           {unmatched.length || contextReviews.length || pendingFullCheck.length ? (
             <ProgressiveDisclosure
               title="Words to review"
@@ -398,9 +395,8 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily }: Props) {
               {(
                 [
                   ["all", `All (${results.length})`],
-                  ["candidate", `Candidate (${counts.candidate})`],
-                  ["reference", `Reference (${counts.reference})`],
-                  ["other", `Other (${counts.other})`],
+                  ["candidate", `Core list (${counts.candidate})`],
+                  ["other", `Other database words (${counts.other})`],
                   ["grammar", `Grammar (${counts.grammar})`],
                   ["cpb", `CPB/common (${counts.cpb})`],
                   ["unavailable", `Full check unavailable (${counts.unavailable})`],

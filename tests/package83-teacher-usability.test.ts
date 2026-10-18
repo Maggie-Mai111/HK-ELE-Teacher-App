@@ -38,11 +38,12 @@ test("Browse has one result surface, More filters, bulk add and responsive mobil
   assert.equal((browse.match(/<WebFamilyTable/g) ?? []).length, 1);
 });
 
-test("new users receive Teacher view while saved Package72 column choices remain on the same key", () => {
+test("full word information is the default while explicit saved column choices remain on the same key", () => {
   const table = readFileSync("src/components/WebFamilyTable.tsx", "utf8");
   assert.match(table, /hkele-phase1v-columns-v1/);
-  assert.match(table, /localStorage\.getItem\(STORAGE_KEY\) \? "detailed" : "teacher"/);
-  assert.match(table, /Teacher view/);
-  assert.match(table, /Detailed view/);
-  assert.match(table, /15 shown/);
+  assert.match(table, /columns\.map\(\(\[key\]\) => \[key, true\]\)/);
+  assert.match(table, /Full word information/);
+  assert.match(table, /Choose columns/);
+  assert.doesNotMatch(table, /teacherColumns|initialView/);
+  assert.match(table, /localStorage\.setItem\(STORAGE_KEY, JSON\.stringify\(next\)\)/);
 });

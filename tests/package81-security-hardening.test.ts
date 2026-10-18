@@ -79,20 +79,20 @@ test("all three public quick examples are deterministic non-zero principal-data 
     sort: "overall",
   });
   const hkBand = executeAiFilter(context, {
-    scope: "inclusive_reference",
+    scope: "candidate",
     hkBands: ["HK Top 1k"],
     limit: 10,
     sort: "hk",
   });
   const root = executeAiFilter(context, {
-    scope: "inclusive_reference",
+    scope: "candidate",
     root: "act",
     limit: 100,
     sort: "overall",
   });
   assert.deepEqual(
     [grade.matchedBeforeLimit, hkBand.matchedBeforeLimit, root.matchedBeforeLimit],
-    VERIFIED_AI_QUICK_EXAMPLES.map((item) => item.verifiedMatchCount),
+    VERIFIED_AI_QUICK_EXAMPLES.map((item) => item.verifiedCoreMatchCount),
   );
   assert.ok(VERIFIED_AI_QUICK_EXAMPLES.every((item) => item.verifiedMatchCount > 0));
   const zero = executeAiFilter(context, {

@@ -1,4 +1,5 @@
 import type { FamilyRecord, FormRecord } from "../domain/hkele";
+import { teacherFamilyRecord, teacherFormRecord } from "./externalLevelPresentation";
 
 function collectRegisteredValues(items: FormRecord[], field: keyof FormRecord): string | null {
   const values = [
@@ -22,10 +23,12 @@ export function deriveAiFilterFamilies(
   forms: FormRecord[],
 ): FamilyRecord[] {
   const byFamily = new Map<string, FormRecord[]>();
-  for (const form of forms) {
+  for (const source of forms) {
+    const form = teacherFormRecord(source);
     byFamily.set(form.baseword_key, [...(byFamily.get(form.baseword_key) ?? []), form]);
   }
-  return families.map((family) => {
+  return families.map((source) => {
+    const family = teacherFamilyRecord(source);
     const familyForms = byFamily.get(family.baseword_key) ?? [];
     return {
       ...family,

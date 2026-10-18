@@ -77,8 +77,8 @@ export function generatePreteachSuggestions(
     if (firstSeen !== null && firstSeen > levelOrder[classLevel]) {
       reasons.push(`Earliest observed at ${item.family.textbook_first_seen_level}`);
     }
-    if (!hasFlag(item.family.candidate_member) && !hasFlag(item.family.reference_member)) {
-      reasons.push("Outside Candidate + Reference");
+    if (!hasFlag(item.family.candidate_member)) {
+      reasons.push("Outside Core list");
     }
     if (!reasons.length) continue;
     suggestions.push({

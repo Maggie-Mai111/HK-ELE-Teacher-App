@@ -34,7 +34,10 @@ export function OccurrenceCard({
       ? inHkRange(owner.current_hk_frequency_rank, customRange.start, customRange.end)
       : false;
   const inList = owner
-    ? teaching.items.some((entry) => entry.basewordKey === owner.baseword_key)
+    ? teaching.items.some(
+        (entry) =>
+          entry.basewordKey === owner.baseword_key && entry.selectedForms.includes(item.surface),
+      )
     : false;
   const relation = item.grammaticalRelation ?? null;
   const mapping = textFormAndFamily(item);
@@ -106,7 +109,7 @@ export function OccurrenceCard({
             disabled={inList}
             kind="secondary"
             label={inList ? "In Teaching list" : "Add to Teaching list"}
-            onPress={() => teaching.add(owner)}
+            onPress={() => teaching.add(owner, item.surface, "Check a text")}
           />
         </View>
       ) : null}

@@ -4,7 +4,12 @@ import {
   validateAiFilterConditions,
   type AiFilterConditions,
 } from "../domain/aiFilterSchema";
-import { hasFlag, type FamilyRecord, type HkeleRepository } from "../domain/hkele";
+import {
+  hasFlag,
+  type BrowseScope,
+  type FamilyRecord,
+  type HkeleRepository,
+} from "../domain/hkele";
 
 export interface AiFilterExecutionContext {
   families: FamilyRecord[];
@@ -17,11 +22,18 @@ export interface AiFilterExecution {
   families: FamilyRecord[];
 }
 
-const contextCache = new WeakMap<HkeleRepository, Promise<AiFilterExecutionContext>>();
+const contextCache = new WeakMap<
+  HkeleRepository,
+  Map<BrowseScope, Promise<AiFilterExecutionContext>>
+>();
 
 export function describeAiFilterConditions(filters: AiFilterConditions): string[] {
   const descriptions = [
-    filters.scope === "candidate" ? "Scope: Candidate" : "Scope: Candidate + Reference",
+    filters.scope === "full"
+      ? "Scope: Full database"
+      : filters.scope === "candidate"
+        ? "Scope: Core list"
+        : "Scope: saved word data (partial)",
   ];
   if (filters.earliestObservedFrom || filters.earliestObservedTo) {
     descriptions.push(
@@ -120,7 +132,7 @@ export function executeAiFilter(
     if (
       filters.scope === "candidate"
         ? !hasFlag(family.candidate_member)
-        : !hasFlag(family.reference_member)
+        : filters.scope === "inclusive_reference" && !hasFlag(family.reference_member)
     )
       return false;
     const grade = gradeIndex(family.textbook_first_seen_level);
@@ -170,10 +182,13 @@ export function executeAiFilter(
   return { filters, matchedBeforeLimit: matches.length, families: matches.slice(0, filters.limit) };
 }
 
-async function loadFamilies(repository: HkeleRepository): Promise<FamilyRecord[]> {
-  if (repository.aiFilterFamilies) return repository.aiFilterFamilies();
+async function loadFamilies(
+  repository: HkeleRepository,
+  scope: BrowseScope,
+): Promise<FamilyRecord[]> {
+  if (repository.aiFilterFamilies) return repository.aiFilterFamilies(scope);
   const first = await repository.browse({
-    scope: "broader",
+    scope,
     sort: "overall",
     page: 1,
     pageSize: 100,
@@ -181,7 +196,7 @@ async function loadFamilies(repository: HkeleRepository): Promise<FamilyRecord[]
   const pages = Math.ceil(first.availableItems / first.pageSize);
   const remaining = await Promise.all(
     Array.from({ length: Math.max(0, pages - 1) }, (_, index) =>
-      repository.browse({ scope: "broader", sort: "overall", page: index + 2, pageSize: 100 }),
+      repository.browse({ scope, sort: "overall", page: index + 2, pageSize: 100 }),
     ),
   );
   return [first, ...remaining].flatMap((page) => page.families);
@@ -200,12 +215,26 @@ async function loadCpbFamilyKeys(repository: HkeleRepository): Promise<ReadonlyS
 
 export function prepareAiFilterContext(
   repository: HkeleRepository,
+  scope: BrowseScope = "full",
 ): Promise<AiFilterExecutionContext> {
-  const existing = contextCache.get(repository);
+  let scopes = contextCache.get(repository);
+  if (!scopes) {
+    scopes = new Map();
+    contextCache.set(repository, scopes);
+  }
+  const existing = scopes.get(scope);
   if (existing) return existing;
-  const loading = Promise.all([loadFamilies(repository), loadCpbFamilyKeys(repository)]).then(
-    ([families, cpbFamilyKeys]) => ({ families, cpbFamilyKeys }),
-  );
-  contextCache.set(repository, loading);
+  const loading = Promise.all([
+    loadFamilies(repository, scope),
+    repository.aiFilterCpbFamilyKeys
+      ? repository.aiFilterCpbFamilyKeys(scope)
+      : loadCpbFamilyKeys(repository),
+  ])
+    .then(([families, cpbFamilyKeys]) => ({ families, cpbFamilyKeys }))
+    .catch((error) => {
+      scopes.delete(scope);
+      throw error;
+    });
+  scopes.set(scope, loading);
   return loading;
 }

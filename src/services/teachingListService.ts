@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
 
 import manifestJson from "../../data/current-manifest.json";
@@ -10,6 +10,8 @@ import type {
   TeachingStatus,
 } from "../domain/teachingList";
 import { migratePackage72TeachingList } from "./teachingListMigration";
+import { mergeLessonSelections, type LessonSelection } from "./lessonPlanning";
+import { registeredExternalLevel } from "./externalLevelPresentation";
 
 const STORAGE_KEY = "hkele-teaching-list-v2";
 const LEGACY_WEB_STORAGE_KEY = "hkele-phase1v-teaching-list-v1";
@@ -22,7 +24,10 @@ function derivedFields(family: FamilyRecord): TeachingListItem["derived"] {
     current_hk_frequency_rank: family.current_hk_frequency_rank,
     current_hk_frequency_band: family.current_hk_frequency_band,
     textbook_first_seen_level: family.textbook_first_seen_level,
-    external_level_reference_display: family.external_level_reference_display,
+    external_level_reference_display: registeredExternalLevel(
+      family,
+      "external_level_reference_display",
+    ),
   };
 }
 
@@ -45,7 +50,11 @@ function normalizeDocument(raw: string | null): TeachingListDocument {
           : [item.displayFamily],
       customOrder: index,
     }));
-  return { schemaVersion: "1.1.0", items };
+  return {
+    schemaVersion: "1.1.0",
+    items,
+    lessonTitle: typeof parsed.lessonTitle === "string" ? parsed.lessonTitle : "",
+  };
 }
 
 export function normalizePackage72Document(raw: string | null): TeachingListDocument {
@@ -115,187 +124,223 @@ export async function refreshTeachingItems(
 
 export function useTeachingList(repository: HkeleRepository) {
   const [items, setItems] = useState<TeachingListItem[]>([]);
+  const [lessonTitle, setLessonTitle] = useState("");
   const [ready, setReady] = useState(false);
-  const [undoState, setUndoState] = useState<{
-    label: string;
-    items: TeachingListItem[];
-  } | null>(null);
+  const [saveError, setSaveError] = useState("");
   const [sessionSources, setSessionSources] = useState<Record<string, string>>({});
+  const itemsRef = useRef<TeachingListItem[]>([]);
+  const lessonTitleRef = useRef("");
+  const writes = useRef(Promise.resolve());
+  const [undoState, setUndoState] = useState<{ label: string; items: TeachingListItem[] } | null>(
+    null,
+  );
+
+  const persist = useCallback((next: TeachingListItem[]) => {
+    const document: TeachingListDocument = {
+      schemaVersion: "1.1.0",
+      items: next,
+      lessonTitle: lessonTitleRef.current,
+    };
+    writes.current = writes.current
+      .catch(() => undefined)
+      .then(() => writeDocument(document))
+      .then(
+        () => setSaveError(""),
+        () =>
+          setSaveError(
+            "We couldn't save your latest changes on this device. Export a copy before leaving.",
+          ),
+      );
+  }, []);
 
   useEffect(() => {
     let active = true;
-    void readDocument().then(async (document) => {
-      const refreshed = await refreshTeachingItems(document.items, repository);
-      if (!active) return;
-      setItems(refreshed);
-      setReady(true);
-      await writeDocument({ schemaVersion: "1.1.0", items: refreshed });
-    });
+    void readDocument()
+      .then(async (document) => {
+        const refreshed = await refreshTeachingItems(document.items, repository);
+        if (!active) return;
+        itemsRef.current = refreshed;
+        lessonTitleRef.current = document.lessonTitle ?? "";
+        setItems(refreshed);
+        setLessonTitle(lessonTitleRef.current);
+        setReady(true);
+        persist(refreshed);
+      })
+      .catch(() => {
+        if (active)
+          setSaveError(
+            "We couldn't open your saved list. Please reload; your saved data has not been replaced.",
+          );
+      });
     return () => {
       active = false;
     };
-  }, [repository]);
+  }, [repository, persist]);
 
   const commit = useCallback(
     (next: TeachingListItem[], undoLabel?: string) => {
-      if (undoLabel) setUndoState({ label: undoLabel, items });
+      if (undoLabel) setUndoState({ label: undoLabel, items: itemsRef.current });
       const ordered = next.map((item, index) => ({ ...item, customOrder: index }));
+      itemsRef.current = ordered;
       setItems(ordered);
-      void writeDocument({ schemaVersion: "1.1.0", items: ordered });
+      persist(ordered);
     },
-    [items],
+    [persist],
+  );
+
+  const updateLessonTitle = useCallback(
+    (value: string) => {
+      lessonTitleRef.current = value;
+      setLessonTitle(value);
+      persist(itemsRef.current);
+    },
+    [persist],
   );
 
   const undo = useCallback(() => {
     if (!undoState) return;
-    const restored = undoState.items.map((item, index) => ({ ...item, customOrder: index }));
-    setItems(restored);
+    commit(undoState.items);
     setUndoState(null);
-    void writeDocument({ schemaVersion: "1.1.0", items: restored });
-  }, [undoState]);
+  }, [commit, undoState]);
+
+  const addSelections = useCallback(
+    (selections: LessonSelection[]) => {
+      const merged = mergeLessonSelections(itemsRef.current, selections, createTeachingItem);
+      commit(merged.items, "Updated lesson words");
+      return { added: merged.added, formsAdded: merged.formsAdded, total: merged.items.length };
+    },
+    [commit],
+  );
 
   const add = useCallback(
-    (family: FamilyRecord, selectedForm?: string, sessionSource?: string) => {
-      const existing = items.find((item) => item.basewordKey === family.baseword_key);
-      const chosen = selectedForm?.trim() || family.display_family;
-      if (sessionSource) {
-        setSessionSources((current) => ({
-          ...current,
-          [family.baseword_key]: sessionSource,
-        }));
-      }
-      if (existing) {
-        if (!existing.selectedForms.includes(chosen)) {
-          commit(
-            items.map((item) =>
-              item.basewordKey === family.baseword_key
-                ? {
-                    ...item,
-                    selectedForms: [...item.selectedForms, chosen],
-                    updatedAt: new Date().toISOString(),
-                  }
-                : item,
-            ),
-          );
-        }
-        return;
-      }
-      commit([...items, createTeachingItem(family, items.length, chosen)]);
+    (family: FamilyRecord, selectedForm?: string, sourceLabel?: string) => {
+      const fromKnowledgeCheck = sourceLabel === "Learner/teacher marked as Not known";
+      if (fromKnowledgeCheck)
+        setSessionSources((current) => ({ ...current, [family.baseword_key]: sourceLabel }));
+      addSelections([
+        {
+          family,
+          selectedForms: [selectedForm?.trim() || family.display_family],
+          sourceLabel: fromKnowledgeCheck ? "Word knowledge check" : (sourceLabel ?? "Find words"),
+        },
+      ]);
     },
-    [commit, items],
+    [addSelections],
   );
 
   const addMany = useCallback(
     (families: FamilyRecord[]) => {
-      const existing = new Set(items.map((item) => item.basewordKey));
-      const unique = families.filter(
-        (family, index, values) =>
-          values.findIndex((value) => value.baseword_key === family.baseword_key) === index,
+      const unique = [...new Map(families.map((family) => [family.baseword_key, family])).values()];
+      const result = addSelections(
+        unique.map((family) => ({
+          family,
+          selectedForms: [family.display_family],
+          sourceLabel: "Find words",
+        })),
       );
-      const additions = unique
-        .filter((family) => !existing.has(family.baseword_key))
-        .map((family, index) => createTeachingItem(family, items.length + index));
-      if (additions.length) commit([...items, ...additions], "Bulk addition to Teaching list");
-      return {
-        added: additions.length,
-        existing: unique.length - additions.length,
-        total: items.length + additions.length,
-      };
+      return { ...result, existing: unique.length - result.added };
     },
-    [commit, items],
+    [addSelections],
   );
 
   const remove = useCallback(
     (basewordKey: string) => {
-      setSessionSources((current) => {
-        const next = { ...current };
-        delete next[basewordKey];
-        return next;
-      });
       commit(
-        items.filter((item) => item.basewordKey !== basewordKey),
-        "Removed family",
+        itemsRef.current.filter((item) => item.basewordKey !== basewordKey),
+        "Removed word family",
       );
     },
-    [commit, items],
+    [commit],
   );
 
   const removeSelectedForm = useCallback(
     (basewordKey: string, form: string) => {
       commit(
-        items.flatMap((item) => {
+        itemsRef.current.flatMap((item) => {
           if (item.basewordKey !== basewordKey) return [item];
           const selectedForms = item.selectedForms.filter((value) => value !== form);
           return selectedForms.length
             ? [{ ...item, selectedForms, updatedAt: new Date().toISOString() }]
             : [];
         }),
-        "Removed selected form",
+        "Removed selected word",
       );
     },
-    [commit, items],
+    [commit],
   );
 
   const update = useCallback(
     (
       basewordKey: string,
-      patch: Partial<Pick<TeachingListItem, "notes" | "connections" | "status">>,
+      patch: Partial<Pick<TeachingListItem, "notes" | "connections" | "status" | "teachingFocus">>,
     ) => {
+      setUndoState(null);
       commit(
-        items.map((item) =>
+        itemsRef.current.map((item) =>
           item.basewordKey === basewordKey
             ? { ...item, ...patch, updatedAt: new Date().toISOString() }
             : item,
         ),
       );
     },
-    [commit, items],
+    [commit],
   );
 
   const move = useCallback(
     (basewordKey: string, direction: -1 | 1) => {
-      const index = items.findIndex((item) => item.basewordKey === basewordKey);
+      const next = [...itemsRef.current];
+      const index = next.findIndex((item) => item.basewordKey === basewordKey);
       const target = index + direction;
-      if (index < 0 || target < 0 || target >= items.length) return;
-      const next = [...items];
+      if (index < 0 || target < 0 || target >= next.length) return;
       const [item] = next.splice(index, 1);
       if (!item) return;
       next.splice(target, 0, item);
       commit(next);
     },
-    [commit, items],
+    [commit],
   );
 
   return useMemo(
     () => ({
       items,
+      lessonTitle,
+      updateLessonTitle,
       ready,
+      saveError,
       add,
       addMany,
+      addSelections,
       remove,
       removeSelectedForm,
       update,
       move,
       undoState,
       undo,
-      sourceFor: (basewordKey: string) => sessionSources[basewordKey] ?? null,
+      sessionSourceFor: (key: string) => sessionSources[key] ?? null,
+      sourceFor: (key: string) =>
+        items.find((item) => item.basewordKey === key)?.sourceLabels?.join(" · ") || null,
     }),
     [
+      items,
+      lessonTitle,
+      updateLessonTitle,
+      ready,
+      saveError,
+      sessionSources,
       add,
       addMany,
-      items,
-      move,
-      ready,
+      addSelections,
       remove,
       removeSelectedForm,
-      sessionSources,
-      undo,
-      undoState,
       update,
+      move,
+      undoState,
+      undo,
     ],
   );
 }
 
 export type TeachingListStore = ReturnType<typeof useTeachingList>;
 
+// Kept for reading earlier saved lists; these are not learner attainment judgements.
 export const TEACHING_STATUSES: TeachingStatus[] = ["Notice", "Practise", "Master"];
