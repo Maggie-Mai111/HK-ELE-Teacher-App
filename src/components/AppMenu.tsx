@@ -7,10 +7,12 @@ export function AppMenu({
   onOpenAbout,
   onFeedback,
   onPrivacy,
+  onOffline,
 }: {
   onOpenAbout: () => void;
   onFeedback: () => void;
   onPrivacy: () => void;
+  onOffline: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<View>(null);
@@ -36,6 +38,7 @@ export function AppMenu({
         accessibilityLabel={open ? "Close menu" : "Open menu"}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
+        aria-expanded={open}
         onPress={() => setOpen((value) => !value)}
         style={({ pressed }) => [styles.button, pressed && styles.pressed]}
       >
@@ -43,6 +46,17 @@ export function AppMenu({
       </Pressable>
       {open ? (
         <View accessibilityLabel="Application menu" style={styles.menu}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => {
+              setOpen(false);
+              onOffline();
+            }}
+            style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}
+          >
+            <Text style={styles.menuTitle}>Offline use</Text>
+            <Text style={styles.menuNote}>Download the wordlist for this device</Text>
+          </Pressable>
           <Pressable
             accessibilityRole="button"
             onPress={() => {

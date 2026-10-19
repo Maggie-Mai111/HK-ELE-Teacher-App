@@ -1,0 +1,15 @@
+{
+  "2026-09-14-package67-v1": {
+    "dataInventorySha256": "d4d3d0059691f0982b9b14c63b618d314b75f781039a919a5051432883f179c5",
+    "sourceManifestSha256": "95f83b04571153ad1496ee0572b3f2cb21d07e828f5184d96f3f9aff667aeb05",
+    "counts": {
+      "candidate": 3185,
+      "forms": 319924,
+      "inclusiveReference": 3430,
+      "ranked": 163570,
+      "referenceOnly": 245,
+      "totalFamilies": 163784,
+      "unranked": 214
+    }
+  }
+}

@@ -11,27 +11,42 @@ interface Props {
   onAdd: (family: FamilyRecord) => void;
   added: boolean;
   matchNote?: string;
+  canAdd?: boolean;
+  selectedForm?: string | undefined;
 }
 
 const shown = (value: unknown) =>
   value === null || value === undefined || value === "" ? "Not available" : String(value);
 
-export function FamilyCard({ family, onOpen, onAdd, added, matchNote }: Props) {
+export function FamilyCard({
+  family,
+  onOpen,
+  onAdd,
+  added,
+  matchNote,
+  canAdd = true,
+  selectedForm,
+}: Props) {
   return (
     <View style={styles.card}>
       <Pressable
-        accessibilityLabel={`Open word detail for ${family.display_family}`}
+        accessibilityLabel={`Open word detail for ${selectedForm || family.display_family}`}
         accessibilityRole="button"
         onPress={() => onOpen(family)}
         style={({ pressed }) => pressed && styles.pressed}
       >
         <View style={styles.titleRow}>
-          <Text style={styles.title}>{family.display_family}</Text>
+          <Text style={styles.title}>{selectedForm || family.display_family}</Text>
           <Text style={styles.badge}>{familySetLabel(family)}</Text>
         </View>
-        {matchNote ? <Text style={styles.match}>{matchNote}</Text> : null}
+        {selectedForm ? (
+          <Text style={styles.match}>Family: {family.display_family}</Text>
+        ) : matchNote ? (
+          <Text style={styles.match}>{matchNote}</Text>
+        ) : null}
         <Text style={styles.meta}>
-          Overall rank {shown(family.overall_frequency_order)} · HK rank{" "}
+          {selectedForm ? "Family overall rank" : "Overall rank"}{" "}
+          {shown(family.overall_frequency_order)} · HK rank{" "}
           {shown(family.current_hk_frequency_rank)}
         </Text>
         <View style={styles.evidence}>
@@ -41,7 +56,7 @@ export function FamilyCard({ family, onOpen, onAdd, added, matchNote }: Props) {
             tone="textbook"
           />
           <EvidenceBadge
-            label="External level"
+            label={selectedForm ? "Family · external level" : "External level"}
             value={
               family.browse_external_level_reference ?? family.external_level_reference_display
             }
@@ -50,7 +65,7 @@ export function FamilyCard({ family, onOpen, onAdd, added, matchNote }: Props) {
         </View>
       </Pressable>
       <ActionButton
-        disabled={added}
+        disabled={added || !canAdd}
         kind="secondary"
         label={added ? "In teaching list" : "Add to teaching list"}
         onPress={() => onAdd(family)}

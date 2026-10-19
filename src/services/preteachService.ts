@@ -34,7 +34,7 @@ function recordedLevel(value: string | null): number | null {
 export function generatePreteachSuggestions(
   _text: string,
   results: ResolvedOccurrence[],
-  classLevel: ClassLevel,
+  classLevel: ClassLevel | null = null,
   limit = 8,
 ): PreteachSuggestion[] {
   const grouped = new Map<
@@ -60,22 +60,26 @@ export function generatePreteachSuggestions(
   for (const [basewordKey, item] of grouped) {
     const rank = item.family.current_hk_frequency_rank;
     const reasons: string[] = [];
-    if (rank === null || rank > 2000) reasons.push("Outside HK Top 2k");
-    else if (rank > 1000) reasons.push("Outside HK Top 1k");
+    if (rank !== null && rank > 2000) reasons.push("Outside HK Top 2k");
+    else if (rank !== null && rank > 1000) reasons.push("Outside HK Top 1k");
     if (hasFlag(item.family.awl)) reasons.push("AWL evidence");
     if (item.family.msvl !== null && item.family.msvl !== "" && item.family.msvl !== 0) {
       reasons.push("MSVL / subject evidence");
     }
-    if (item.results.length >= 2) reasons.push(`Repeated ${item.results.length} times`);
+    if (item.results.length >= 2) reasons.push(`Family appears ${item.results.length} times`);
     const evidence = item.results
       .map((result) => result.owners[0]?.matched_form_evidence)
       .find(Boolean);
     if (evidence && (evidence.root || evidence.prefix || evidence.suffix)) {
       reasons.push("Registered morphology available");
     }
-    const firstSeen = recordedLevel(item.family.textbook_first_seen_level);
-    if (firstSeen !== null && firstSeen > levelOrder[classLevel]) {
-      reasons.push(`Earliest observed at ${item.family.textbook_first_seen_level}`);
+    const formEvidence = item.results[0]?.owners[0]?.matched_form_evidence;
+    const firstSeenLabel = formEvidence
+      ? formEvidence.first_seen_hk_textbooks
+      : item.family.textbook_first_seen_level;
+    const firstSeen = recordedLevel(firstSeenLabel);
+    if (classLevel && firstSeen !== null && firstSeen > levelOrder[classLevel]) {
+      reasons.push(`${formEvidence ? "Word" : "Family"} first seen at ${firstSeenLabel}`);
     }
     if (!hasFlag(item.family.candidate_member)) {
       reasons.push("Outside Core list");
@@ -95,8 +99,8 @@ export function generatePreteachSuggestions(
       (left, right) =>
         right.reasons.length - left.reasons.length ||
         right.occurrences - left.occurrences ||
-        (right.family.current_hk_frequency_rank ?? Number.MAX_SAFE_INTEGER) -
-          (left.family.current_hk_frequency_rank ?? Number.MAX_SAFE_INTEGER) ||
+        (right.family.current_hk_frequency_rank ?? 0) -
+          (left.family.current_hk_frequency_rank ?? 0) ||
         left.displayFamily.localeCompare(right.displayFamily),
     )
     .slice(0, Math.max(0, Math.min(8, limit)));

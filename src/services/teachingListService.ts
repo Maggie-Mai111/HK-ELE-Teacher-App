@@ -12,6 +12,19 @@ import type {
 import { migratePackage72TeachingList } from "./teachingListMigration";
 import { mergeLessonSelections, type LessonSelection } from "./lessonPlanning";
 import { registeredExternalLevel } from "./externalLevelPresentation";
+import {
+  LESSON_LIBRARY_STORAGE_KEY,
+  activeLesson,
+  addSavedLesson,
+  lessonLabel,
+  mergeRefreshedLessonItems,
+  migrateLessonLibrary,
+  parseLessonLibrary,
+  renameActiveLesson,
+  replaceLessonItems,
+  selectSavedLesson,
+  type LessonLibrary,
+} from "./lessonLibrary";
 
 const STORAGE_KEY = "hkele-teaching-list-v2";
 const LEGACY_WEB_STORAGE_KEY = "hkele-phase1v-teaching-list-v1";
@@ -34,12 +47,13 @@ function derivedFields(family: FamilyRecord): TeachingListItem["derived"] {
 function normalizeDocument(raw: string | null): TeachingListDocument {
   if (!raw) return EMPTY_DOCUMENT;
   const parsed = JSON.parse(raw) as Partial<TeachingListDocument>;
-  if (!Array.isArray(parsed.items)) return EMPTY_DOCUMENT;
+  if (!Array.isArray(parsed.items)) throw new Error("Invalid saved list.");
   const items = parsed.items
-    .filter(
-      (item): item is TeachingListItem =>
-        typeof item?.basewordKey === "string" && typeof item?.displayFamily === "string",
-    )
+    .map((item) => {
+      if (typeof item?.basewordKey !== "string" || typeof item?.displayFamily !== "string")
+        throw new Error("Invalid saved word.");
+      return item;
+    })
     .sort((left, right) => left.customOrder - right.customOrder)
     .map((item, index) => ({
       ...item,
@@ -71,12 +85,24 @@ async function readDocument(): Promise<TeachingListDocument> {
   return normalizeDocument(await AsyncStorage.getItem(STORAGE_KEY));
 }
 
-async function writeDocument(document: TeachingListDocument): Promise<void> {
+async function readLibrary(): Promise<LessonLibrary> {
+  const raw =
+    Platform.OS === "web" && typeof localStorage !== "undefined"
+      ? localStorage.getItem(LESSON_LIBRARY_STORAGE_KEY)
+      : await AsyncStorage.getItem(LESSON_LIBRARY_STORAGE_KEY);
+  return raw !== null
+    ? parseLessonLibrary(raw)
+    : parseLessonLibrary(
+        JSON.stringify(migrateLessonLibrary(await readDocument(), new Date().toISOString())),
+      );
+}
+
+async function writeDocument(document: LessonLibrary): Promise<void> {
   const raw = JSON.stringify(document);
   if (Platform.OS === "web" && typeof localStorage !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, raw);
+    localStorage.setItem(LESSON_LIBRARY_STORAGE_KEY, raw);
   } else {
-    await AsyncStorage.setItem(STORAGE_KEY, raw);
+    await AsyncStorage.setItem(LESSON_LIBRARY_STORAGE_KEY, raw);
   }
 }
 
@@ -123,82 +149,158 @@ export async function refreshTeachingItems(
 }
 
 export function useTeachingList(repository: HkeleRepository) {
-  const [items, setItems] = useState<TeachingListItem[]>([]);
-  const [lessonTitle, setLessonTitle] = useState("");
+  const [library, setLibrary] = useState<LessonLibrary | null>(null);
+  const libraryRef = useRef<LessonLibrary | null>(null);
+  const itemsRef = useRef<TeachingListItem[]>([]);
   const [ready, setReady] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [sessionSources, setSessionSources] = useState<Record<string, string>>({});
-  const itemsRef = useRef<TeachingListItem[]>([]);
-  const lessonTitleRef = useRef("");
+  const [undoState, setUndoState] = useState<{
+    lessonId: string;
+    label: string;
+    items: TeachingListItem[];
+  } | null>(null);
   const writes = useRef(Promise.resolve());
-  const [undoState, setUndoState] = useState<{ label: string; items: TeachingListItem[] } | null>(
-    null,
-  );
+  const pendingWrites = useRef(0);
+  const mounted = useRef(true);
+  const current = library ? activeLesson(library) : null;
+  const items = current?.items ?? [];
+  const lessonTitle = current?.title ?? "";
+  const activeLessonId = library?.activeLessonId ?? "";
 
-  const persist = useCallback((next: TeachingListItem[]) => {
-    const document: TeachingListDocument = {
-      schemaVersion: "1.1.0",
-      items: next,
-      lessonTitle: lessonTitleRef.current,
-    };
+  const persist = useCallback((document: LessonLibrary) => {
+    pendingWrites.current += 1;
+    setSaving(true);
     writes.current = writes.current
       .catch(() => undefined)
       .then(() => writeDocument(document))
       .then(
-        () => setSaveError(""),
-        () =>
-          setSaveError(
-            "We couldn't save your latest changes on this device. Export a copy before leaving.",
-          ),
-      );
+        () => {
+          if (mounted.current) setSaveError("");
+        },
+        () => {
+          if (mounted.current)
+            setSaveError(
+              "We couldn't save your latest changes on this device. Export a copy before leaving.",
+            );
+        },
+      )
+      .then(() => {
+        pendingWrites.current -= 1;
+        if (mounted.current) setSaving(pendingWrites.current > 0);
+      });
   }, []);
 
+  const applyLibrary = useCallback(
+    (next: LessonLibrary) => {
+      libraryRef.current = next;
+      itemsRef.current = activeLesson(next).items;
+      setLibrary(next);
+      persist(next);
+    },
+    [persist],
+  );
+
   useEffect(() => {
+    mounted.current = true;
     let active = true;
-    void readDocument()
-      .then(async (document) => {
-        const refreshed = await refreshTeachingItems(document.items, repository);
+    void readLibrary()
+      .then((document) => {
         if (!active) return;
-        itemsRef.current = refreshed;
-        lessonTitleRef.current = document.lessonTitle ?? "";
-        setItems(refreshed);
-        setLessonTitle(lessonTitleRef.current);
+        applyLibrary(document);
         setReady(true);
-        persist(refreshed);
       })
       .catch(() => {
         if (active)
           setSaveError(
-            "We couldn't open your saved list. Please reload; your saved data has not been replaced.",
+            "We couldn't open your saved lessons. Please reload; your saved data has not been replaced.",
           );
       });
     return () => {
       active = false;
+      mounted.current = false;
     };
-  }, [repository, persist]);
+  }, [applyLibrary]);
+
+  useEffect(() => {
+    if (!ready || !activeLessonId || !libraryRef.current) return;
+    let active = true;
+    const snapshot = activeLesson(libraryRef.current);
+    void refreshTeachingItems(snapshot.items, repository).then((refreshed) => {
+      const latest = libraryRef.current;
+      if (!active || !latest || latest.activeLessonId !== snapshot.id) return;
+      const currentItems = activeLesson(latest).items;
+      const merged = mergeRefreshedLessonItems(currentItems, refreshed);
+      if (JSON.stringify(merged) !== JSON.stringify(currentItems))
+        applyLibrary(replaceLessonItems(latest, merged, new Date().toISOString()));
+    });
+    return () => {
+      active = false;
+    };
+  }, [activeLessonId, ready, repository, applyLibrary]);
 
   const commit = useCallback(
     (next: TeachingListItem[], undoLabel?: string) => {
-      if (undoLabel) setUndoState({ label: undoLabel, items: itemsRef.current });
+      const latest = libraryRef.current;
+      if (!latest) return;
+      if (undoLabel)
+        setUndoState({
+          lessonId: latest.activeLessonId,
+          label: undoLabel,
+          items: itemsRef.current,
+        });
       const ordered = next.map((item, index) => ({ ...item, customOrder: index }));
-      itemsRef.current = ordered;
-      setItems(ordered);
-      persist(ordered);
+      applyLibrary(replaceLessonItems(latest, ordered, new Date().toISOString()));
     },
-    [persist],
+    [applyLibrary],
   );
 
   const updateLessonTitle = useCallback(
     (value: string) => {
-      lessonTitleRef.current = value;
-      setLessonTitle(value);
-      persist(itemsRef.current);
+      const latest = libraryRef.current;
+      if (latest) applyLibrary(renameActiveLesson(latest, value, new Date().toISOString()));
     },
-    [persist],
+    [applyLibrary],
   );
 
+  const createLesson = useCallback(
+    (title: string) => {
+      const latest = libraryRef.current;
+      if (!latest) return;
+      let id: string;
+      do {
+        id = `lesson-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      } while (latest.lessons.some((lesson) => lesson.id === id));
+      setUndoState(null);
+      setSessionSources({});
+      applyLibrary(addSavedLesson(latest, title, id, new Date().toISOString()));
+    },
+    [applyLibrary],
+  );
+
+  const switchLesson = useCallback(
+    (id: string) => {
+      const latest = libraryRef.current;
+      if (
+        !latest ||
+        !latest.lessons.some((lesson) => lesson.id === id) ||
+        latest.activeLessonId === id
+      )
+        return;
+      setUndoState(null);
+      setSessionSources({});
+      applyLibrary(selectSavedLesson(latest, id));
+    },
+    [applyLibrary],
+  );
+
+  const retrySave = useCallback(() => {
+    if (libraryRef.current) persist(libraryRef.current);
+  }, [persist]);
+
   const undo = useCallback(() => {
-    if (!undoState) return;
+    if (!undoState || undoState.lessonId !== libraryRef.current?.activeLessonId) return;
     commit(undoState.items);
     setUndoState(null);
   }, [commit, undoState]);
@@ -304,6 +406,14 @@ export function useTeachingList(repository: HkeleRepository) {
     () => ({
       items,
       lessonTitle,
+      activeLessonId,
+      lessons: library?.lessons ?? [],
+      lessonDisplayTitle:
+        current && library ? lessonLabel(current, library.lessons.indexOf(current)) : "",
+      createLesson,
+      switchLesson,
+      saving,
+      retrySave,
       updateLessonTitle,
       ready,
       saveError,
@@ -323,6 +433,13 @@ export function useTeachingList(repository: HkeleRepository) {
     [
       items,
       lessonTitle,
+      activeLessonId,
+      library,
+      current,
+      createLesson,
+      switchLesson,
+      saving,
+      retrySave,
       updateLessonTitle,
       ready,
       saveError,

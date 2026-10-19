@@ -8,10 +8,7 @@ export function SafeMorphologyForm({ form }: { form: FormRecord }) {
   const segments = safeMorphologySegments(form);
   if (!segments) return <Text style={styles.plain}>{form.form}</Text>;
   return (
-    <View
-      accessibilityLabel={`${form.form}; safely segmented registered morphology`}
-      style={styles.box}
-    >
+    <View accessibilityLabel={`${form.form}; word parts`} style={styles.box}>
       <Text style={styles.word}>
         {segments.map((segment, index) => (
           <Text key={`${segment.kind}-${index}`} style={styles[segment.kind]}>

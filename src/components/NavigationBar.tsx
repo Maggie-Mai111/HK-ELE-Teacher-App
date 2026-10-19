@@ -2,21 +2,26 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { colors, spacing } from "../theme/tokens";
 
-export type AppRoute = "home" | "browse" | "check" | "list" | "data";
+export type AppRoute = "home" | "browse" | "check" | "list" | "data" | "offline";
 
 interface NavigationBarProps {
   activeRoute: AppRoute;
   onNavigate: (route: AppRoute) => void;
+  lessonWordCount?: number;
 }
 
 const items: ReadonlyArray<{ route: AppRoute; label: string }> = [
   { route: "home", label: "Home" },
-  { route: "browse", label: "Find words" },
   { route: "check", label: "Check a text" },
+  { route: "browse", label: "Find words" },
   { route: "list", label: "Teaching list" },
 ];
 
-export function NavigationBar({ activeRoute, onNavigate }: NavigationBarProps) {
+export function NavigationBar({
+  activeRoute,
+  onNavigate,
+  lessonWordCount = 0,
+}: NavigationBarProps) {
   return (
     <View accessibilityRole="tablist" style={styles.bar}>
       {items.map((item) => {
@@ -24,9 +29,10 @@ export function NavigationBar({ activeRoute, onNavigate }: NavigationBarProps) {
         return (
           <Pressable
             key={item.route}
-            accessibilityLabel={`Open ${item.label}`}
+            accessibilityLabel={`Open ${item.label}${item.route === "list" && lessonWordCount > 0 ? `, ${lessonWordCount} selected ${lessonWordCount === 1 ? "word" : "words"}` : ""}`}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
+            aria-selected={selected}
             onPress={() => onNavigate(item.route)}
             style={({ pressed }) => [
               styles.item,
@@ -34,7 +40,10 @@ export function NavigationBar({ activeRoute, onNavigate }: NavigationBarProps) {
               pressed && styles.pressed,
             ]}
           >
-            <Text style={[styles.label, selected && styles.selectedLabel]}>{item.label}</Text>
+            <Text style={[styles.label, selected && styles.selectedLabel]}>
+              {item.label}
+              {item.route === "list" && lessonWordCount > 0 ? ` (${lessonWordCount})` : ""}
+            </Text>
           </Pressable>
         );
       })}

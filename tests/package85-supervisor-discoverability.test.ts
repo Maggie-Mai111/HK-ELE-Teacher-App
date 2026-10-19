@@ -127,11 +127,11 @@ test("all Known and all Not known produce bounded complementary extremes", () =>
 test("knowledge UI distinguishes sample estimates, exact checked results and progress", () => {
   const panel = source("src/components/KnowledgeTestPanel.tsx");
   for (const label of [
-    "Quick sample (10)",
-    "Larger sample (20)",
-    "Full check",
-    "Sample estimate",
-    "Result for matched families only",
+    "Quick check (10)",
+    "More words (20)",
+    "All matched families",
+    "Sample of",
+    "Checked word families",
     "Known",
     "Not known",
     "Unfamiliar families",
@@ -139,16 +139,16 @@ test("knowledge UI distinguishes sample estimates, exact checked results and pro
   ])
     assert.match(panel, new RegExp(label.replace(/[()]/g, "\\$&")));
   assert.match(panel, /coverage\.complete \? \(/);
-  assert.match(panel, /matched words included in this check/);
-  assert.match(panel, /Vocabulary coverage is not the same as[\s\S]*reading comprehension/);
+  assert.match(panel, /Mark the remaining words/);
+  assert.match(panel, /Sample of.*active.length/);
 });
 
-test("knowledge check has a visible entry immediately after Text summary", () => {
+test("knowledge check remains optional after the reader and pre-teach suggestions", () => {
   const check = source("src/screens/CheckTextScreen.tsx");
-  const summary = check.indexOf("Text summary");
+  const summary = check.indexOf('accessibilityLabel="Checked text"');
   const entry = check.indexOf("Check word knowledge", summary);
   const preteach = check.indexOf("<PreteachPanel", summary);
-  assert.ok(summary >= 0 && entry > summary && preteach > entry);
+  assert.ok(summary >= 0 && preteach > summary && entry > preteach);
   assert.doesNotMatch(check, /title="Knowledge check"/);
 });
 
@@ -156,11 +156,11 @@ test("Not known words have one-click Teaching List action with a session-only so
   const panel = source("src/components/KnowledgeTestPanel.tsx");
   const service = source("src/services/teachingListService.ts");
   const list = source("src/screens/TeachingListScreen.tsx");
-  assert.match(panel, /Add marked word to Teaching list/);
+  assert.match(panel, /Add to teaching list/);
   assert.match(panel, /Learner\/teacher marked as Not known/);
   assert.match(service, /sessionSources/);
   assert.doesNotMatch(service, /writeDocument\([^)]*sessionSources/);
-  assert.match(list, /Source this session:/);
+  assert.doesNotMatch(list, /Source this session:/);
 });
 
 test("pre-teach suggestions remain deterministic, excluded and visibly reasoned", () => {
@@ -186,10 +186,8 @@ test("pre-teach suggestions remain deterministic, excluded and visibly reasoned"
 test("pre-teach UI separates direct marks from registered system reasons", () => {
   const panel = source("src/components/PreteachPanel.tsx");
   assert.match(panel, /Learner\/teacher marked as Not known/);
-  assert.match(panel, /Suggested words to review/);
-  assert.match(panel, /Choose the ones your class needs/);
-  assert.match(
-    panel,
-    /Earliest observed.*sampled textbook evidence[\s\S]*not a[\s\S]*prescribed teaching year/,
-  );
+  assert.match(panel, /Suggested words for pre-teaching/);
+  assert.match(panel, /onOpenFamily/);
+  assert.match(panel, /reasonLabel/);
+  assert.match(panel, /slice\(0, limit\)/);
 });

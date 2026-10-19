@@ -41,7 +41,7 @@ test("genuinely unmatched words are grouped independently without an inferred ow
     items.map(({ displayForm, count }) => ({ displayForm, count })),
     [{ displayForm: "quarkish", count: 2 }],
   );
-  assert.match(items[0]?.explanation ?? "", /without guessing a family, rank or teaching value/);
+  assert.equal(items[0]?.explanation, "No entry found in the wordlist.");
 });
 
 test("text form and HK-ELE family remain separately labelled", () => {
@@ -75,7 +75,7 @@ test("text form and HK-ELE family remain separately labelled", () => {
     ],
   });
   assert.deepEqual(textFormAndFamily(item), { textForm: "understand", family: "stand" });
-  assert.equal(textResultStatusLabel(item), "Ordinary family match");
+  assert.equal(textResultStatusLabel(item), "Matched");
 });
 
 test("compound routes have a distinct teacher status and do not become unmatched", () => {
@@ -107,7 +107,7 @@ test("compound routes have a distinct teacher status and do not become unmatched
     ],
   });
   assert.equal(textResultKind(item), "compound-family");
-  assert.equal(textResultStatusLabel(item), "Compound match");
+  assert.equal(textResultStatusLabel(item), "Compound");
 });
 
 test("teacher UI contains no technical-address prompt or misleading unmatched wording", async () => {

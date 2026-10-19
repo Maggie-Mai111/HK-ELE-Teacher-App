@@ -155,6 +155,6 @@ test("pre-teach suggestions exclude CPB and review items and show transparent re
   assert.equal(suggestions[0]?.basewordKey, "technical");
   assert.ok(suggestions[0]?.reasons.includes("Outside HK Top 2k"));
   assert.ok(suggestions[0]?.reasons.includes("AWL evidence"));
-  assert.ok(suggestions[0]?.reasons.includes("Repeated 2 times"));
-  assert.ok(suggestions[0]?.reasons.includes("Earliest observed at S1"));
+  assert.ok(suggestions[0]?.reasons.includes("Family appears 2 times"));
+  assert.ok(suggestions[0]?.reasons.includes("Family first seen at S1"));
 });

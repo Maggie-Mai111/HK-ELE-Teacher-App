@@ -51,7 +51,7 @@ test("the classroom example reproduces 99 tokens, four data gaps and one distinc
     const context = groupContextReviews(results);
     assert.equal(context.length, 1);
     assert.equal(context[0]?.displayForm, "does");
-    assert.match(context[0]?.explanation ?? "", /context/);
+    assert.match(context[0]?.explanation ?? "", /sentence/);
     assert.equal(
       new Set(results.flatMap((item) => item.owners.map((owner) => owner.baseword_key))).size,
       78,

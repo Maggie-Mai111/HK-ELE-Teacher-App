@@ -18,8 +18,9 @@ import { ActionButton } from "./ActionButton";
 interface Props {
   currentText: string;
   onApplyText: (text: string) => void;
+  onWorkChange?: (hasWork: boolean) => void;
 }
-export function OcrInputPanel({ currentText, onApplyText }: Props) {
+export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props) {
   const [image, setImage] = useState<string | null>(null);
   const [recognizedText, setRecognizedText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -28,6 +29,9 @@ export function OcrInputPanel({ currentText, onApplyText }: Props) {
   const [replaceConfirmed, setReplaceConfirmed] = useState(false);
   const controller = useRef<AbortController | null>(null);
   const mounted = useRef(true);
+  const hasWork = Boolean(image || recognizedText.trim() || busy);
+  useEffect(() => onWorkChange?.(hasWork), [hasWork, onWorkChange]);
+  useEffect(() => () => onWorkChange?.(false), [onWorkChange]);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -61,7 +65,7 @@ export function OcrInputPanel({ currentText, onApplyText }: Props) {
             quality: 1,
           });
       if (result.canceled) {
-        setMessage("Selection cancelled. Your existing text is unchanged.");
+        setMessage("Selection cancelled.");
         return;
       }
       const asset = result.assets[0];
@@ -75,7 +79,11 @@ export function OcrInputPanel({ currentText, onApplyText }: Props) {
       setMessage("Photo ready. Recognition works best with clear printed English.");
     } catch (reason) {
       setMessage(
-        reason instanceof Error
+        reason instanceof Error &&
+          [
+            "This image could not be opened. Choose a JPG or PNG photo.",
+            "Choose a photo smaller than 12 MB, or crop it first.",
+          ].includes(reason.message)
           ? reason.message
           : "Photo selection failed. Choose an existing image or paste text.",
       );
@@ -101,14 +109,12 @@ export function OcrInputPanel({ currentText, onApplyText }: Props) {
         setReplaceConfirmed(false);
         setMessage("Review and edit the recognized text before using it.");
       }
-    } catch (reason) {
+    } catch {
       if (mounted.current)
         setMessage(
           job.signal.aborted
-            ? "Recognition stopped. Your existing text is unchanged."
-            : reason instanceof Error
-              ? reason.message
-              : "Recognition failed. Try a clearer photo or paste text.",
+            ? "Recognition stopped."
+            : "We couldn't read this photo. Try a clearer image or paste text.",
         );
     } finally {
       clearTimeout(timeout);

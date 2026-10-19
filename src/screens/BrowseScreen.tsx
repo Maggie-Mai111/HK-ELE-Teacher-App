@@ -13,6 +13,7 @@ import { ActionButton } from "../components/ActionButton";
 import { AiFilterAssistant } from "../components/AiFilterAssistant";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { DataModeNotice } from "../components/DataModeNotice";
+import { CurrentLesson } from "../components/CurrentLesson";
 import { FamilyCard } from "../components/FamilyCard";
 import { ScreenHeader } from "../components/ScreenHeader";
 import { WebFamilyTable } from "../components/WebFamilyTable";
@@ -30,11 +31,12 @@ import { describeAiFilterConditions, type AiFilterExecution } from "../services/
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 import { inTeacherWordScope } from "../services/wordListPresentation";
+import { hasSelectedForm, searchSelectedForm } from "../services/lessonSelectionPresentation";
 
 interface Props {
   repository: HkeleRepository;
   teaching: TeachingListStore;
-  onOpenFamily: (basewordKey: string) => void;
+  onOpenFamily: (basewordKey: string, selectedForm?: string) => void;
 }
 
 const scopes: Array<[BrowseScope, string]> = [
@@ -172,8 +174,14 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     setResultMode("browse");
     focusAndReveal(resultSummaryRef.current);
   };
+  const selectedFormFor = (family: FamilyRecord) =>
+    state.searchActive ? searchSelectedForm(family, search) : undefined;
   const isAdded = (family: FamilyRecord) =>
-    teaching.items.some((item) => item.basewordKey === family.baseword_key);
+    hasSelectedForm(teaching.items, family, selectedFormFor(family));
+  const addFamily = (family: FamilyRecord) =>
+    teaching.add(family, selectedFormFor(family), "Find words");
+  const openFamily = (family: FamilyRecord) =>
+    onOpenFamily(family.baseword_key, selectedFormFor(family));
   const useTable = Platform.OS === "web" && viewport.width >= 760;
   const searchFamilies = (search?.owners ?? []).filter((family) =>
     inTeacherWordScope(family, scope),
@@ -238,6 +246,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         ))}
       </View>
       <DataModeNotice mode={dataMode} />
+      <CurrentLesson teaching={teaching} />
       <AiFilterAssistant
         scope={scope}
         editRequestNonce={editRequestNonce}
@@ -248,7 +257,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       <View ref={manualFiltersRef} style={styles.moreFilters} tabIndex={-1}>
         <ActionButton
           kind="secondary"
-          label={moreFiltersOpen ? "Hide filters" : "More filters"}
+          label={moreFiltersOpen ? "Hide sort options" : "Sort"}
           onPress={() => setMoreFiltersOpen((value) => !value)}
         />
         {moreFiltersOpen ? (
@@ -309,6 +318,12 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             <Text style={styles.resultStatus}>
               {outsideCore ? "Outside the Core list" : searchStatus(search)}
             </Text>
+            {searchFamilies.length === 1 && selectedFormFor(searchFamilies[0]!) ? (
+              <Text style={styles.muted}>
+                Matched word: {selectedFormFor(searchFamilies[0]!)} · Family:{" "}
+                {searchFamilies[0]!.display_family}
+              </Text>
+            ) : null}
             {outsideCore ? (
               <>
                 <Text style={styles.muted}>
@@ -417,8 +432,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           <WebFamilyTable
             families={activeFamilies}
             isAdded={isAdded}
-            onAdd={teaching.add}
-            onOpen={(family) => onOpenFamily(family.baseword_key)}
+            onAdd={addFamily}
+            onOpen={openFamily}
+            canAdd={teaching.ready}
           />
         ) : (
           activeFamilies.map((family) => (
@@ -437,8 +453,10 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
                     }`,
                   }
                 : {})}
-              onAdd={teaching.add}
-              onOpen={(item) => onOpenFamily(item.baseword_key)}
+              onAdd={addFamily}
+              onOpen={openFamily}
+              canAdd={teaching.ready}
+              selectedForm={selectedFormFor(family)}
             />
           ))
         )

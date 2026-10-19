@@ -65,8 +65,8 @@ test("new browse results move focus and scroll to a single live summary", () => 
   assert.match(browse, /accessibilityLiveRegion="polite"/);
   assert.match(browse, /focusAfterBrowseLoad\.current = true/);
   const check = source("src/screens/CheckTextScreen.tsx");
-  assert.match(check, /summaryRef/);
-  assert.match(check, /filteredSummaryRef/);
+  assert.match(check, /readerRef/);
+  assert.match(check, /onRevealSection/);
 });
 
 test("AI fixture is strict, local-only, includes all conditions and never needs a provider", () => {
@@ -158,13 +158,8 @@ test("photo OCR and advanced text evidence stay behind collapsed disclosures", (
   const check = source("src/screens/CheckTextScreen.tsx");
   assert.match(check, /title="Scan text from a photo"[\s\S]*<OcrInputPanel/);
   assert.ok(check.indexOf('title="Text complexity"') > check.indexOf("<PreteachPanel"));
-  assert.ok(check.indexOf("Check word knowledge") < check.indexOf("<PreteachPanel"));
-  for (const title of [
-    "Text highlighting",
-    "Text complexity",
-    "All word results",
-    "All occurrences",
-  ])
+  assert.ok(check.indexOf("Check word knowledge") > check.indexOf("<PreteachPanel"));
+  for (const title of ["Text complexity", "All word results", "Words in context"])
     assert.match(check, new RegExp(`title="${title}"`));
   const disclosure = source("src/components/ProgressiveDisclosure.tsx");
   assert.match(disclosure, /defaultOpen = false/);

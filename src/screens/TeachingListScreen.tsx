@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { ScreenHeader } from "../components/ScreenHeader";
+import { LessonLibraryControls } from "../components/LessonLibraryControls";
 import type { TeachingListItem } from "../domain/teachingList";
 import { LESSON_FOCUS_OPTIONS, lessonFocusLabel } from "../services/lessonPlanning";
 import { exportTeachingList } from "../services/shareExport";
@@ -12,7 +13,7 @@ import { colors, spacing } from "../theme/tokens";
 
 interface Props {
   teaching: TeachingListStore;
-  onOpenFamily: (basewordKey: string) => void;
+  onOpenFamily: (basewordKey: string, selectedForm?: string) => void;
   onFindWords: () => void;
   onCheckText: () => void;
 }
@@ -28,9 +29,10 @@ function ListItem({
   index: number;
   total: number;
   teaching: TeachingListStore;
-  onOpenFamily: (basewordKey: string) => void;
+  onOpenFamily: (basewordKey: string, selectedForm?: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [chooseWord, setChooseWord] = useState(false);
   const [relatedOpen, setRelatedOpen] = useState(Boolean(item.connections));
   return (
     <View style={styles.card}>
@@ -43,6 +45,7 @@ function ListItem({
           accessibilityRole="button"
           accessibilityLabel={`${open ? "Close editing" : "Edit"} ${item.displayFamily}`}
           accessibilityState={{ expanded: open }}
+          aria-expanded={open}
           onPress={() => setOpen(!open)}
           style={styles.editButton}
         >
@@ -78,9 +81,6 @@ function ListItem({
               />
             ))}
           </View>
-          <Text style={styles.meta}>
-            An intention for this lesson, not a test of student knowledge.
-          </Text>
           <Text style={styles.label}>Teaching note (optional)</Text>
           <TextInput
             accessibilityLabel={`Teaching notes for ${item.displayFamily}`}
@@ -123,22 +123,21 @@ function ListItem({
               </View>
             ))}
           </View>
-          {teaching.sessionSourceFor(item.basewordKey) ? (
-            <Text style={styles.meta}>
-              Source this session: {teaching.sessionSourceFor(item.basewordKey)}
-            </Text>
-          ) : null}
           {teaching.sourceFor(item.basewordKey) ? (
             <Text style={styles.meta}>Added from: {teaching.sourceFor(item.basewordKey)}</Text>
           ) : null}
           {item.status !== "Notice" ? (
-            <Text style={styles.meta}>Earlier teaching depth: {item.status}</Text>
+            <Text style={styles.meta}>Previous setting: {item.status}</Text>
           ) : null}
           <View style={styles.actions}>
             <ActionButton
               kind="secondary"
               label="View word information"
-              onPress={() => onOpenFamily(item.basewordKey)}
+              onPress={() =>
+                item.selectedForms.length > 1
+                  ? setChooseWord(!chooseWord)
+                  : onOpenFamily(item.basewordKey, item.selectedForms[0])
+              }
             />
             <ActionButton
               disabled={index === 0}
@@ -158,6 +157,18 @@ function ListItem({
               onPress={() => teaching.remove(item.basewordKey)}
             />
           </View>
+          {chooseWord ? (
+            <View style={styles.actions}>
+              {item.selectedForms.map((form) => (
+                <ActionButton
+                  key={form}
+                  kind="secondary"
+                  label={`View ${form}`}
+                  onPress={() => onOpenFamily(item.basewordKey, form)}
+                />
+              ))}
+            </View>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -168,27 +179,44 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onChec
   const [message, setMessage] = useState("");
   const [exporting, setExporting] = useState(false);
   const [moreFormats, setMoreFormats] = useState(false);
+  const activeLessonRef = useRef(teaching.activeLessonId);
+  activeLessonRef.current = teaching.activeLessonId;
+  useEffect(() => {
+    setMessage("");
+    setMoreFormats(false);
+  }, [teaching.activeLessonId]);
   const runExport = async (format: "csv" | "md" | "xlsx") => {
+    const exportedLesson = teaching.activeLessonId;
     setExporting(true);
     setMessage("");
     try {
       await exportTeachingList(teaching.items, format, teaching.lessonTitle);
-      setMessage("Your file is ready.");
+      if (activeLessonRef.current === exportedLesson) setMessage("Your file is ready.");
     } catch {
-      setMessage("We couldn't export your list. Please try again.");
+      if (activeLessonRef.current === exportedLesson)
+        setMessage("We couldn't export your list. Please try again.");
     } finally {
       setExporting(false);
     }
   };
   const focusCount = teaching.items.filter((item) => item.teachingFocus === "focus").length;
   const mentionCount = teaching.items.filter((item) => item.teachingFocus === "mention").length;
+  const selectedWordCount = teaching.items.reduce(
+    (sum, item) => sum + item.selectedForms.length,
+    0,
+  );
   return (
     <View style={styles.content}>
       <ScreenHeader title="Teaching list" intro="Your words for this lesson." />
       {teaching.saveError ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          {teaching.saveError}
-        </Text>
+        <View>
+          <Text accessibilityRole="alert" style={styles.error}>
+            {teaching.saveError}
+          </Text>
+          {teaching.ready ? (
+            <ActionButton kind="secondary" label="Try saving again" onPress={teaching.retrySave} />
+          ) : null}
+        </View>
       ) : null}
       {!teaching.ready ? (
         <ActivityIndicator
@@ -198,6 +226,7 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onChec
         />
       ) : (
         <>
+          <LessonLibraryControls teaching={teaching} />
           <View style={styles.lessonBox}>
             <Text style={styles.label}>Lesson name (optional)</Text>
             <TextInput
@@ -207,7 +236,9 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onChec
               onChangeText={teaching.updateLessonTitle}
               style={styles.titleInput}
             />
-            <Text style={styles.meta}>Saved on this device.</Text>
+            <Text accessibilityLiveRegion="polite" style={styles.meta}>
+              {teaching.saving ? "Saving…" : teaching.saveError ? "" : "Saved on this device."}
+            </Text>
           </View>
           {teaching.items.length === 0 ? (
             <View style={styles.empty}>
@@ -222,8 +253,8 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onChec
             <>
               <View style={styles.exportBox}>
                 <Text style={styles.exportTitle}>
-                  {teaching.items.reduce((sum, item) => sum + item.selectedForms.length, 0)}{" "}
-                  selected words · {teaching.items.length} families
+                  {selectedWordCount} selected {selectedWordCount === 1 ? "word" : "words"} ·{" "}
+                  {teaching.items.length} {teaching.items.length === 1 ? "family" : "families"}
                 </Text>
                 <Text style={styles.meta}>
                   In depth {focusCount} · Brief {mentionCount} · Undecided{" "}
@@ -239,6 +270,7 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onChec
                     accessibilityRole="button"
                     accessibilityLabel="More formats"
                     accessibilityState={{ expanded: moreFormats }}
+                    aria-expanded={moreFormats}
                     style={styles.editButton}
                     onPress={() => setMoreFormats(!moreFormats)}
                   >
@@ -279,7 +311,7 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onChec
           ) : null}
           {teaching.items.map((item, index) => (
             <ListItem
-              key={item.basewordKey}
+              key={`${teaching.activeLessonId}:${item.basewordKey}`}
               item={item}
               index={index}
               total={teaching.items.length}

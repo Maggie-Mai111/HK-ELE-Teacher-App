@@ -1,21 +1,20 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { ComplexityPanel } from "../components/ComplexityPanel";
-import { ContextReviewPanel } from "../components/ContextReviewPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
+import { CurrentLesson } from "../components/CurrentLesson";
 import { HighlightedText } from "../components/HighlightedText";
 import { KnowledgeTestPanel } from "../components/KnowledgeTestPanel";
 import { LessonWordPicker } from "../components/LessonWordPicker";
 import { OccurrenceCard } from "../components/OccurrenceCard";
 import { OcrInputPanel } from "../components/OcrInputPanel";
-import { PendingFullCheckPanel } from "../components/PendingFullCheckPanel";
 import { PreteachPanel } from "../components/PreteachPanel";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { ScreenHeader } from "../components/ScreenHeader";
-import { UnmatchedWordsPanel } from "../components/UnmatchedWordsPanel";
+import { TextWordSheet } from "../components/TextWordSheet";
 import type { DataMode, HkeleRepository, ResolvedOccurrence } from "../domain/hkele";
 import { matchCpb100 } from "../services/cpbService";
 import { validHkRange } from "../services/frequencyService";
@@ -25,118 +24,124 @@ import {
   nextBatchSize,
   OCCURRENCE_BATCH_SIZE,
 } from "../services/progressiveResults";
-import {
-  groupPendingFullDatabaseChecks,
-  groupContextReviews,
-  groupUnmatchedWords,
-  textResultsAreCurrent,
-  textResultKind,
-} from "../services/textResultPresentation";
+import { textResultsAreCurrent, textResultKind } from "../services/textResultPresentation";
+import { textWordAction, type CheckedTextEvidence } from "../services/textReaderService";
 import type { TeachingListStore } from "../services/teachingListService";
 import { scan, TokenizerError } from "../services/tokenizer";
 import { colors, spacing } from "../theme/tokens";
+import type { SessionWork } from "../services/reopenSession";
 
 type ResultFilter =
   "all" | "candidate" | "other" | "grammar" | "cpb" | "unavailable" | "unmatched" | "review";
 type ResultSort = "occurrence" | "family";
-type MembershipCategory =
-  "candidate" | "other" | "grammar" | "unavailable" | "unmatched" | "review";
-
+type Category = Exclude<ResultFilter, "all" | "cpb">;
 interface Props {
+  onSessionWorkChange: (work: SessionWork) => void;
+  onRevealSection: (section: View | null) => void;
   onOpenTeachingList: () => void;
   repository: HkeleRepository;
   teaching: TeachingListStore;
   onOpenFamily: (
     basewordKey: string,
-    evidence: { members: Array<{ surface: string; count: number }>; count: number },
+    evidence?: CheckedTextEvidence,
+    selectedForm?: string,
   ) => void;
 }
-
-function category(item: ResolvedOccurrence): MembershipCategory {
+function category(item: ResolvedOccurrence): Category {
   const kind = textResultKind(item);
   if (kind === "grammatical-relation") return "grammar";
   if (kind === "full-check-unavailable") return "unavailable";
   if (kind === "unmatched") return "unmatched";
   if (item.status !== "RESOLVED" || item.owners.length !== 1) return "review";
-  const owner = item.owners[0];
-  if (owner?.candidate_member === true || owner?.candidate_member === 1) return "candidate";
-  return "other";
+  return item.owners[0]?.candidate_member ? "candidate" : "other";
 }
 
-function focusAndReveal(target: View | null) {
-  setTimeout(() => {
-    const node = target as unknown as {
-      focus?: () => void;
-      scrollIntoView?: (options: { block: string; behavior: string }) => void;
-    } | null;
-    node?.scrollIntoView?.({ block: "start", behavior: "smooth" });
-    node?.focus?.();
-  }, 0);
-}
-
-export function CheckTextScreen({ repository, teaching, onOpenFamily, onOpenTeachingList }: Props) {
-  const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
+export function CheckTextScreen({
+  repository,
+  teaching,
+  onOpenFamily,
+  onOpenTeachingList,
+  onRevealSection,
+  onSessionWorkChange,
+}: Props) {
   const [text, setText] = useState("");
+  const sourceRef = useRef("");
   const [checkedText, setCheckedText] = useState<string | null>(null);
   const [results, setResults] = useState<ResolvedOccurrence[]>([]);
-  const [filter, setFilter] = useState<ResultFilter>("all");
-  const [sort, setSort] = useState<ResultSort>("occurrence");
+  const [editing, setEditing] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [cpbEnabled, setCpbEnabled] = useState(true);
-  const [hkEnabled, setHkEnabled] = useState(true);
+  const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
+  const [showHighlights, setShowHighlights] = useState(false);
+  const [cpbEnabled, setCpbEnabled] = useState(false);
+  const [hkEnabled, setHkEnabled] = useState(false);
   const [customEnabled, setCustomEnabled] = useState(false);
   const [customStart, setCustomStart] = useState("1");
   const [customEnd, setCustomEnd] = useState("500");
+  const [wordSheet, setWordSheet] = useState<ResolvedOccurrence | null>(null);
+  const [filter, setFilter] = useState<ResultFilter>("all");
+  const [sort, setSort] = useState<ResultSort>("occurrence");
   const [groupLimit, setGroupLimit] = useState(OCCURRENCE_BATCH_SIZE);
   const [occurrenceLimit, setOccurrenceLimit] = useState(OCCURRENCE_BATCH_SIZE);
-  const [knowledgeOpen, setKnowledgeOpen] = useState(false);
   const [knowledgeNotKnown, setKnowledgeNotKnown] = useState<KnowledgeFamily[]>([]);
-  const summaryRef = useRef<View>(null);
-  const filteredSummaryRef = useRef<View>(null);
-
+  const [ocrWork, setOcrWork] = useState(false);
+  const [knowledgeWork, setKnowledgeWork] = useState(false);
+  const hasText = Boolean(text.trim() || checkedText?.trim());
+  useEffect(
+    () => onSessionWorkChange({ text: hasText, ocr: ocrWork, knowledge: knowledgeWork }),
+    [hasText, ocrWork, knowledgeWork, onSessionWorkChange],
+  );
+  const readerRef = useRef<View>(null);
+  const suggestionsRef = useRef<View>(null);
+  const changeText = (value: string) => {
+    sourceRef.current = value;
+    setText(value);
+    setWordSheet(null);
+  };
   const analyze = async () => {
+    const source = sourceRef.current;
     setLoading(true);
     setError("");
+    setWordSheet(null);
     try {
-      const tokenScan = scan(text);
-      const next = await repository.resolveOccurrences(text, tokenScan.occurrences);
+      const tokens = scan(source);
+      const next = await repository.resolveOccurrences(source, tokens.occurrences);
+      if (sourceRef.current !== source) return;
+      if (!next.length) {
+        setError("Add some English text to check.");
+        setEditing(true);
+        return;
+      }
       setResults(next);
-      setCheckedText(text);
+      setCheckedText(source);
+      setEditing(false);
       setFilter("all");
       setSort("occurrence");
       setGroupLimit(OCCURRENCE_BATCH_SIZE);
       setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
       setKnowledgeNotKnown([]);
-      setKnowledgeOpen(false);
       setDataMode(repository.getDataMode());
-      focusAndReveal(summaryRef.current);
+      setTimeout(() => onRevealSection(readerRef.current), 0);
     } catch (reason) {
-      setResults([]);
+      setEditing(true);
       if (reason instanceof TokenizerError) {
-        const offset = reason.issues[0]?.offset ?? 0;
-        setError(
-          `Check the text near “${text.slice(Math.max(0, offset - 12), offset + 12)}” and remove any unusual symbols, then try again.`,
-        );
+        setError("Check the spelling and symbols in the text, then try again.");
       } else if (reason instanceof Error && reason.message.startsWith("The technical limit is")) {
-        setError("Please check up to 500 words at a time. Split a longer passage into sections.");
-      } else {
-        setError("We couldn't check the text. Check your connection and try again.");
-      }
+        setError("Check up to 500 words at a time. Split a longer passage into sections.");
+      } else setError("We couldn't check the text. Check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
-
   const counts = useMemo(() => {
     const values = {
       candidate: 0,
       other: 0,
       grammar: 0,
-      unmatched: 0,
       unavailable: 0,
-      cpb: 0,
+      unmatched: 0,
       review: 0,
+      cpb: 0,
     };
     for (const item of results) {
       values[category(item)] += 1;
@@ -145,89 +150,102 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily, onOpenTeac
     return values;
   }, [results]);
   const visible = useMemo(() => {
-    const selected =
+    const values =
       filter === "all"
         ? [...results]
         : results.filter((item) =>
             filter === "cpb" ? Boolean(matchCpb100(item.surface)) : category(item) === filter,
           );
-    if (sort === "family") {
-      selected.sort((left, right) =>
-        (left.owners[0]?.display_family ?? left.surface).localeCompare(
-          right.owners[0]?.display_family ?? right.surface,
+    if (sort === "family")
+      values.sort((a, b) =>
+        (a.owners[0]?.display_family ?? a.surface).localeCompare(
+          b.owners[0]?.display_family ?? b.surface,
         ),
       );
-    }
-    return selected;
+    return values;
   }, [filter, results, sort]);
   const groups = useMemo(() => groupOccurrences(visible), [visible]);
   const uniqueFamilies = useMemo(
     () =>
       new Set(
         results
-          .filter((item) => item.status === "RESOLVED" && item.owners.length === 1)
-          .flatMap((item) =>
-            item.owners
-              .filter((owner) => !owner.blocked && !owner.display_blocked)
-              .map((owner) => owner.baseword_key),
-          ),
+          .filter((item) => textWordAction(item) === "family")
+          .map((item) => item.owners[0]?.baseword_key),
       ).size,
     [results],
   );
-  const unmatched = useMemo(() => groupUnmatchedWords(results), [results]);
-  const contextReviews = useMemo(() => groupContextReviews(results), [results]);
-  const resultsCurrent = textResultsAreCurrent(text, checkedText);
-  const pendingFullCheck = useMemo(() => groupPendingFullDatabaseChecks(results), [results]);
-  const familyEvidence = (basewordKey: string) => {
-    const countsBySurface = new Map<string, number>();
-    for (const result of results) {
-      if (!result.owners.some((owner) => owner.baseword_key === basewordKey)) continue;
-      countsBySurface.set(result.surface, (countsBySurface.get(result.surface) ?? 0) + 1);
+  const customRange = useMemo(
+    () =>
+      customEnabled && validHkRange(Number(customStart), Number(customEnd))
+        ? { start: Number(customStart), end: Number(customEnd) }
+        : null,
+    [customEnabled, customStart, customEnd],
+  );
+  const current = textResultsAreCurrent(text, checkedText);
+  const showResults = results.length > 0 && current && !editing && !loading;
+  const familyEvidence = (key: string, surface?: string): CheckedTextEvidence => {
+    const forms = new Map<string, number>();
+    for (const item of results) {
+      if (textWordAction(item) !== "family" || item.owners[0]?.baseword_key !== key) continue;
+      forms.set(item.surface, (forms.get(item.surface) ?? 0) + 1);
     }
-    const members = [...countsBySurface].map(([surface, count]) => ({ surface, count }));
-    return { members, count: members.reduce((sum, member) => sum + member.count, 0) };
+    const members = [...forms].map(([surface, count]) => ({ surface, count }));
+    const context = results.find(
+      (item) => item.owners[0]?.baseword_key === key && (!surface || item.surface === surface),
+    )?.context;
+    return {
+      members,
+      count: members.reduce((sum, member) => sum + member.count, 0),
+      ...(context ? { context } : {}),
+    };
   };
-  const customRange = useMemo(() => {
-    const start = Number(customStart);
-    const end = Number(customEnd);
-    return customEnabled && validHkRange(start, end) ? { start, end } : null;
-  }, [customEnabled, customEnd, customStart]);
-  const changeFilter = (next: ResultFilter) => {
-    setFilter(next);
-    setGroupLimit(OCCURRENCE_BATCH_SIZE);
-    setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
-    focusAndReveal(filteredSummaryRef.current);
+  const openWord = (item: ResolvedOccurrence) => {
+    if (textWordAction(item) === "family")
+      onOpenFamily(
+        item.owners[0]!.baseword_key,
+        { ...familyEvidence(item.owners[0]!.baseword_key), context: item.context },
+        item.surface,
+      );
+    else setWordSheet(item);
   };
-  const changeSort = (next: ResultSort) => {
-    setSort(next);
-    setGroupLimit(OCCURRENCE_BATCH_SIZE);
-    setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
-    focusAndReveal(filteredSummaryRef.current);
-  };
-
   return (
     <View style={styles.content}>
-      <ScreenHeader
-        intro="Paste text or scan a photo, then check the words."
-        title="Check a text"
-      />
-      <ProgressiveDisclosure title="Scan text from a photo">
-        <OcrInputPanel currentText={text} onApplyText={setText} />
-      </ProgressiveDisclosure>
-      <TextInput
-        accessibilityLabel="Text to check"
-        multiline
-        onChangeText={setText}
-        placeholder="Paste or type classroom text here…"
-        style={styles.textarea}
-        textAlignVertical="top"
-        value={text}
-      />
-      <ActionButton
-        disabled={loading || !text.trim()}
-        label={loading ? "Checking…" : "Check text"}
-        onPress={() => void analyze()}
-      />
+      <ScreenHeader title="Check a text" intro="Explore the vocabulary in your lesson text." />
+      {editing || !current || !results.length ? (
+        <>
+          <ProgressiveDisclosure title="Scan text from a photo">
+            <OcrInputPanel currentText={text} onApplyText={changeText} onWorkChange={setOcrWork} />
+          </ProgressiveDisclosure>
+          <TextInput
+            accessibilityLabel="Text to check"
+            multiline
+            value={text}
+            onChangeText={changeText}
+            placeholder="Paste or type your text here…"
+            style={styles.textarea}
+            textAlignVertical="top"
+          />
+          <View style={styles.actions}>
+            <ActionButton
+              disabled={loading || !text.trim()}
+              label={loading ? "Checking…" : "Check text"}
+              onPress={() => void analyze()}
+            />
+            {checkedText !== null ? (
+              <ActionButton
+                disabled={loading}
+                kind="secondary"
+                label="Back to checked text"
+                onPress={() => {
+                  changeText(checkedText);
+                  setError("");
+                  setEditing(false);
+                }}
+              />
+            ) : null}
+          </View>
+        </>
+      ) : null}
       <DataModeNotice mode={dataMode} />
       {error ? (
         <Text accessibilityRole="alert" style={styles.error}>
@@ -237,336 +255,313 @@ export function CheckTextScreen({ repository, teaching, onOpenFamily, onOpenTeac
       {loading ? (
         <ActivityIndicator accessibilityLabel="Checking text" color={colors.primary} size="large" />
       ) : null}
-      {results.length && !resultsCurrent ? (
-        <Text accessibilityLiveRegion="polite" style={styles.rangeError}>
-          Text changed. Choose Check text to update the results.
-        </Text>
-      ) : null}
-      {results.length && resultsCurrent && !loading ? (
-        <>
+      {checkedText !== null && results.length > 0 ? (
+        <View
+          style={showResults ? styles.resultContent : styles.hiddenResults}
+          accessibilityElementsHidden={!showResults}
+          importantForAccessibility={showResults ? "auto" : "no-hide-descendants"}
+          pointerEvents={showResults ? "auto" : "none"}
+        >
           <View
-            accessibilityLabel="Text check summary"
-            accessibilityLiveRegion="polite"
-            ref={summaryRef}
-            style={styles.summary}
+            ref={readerRef}
             tabIndex={-1}
+            style={styles.reader}
+            accessibilityLabel="Checked text"
           >
-            <Text accessibilityRole="header" aria-level={2} style={styles.summaryTitle}>
-              Text summary
-            </Text>
-            <Text style={styles.summaryLead}>
-              {results.length} word occurrences · {uniqueFamilies} matched families
-            </Text>
-            <Text style={styles.summaryText}>
-              {(
-                [
-                  ["Core list", counts.candidate],
-                  ["Other database words", counts.other],
-                  ["Grammar", counts.grammar],
-                  ["Not matched", counts.unmatched],
-                  ["Context check", counts.review],
-                  ["Check when online", counts.unavailable],
-                ] as const
-              )
-                .filter(([, count]) => count > 0)
-                .map(([label, count]) => `${label} ${count}`)
-                .join(" · ")}
-            </Text>
-            {counts.unmatched ? (
-              <Text style={styles.summaryText}>
-                Not matched describes the current data, not what your students know.
+            <View style={styles.readerHeading}>
+              <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+                Your text
               </Text>
+              <Text style={styles.meta}>
+                {results.length} {results.length === 1 ? "word" : "words"} · {uniqueFamilies}{" "}
+                {uniqueFamilies === 1 ? "family" : "families"}
+              </Text>
+            </View>
+            <Text style={styles.meta}>Tap a word to see its information.</Text>
+            {results.length > 80 ? (
+              <ActionButton
+                kind="secondary"
+                label="Pre-teaching suggestions ↓"
+                onPress={() => onRevealSection(suggestionsRef.current)}
+              />
             ) : null}
-          </View>
-          <LessonWordPicker
-            key={checkedText}
-            results={results}
-            teaching={teaching}
-            onOpenList={onOpenTeachingList}
-          />
-          {unmatched.length || contextReviews.length || pendingFullCheck.length ? (
-            <ProgressiveDisclosure
-              title="Words to review"
-              summary="Words without a match or with more than one possible reading."
-            >
-              <UnmatchedWordsPanel items={unmatched} />
-              <ContextReviewPanel items={contextReviews} />
-              <PendingFullCheckPanel items={pendingFullCheck} />
-            </ProgressiveDisclosure>
-          ) : null}
-          <View style={styles.knowledgeEntry}>
-            <View style={styles.knowledgeEntryText}>
-              <Text accessibilityRole="header" aria-level={2} style={styles.knowledgeEntryTitle}>
-                Check word knowledge
-              </Text>
-              <Text style={styles.knowledgeEntryNote}>
-                Let a teacher or learner mark Known / Not known and estimate the unfamiliar-word
-                rate. Answers stay in this session.
-              </Text>
-            </View>
-            <ActionButton
-              kind={knowledgeOpen ? "secondary" : "primary"}
-              label={knowledgeOpen ? "Hide word knowledge check" : "Check word knowledge"}
-              onPress={() => setKnowledgeOpen((value) => !value)}
-            />
-          </View>
-          {knowledgeOpen ? (
-            <KnowledgeTestPanel
-              onNotKnownChange={setKnowledgeNotKnown}
-              results={results}
-              teaching={teaching}
-              text={text}
-            />
-          ) : null}
-          <ProgressiveDisclosure title="Words to review for pre-teaching">
-            <PreteachPanel
-              notKnownFamilies={knowledgeNotKnown}
-              repository={repository}
-              results={results}
-              teaching={teaching}
-              text={text}
-            />
-          </ProgressiveDisclosure>
-          <ProgressiveDisclosure
-            summary="CPB, HK frequency and custom-range highlighting controls."
-            title="Text highlighting"
-          >
-            <View style={styles.chips}>
-              <ChoiceChip
-                label={cpbEnabled ? "★ CPB 100 on" : "CPB 100 off"}
-                onPress={() => setCpbEnabled((value) => !value)}
-                selected={cpbEnabled}
-              />
-              <ChoiceChip
-                label={hkEnabled ? "HK frequency on" : "HK frequency off"}
-                onPress={() => setHkEnabled((value) => !value)}
-                selected={hkEnabled}
-              />
-              <ChoiceChip
-                label={customEnabled ? "Custom HK range on" : "Custom HK range off"}
-                onPress={() => setCustomEnabled((value) => !value)}
-                selected={customEnabled}
+            <View style={styles.actions}>
+              <ActionButton kind="secondary" label="Edit text" onPress={() => setEditing(true)} />
+              <ActionButton
+                kind="secondary"
+                label={showHighlights ? "Hide highlight options" : "Highlight words"}
+                onPress={() => setShowHighlights(!showHighlights)}
               />
             </View>
-            {customEnabled ? (
-              <View style={styles.rangeRow}>
-                <TextInput
-                  accessibilityLabel="Custom HK rank start"
-                  keyboardType="number-pad"
-                  onChangeText={setCustomStart}
-                  style={styles.rangeInput}
-                  value={customStart}
-                />
-                <Text style={styles.rangeDash}>to</Text>
-                <TextInput
-                  accessibilityLabel="Custom HK rank end"
-                  keyboardType="number-pad"
-                  onChangeText={setCustomEnd}
-                  style={styles.rangeInput}
-                  value={customEnd}
-                />
+            {showHighlights ? (
+              <View style={styles.highlightOptions}>
+                <View style={styles.actions}>
+                  <ChoiceChip
+                    label="Common words"
+                    selected={cpbEnabled}
+                    onPress={() => setCpbEnabled(!cpbEnabled)}
+                  />
+                  <ChoiceChip
+                    label="HK frequency"
+                    selected={hkEnabled}
+                    onPress={() => setHkEnabled(!hkEnabled)}
+                  />
+                  <ChoiceChip
+                    label="Custom rank range"
+                    selected={customEnabled}
+                    onPress={() => setCustomEnabled(!customEnabled)}
+                  />
+                </View>
+                {customEnabled ? (
+                  <View style={styles.actions}>
+                    <TextInput
+                      accessibilityLabel="Custom HK rank start"
+                      keyboardType="number-pad"
+                      value={customStart}
+                      onChangeText={setCustomStart}
+                      style={styles.rangeInput}
+                    />
+                    <Text style={styles.meta}>to</Text>
+                    <TextInput
+                      accessibilityLabel="Custom HK rank end"
+                      keyboardType="number-pad"
+                      value={customEnd}
+                      onChangeText={setCustomEnd}
+                      style={styles.rangeInput}
+                    />
+                  </View>
+                ) : null}
+                {customEnabled && !customRange ? (
+                  <Text accessibilityRole="alert" style={styles.error}>
+                    Enter a valid start and end rank.
+                  </Text>
+                ) : null}
               </View>
             ) : null}
-            {customEnabled && !customRange ? (
-              <Text accessibilityRole="alert" style={styles.rangeError}>
-                Enter whole-number ranks with an end rank equal to or above the start.
-              </Text>
-            ) : null}
             <HighlightedText
-              cpbEnabled={cpbEnabled}
-              customRange={customRange}
-              hkEnabled={hkEnabled}
+              text={checkedText!}
               results={results}
-              text={text}
+              cpbEnabled={cpbEnabled}
+              hkEnabled={hkEnabled}
+              customRange={customRange}
+              onWordPress={openWord}
+            />
+          </View>
+          <View
+            ref={suggestionsRef}
+            tabIndex={-1}
+            accessibilityLabel="Pre-teaching suggestions"
+            style={styles.resultContent}
+          >
+            {results.length > 80 ? (
+              <ActionButton
+                kind="secondary"
+                label="↑ Back to text"
+                onPress={() => onRevealSection(readerRef.current)}
+              />
+            ) : null}
+            <CurrentLesson teaching={teaching} />
+            <PreteachPanel
+              key={teaching.activeLessonId}
+              text={checkedText!}
+              results={results}
+              teaching={teaching}
+              notKnownFamilies={knowledgeNotKnown}
+              onOpenFamily={(key, surface) =>
+                onOpenFamily(key, familyEvidence(key, surface), surface)
+              }
+              onOpenList={onOpenTeachingList}
+            />
+          </View>
+          <ProgressiveDisclosure title="Check word knowledge" keepMounted>
+            <KnowledgeTestPanel
+              key={teaching.activeLessonId}
+              text={checkedText!}
+              results={results}
+              teaching={teaching}
+              onNotKnownChange={setKnowledgeNotKnown}
+              onHasResponsesChange={setKnowledgeWork}
             />
           </ProgressiveDisclosure>
-          <ProgressiveDisclosure
-            summary="See how the passage reads and what the measures mean."
-            title="Text complexity"
-          >
-            <ComplexityPanel results={results} text={text} />
+          <ProgressiveDisclosure title="Choose more lesson words" keepMounted>
+            <LessonWordPicker
+              key={`${checkedText}:${teaching.activeLessonId}`}
+              showHeading={false}
+              results={results}
+              teaching={teaching}
+              onOpenList={onOpenTeachingList}
+            />
           </ProgressiveDisclosure>
-          <ProgressiveDisclosure
-            summary="Browse word families, repeated words and matches."
-            title="All word results"
-          >
-            <Text style={styles.label}>Show</Text>
-            <View style={styles.chips}>
-              {(
-                [
-                  ["all", `All (${results.length})`],
-                  ["candidate", `Core list (${counts.candidate})`],
-                  ["other", `Other database words (${counts.other})`],
-                  ["grammar", `Grammar (${counts.grammar})`],
-                  ["cpb", `CPB/common (${counts.cpb})`],
-                  ["unavailable", `Full check unavailable (${counts.unavailable})`],
-                  ["unmatched", `Not matched (${counts.unmatched})`],
-                  ["review", `Review (${counts.review})`],
-                ] as Array<[ResultFilter, string]>
-              ).map(([value, label]) => (
+          <ProgressiveDisclosure title="More text details">
+            <ProgressiveDisclosure title="Text complexity">
+              <ComplexityPanel text={checkedText!} results={results} />
+            </ProgressiveDisclosure>
+            <ProgressiveDisclosure title="All word results">
+              <View style={styles.actions}>
+                {(
+                  [
+                    ["all", `All (${results.length})`],
+                    ["candidate", `Core list (${counts.candidate})`],
+                    ["other", `Other words (${counts.other})`],
+                    ["grammar", `Short forms (${counts.grammar})`],
+                    ["cpb", `Common words (${counts.cpb})`],
+                    ["unavailable", `Check online (${counts.unavailable})`],
+                    ["unmatched", `No entry (${counts.unmatched})`],
+                    ["review", `Choose family (${counts.review})`],
+                  ] as Array<[ResultFilter, string]>
+                )
+                  .filter(([value]) => value === "all" || counts[value as keyof typeof counts] > 0)
+                  .map(([value, label]) => (
+                    <ChoiceChip
+                      key={value}
+                      label={label}
+                      selected={filter === value}
+                      onPress={() => {
+                        setFilter(value);
+                        setGroupLimit(OCCURRENCE_BATCH_SIZE);
+                        setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
+                      }}
+                    />
+                  ))}
+              </View>
+              <View style={styles.actions}>
                 <ChoiceChip
-                  key={value}
-                  label={label}
-                  onPress={() => changeFilter(value)}
-                  selected={filter === value}
+                  label="In text"
+                  selected={sort === "occurrence"}
+                  onPress={() => setSort("occurrence")}
                 />
-              ))}
-            </View>
-            <Text style={styles.label}>Order</Text>
-            <View style={styles.chips}>
-              <ChoiceChip
-                label="In text"
-                onPress={() => changeSort("occurrence")}
-                selected={sort === "occurrence"}
-              />
-              <ChoiceChip
-                label="Family A–Z"
-                onPress={() => changeSort("family")}
-                selected={sort === "family"}
-              />
-            </View>
-            <View
-              accessibilityLiveRegion="polite"
-              ref={filteredSummaryRef}
-              style={styles.filteredSummary}
-              tabIndex={-1}
-            >
-              <Text style={styles.filteredText}>
-                {visible.length} occurrences · {groups.length} grouped family/form rows · showing
-                first {Math.min(groupLimit, groups.length)}
+                <ChoiceChip
+                  label="Family A–Z"
+                  selected={sort === "family"}
+                  onPress={() => setSort("family")}
+                />
+              </View>
+              <Text style={styles.meta}>
+                {visible.length} word occurrences · {groups.length} different forms
               </Text>
-            </View>
-            {groups.slice(0, groupLimit).map((group) => (
-              <View key={group.key} style={styles.groupRow}>
-                <View style={styles.groupText}>
+              {groups.slice(0, groupLimit).map((group) => (
+                <View key={group.key} style={styles.groupRow}>
                   <Text style={styles.groupTitle}>
                     {group.form} × {group.count}
                   </Text>
-                  <Text style={styles.groupNote}>
+                  <Text style={styles.meta}>
                     {group.family} · {group.status}
                   </Text>
                 </View>
-              </View>
-            ))}
-            {groupLimit < groups.length ? (
-              <ActionButton
-                kind="secondary"
-                label={`Show ${Math.min(OCCURRENCE_BATCH_SIZE, groups.length - groupLimit)} more grouped rows`}
-                onPress={() =>
-                  setGroupLimit((value) =>
-                    nextBatchSize(value, groups.length, OCCURRENCE_BATCH_SIZE),
-                  )
-                }
-              />
-            ) : null}
-          </ProgressiveDisclosure>
-          <ProgressiveDisclosure
-            summary="See each word in its original sentence."
-            title="All occurrences"
-          >
-            {visible.slice(0, occurrenceLimit).map((item) => {
-              return (
-                <OccurrenceCard
-                  cpbEnabled={cpbEnabled}
-                  customRange={customRange}
-                  hkEnabled={hkEnabled}
-                  item={item}
-                  key={item.occurrenceId}
-                  onOpenFamily={(basewordKey) =>
-                    onOpenFamily(basewordKey, familyEvidence(basewordKey))
+              ))}
+              {groupLimit < groups.length ? (
+                <ActionButton
+                  kind="secondary"
+                  label="Show more words"
+                  onPress={() =>
+                    setGroupLimit((value) =>
+                      nextBatchSize(value, groups.length, OCCURRENCE_BATCH_SIZE),
+                    )
                   }
-                  teaching={teaching}
                 />
-              );
-            })}
-            {occurrenceLimit < visible.length ? (
-              <ActionButton
-                kind="secondary"
-                label={`Show ${Math.min(OCCURRENCE_BATCH_SIZE, visible.length - occurrenceLimit)} more occurrences`}
-                onPress={() =>
-                  setOccurrenceLimit((value) =>
-                    nextBatchSize(value, visible.length, OCCURRENCE_BATCH_SIZE),
-                  )
-                }
-              />
-            ) : null}
+              ) : null}
+            </ProgressiveDisclosure>
+            <ProgressiveDisclosure title="Words in context">
+              {visible.slice(0, occurrenceLimit).map((item) => (
+                <OccurrenceCard
+                  key={item.occurrenceId}
+                  item={item}
+                  teaching={teaching}
+                  cpbEnabled={cpbEnabled}
+                  hkEnabled={hkEnabled}
+                  customRange={customRange}
+                  onOpenFamily={(key) =>
+                    onOpenFamily(
+                      key,
+                      { ...familyEvidence(key), context: item.context },
+                      item.surface,
+                    )
+                  }
+                />
+              ))}
+              {occurrenceLimit < visible.length ? (
+                <ActionButton
+                  kind="secondary"
+                  label="Show more occurrences"
+                  onPress={() =>
+                    setOccurrenceLimit((value) =>
+                      nextBatchSize(value, visible.length, OCCURRENCE_BATCH_SIZE),
+                    )
+                  }
+                />
+              ) : null}
+            </ProgressiveDisclosure>
           </ProgressiveDisclosure>
-        </>
+        </View>
       ) : null}
+      <TextWordSheet
+        item={wordSheet}
+        onClose={() => setWordSheet(null)}
+        onOpenFamily={(key, surface, context) =>
+          onOpenFamily(key, { members: [{ surface, count: 1 }], count: 1, context }, surface)
+        }
+        onRetry={() => void analyze()}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  content: { gap: spacing.md, padding: spacing.lg },
-  error: {
-    backgroundColor: colors.dangerSoft,
-    borderRadius: 10,
-    color: colors.danger,
-    fontSize: 15,
-    lineHeight: 22,
+  resultContent: { gap: spacing.md },
+  hiddenResults: { display: "none" },
+  content: { padding: spacing.lg, gap: spacing.md },
+  textarea: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    color: colors.ink,
+    fontSize: 17,
+    lineHeight: 26,
+    minHeight: 180,
+    borderRadius: 12,
     padding: spacing.md,
   },
-  filteredSummary: { backgroundColor: colors.subdued, borderRadius: 10, padding: spacing.sm },
-  filteredText: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
-  groupNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  groupRow: {
-    borderBottomColor: colors.border,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    minHeight: 52,
-    paddingVertical: spacing.sm,
-  },
-  groupText: { gap: spacing.xs },
-  groupTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
-  label: { color: colors.ink, fontSize: 15, fontWeight: "800" },
-  knowledgeEntry: {
-    alignItems: "flex-start",
+  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, alignItems: "center" },
+  reader: {
     backgroundColor: colors.surface,
-    borderColor: colors.primary,
-    borderRadius: 14,
-    borderWidth: 2,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  readerHeading: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md,
+    gap: spacing.sm,
+    alignItems: "baseline",
     justifyContent: "space-between",
-    padding: spacing.md,
   },
-  knowledgeEntryNote: { color: colors.ink, fontSize: 15, lineHeight: 22 },
-  knowledgeEntryText: { flex: 1, gap: spacing.xs, minWidth: 240 },
-  knowledgeEntryTitle: { color: colors.primary, fontSize: 20, fontWeight: "800" },
-  rangeDash: { color: colors.muted, fontSize: 15, fontWeight: "700" },
-  rangeError: { color: colors.danger, fontSize: 15, lineHeight: 22 },
-  rangeInput: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
+  title: { fontSize: 21, fontWeight: "800", color: colors.ink },
+  meta: { fontSize: 14, lineHeight: 21, color: colors.muted },
+  highlightOptions: {
+    backgroundColor: colors.canvas,
+    padding: spacing.sm,
     borderRadius: 10,
+    gap: spacing.sm,
+  },
+  rangeInput: {
     borderWidth: 1,
-    color: colors.ink,
-    fontSize: 16,
-    minHeight: 48,
-    paddingHorizontal: spacing.md,
-    width: 116,
-  },
-  rangeRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  summary: {
-    backgroundColor: colors.primarySoft,
-    borderRadius: 14,
-    gap: spacing.xs,
-    padding: spacing.md,
-  },
-  summaryLead: { color: colors.ink, fontSize: 18, fontWeight: "800", lineHeight: 25 },
-  summaryText: { color: colors.ink, fontSize: 15, lineHeight: 22 },
-  summaryTitle: { color: colors.primary, fontSize: 20, fontWeight: "800" },
-  textarea: {
-    backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 12,
-    borderWidth: 1,
-    color: colors.ink,
+    borderRadius: 8,
+    padding: spacing.sm,
     fontSize: 16,
-    lineHeight: 24,
-    minHeight: 180,
-    padding: spacing.md,
+    color: colors.ink,
+    width: 95,
+    backgroundColor: colors.surface,
+    minHeight: 44,
   },
+  error: { fontSize: 15, lineHeight: 22, color: colors.danger },
+  groupRow: {
+    backgroundColor: colors.canvas,
+    padding: spacing.sm,
+    borderRadius: 9,
+    gap: spacing.xs,
+  },
+  groupTitle: { fontSize: 16, color: colors.ink, fontWeight: "700" },
 });

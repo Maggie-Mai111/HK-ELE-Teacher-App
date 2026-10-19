@@ -4,17 +4,21 @@ import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import type { ResolvedOccurrence } from "../domain/hkele";
 import { lessonChoicesFromResults } from "../services/lessonPlanning";
 import type { TeachingListStore } from "../services/teachingListService";
+import { selectedWordCount } from "../services/lessonSelectionPresentation";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
+import { CurrentLesson } from "./CurrentLesson";
 
 export function LessonWordPicker({
   results,
   teaching,
   onOpenList,
+  showHeading = true,
 }: {
   results: ResolvedOccurrence[];
   teaching: TeachingListStore;
   onOpenList: () => void;
+  showHeading?: boolean;
 }) {
   const choices = useMemo(() => lessonChoicesFromResults(results), [results]);
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -30,12 +34,13 @@ export function LessonWordPicker({
   const chosen = choices.filter((choice) => selected.has(choice.family.baseword_key));
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" aria-level={2} style={styles.title}>
-        Choose words for this lesson
-      </Text>
-      <Text style={styles.note}>
-        Tick the words your class needs. Nothing is selected automatically.
-      </Text>
+      {showHeading ? (
+        <Text accessibilityRole="header" aria-level={2} style={styles.title}>
+          Choose words for this lesson
+        </Text>
+      ) : null}
+      <Text style={styles.note}>Select words to add to your teaching list.</Text>
+      <CurrentLesson teaching={teaching} />
       <TextInput
         accessibilityLabel="Find a word in this text"
         placeholder="Find a word in this text"
@@ -62,6 +67,7 @@ export function LessonWordPicker({
               accessibilityRole="checkbox"
               accessibilityLabel={`Select ${choice.selectedForms.join(", ")}`}
               accessibilityState={{ checked: selected.has(key) }}
+              aria-checked={selected.has(key)}
               onPress={() => {
                 setMessage("");
                 setSelected((current) => {
@@ -102,7 +108,7 @@ export function LessonWordPicker({
             const result = teaching.addSelections(chosen);
             setMessage(
               result.formsAdded
-                ? `${result.formsAdded} words added to your lesson.`
+                ? `${result.formsAdded} ${result.formsAdded === 1 ? "word" : "words"} added to your lesson.`
                 : "These words are already in your lesson.",
             );
             setSelected(new Set());
@@ -117,7 +123,7 @@ export function LessonWordPicker({
         ) : null}
         <ActionButton
           kind="secondary"
-          label={`View teaching list (${teaching.items.length})`}
+          label={`View teaching list (${selectedWordCount(teaching.items)})`}
           onPress={onOpenList}
         />
       </View>

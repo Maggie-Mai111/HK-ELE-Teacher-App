@@ -49,9 +49,9 @@ export function DataUpdatePanel() {
       }
       const next = await dataUpdateManager.check(releaseConfiguration.updateManifestUrl);
       setPreview(next);
-      setMessage("The data release is compatible. Review the details before installing.");
-    } catch (reason) {
-      setMessage(reason instanceof Error ? reason.message : String(reason));
+      setMessage("A wordlist update is available.");
+    } catch {
+      setMessage("Unable to check wordlist updates. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -66,11 +66,9 @@ export function DataUpdatePanel() {
       const next = await dataUpdateManager.install(preview.manifestUrl, setProgress);
       setStatus(next);
       setPreview(null);
-      setMessage("Verified data installed. Restart the App to load the new active version.");
-    } catch (reason) {
-      setMessage(
-        `${reason instanceof Error ? reason.message : String(reason)} The previous active data remains available.`,
-      );
+      setMessage("Wordlist updated. Reopen HK-ELE to use it.");
+    } catch {
+      setMessage("Update unsuccessful. Your current wordlist is still available.");
     } finally {
       setBusy(false);
     }
@@ -82,9 +80,9 @@ export function DataUpdatePanel() {
     try {
       const next = await dataUpdateManager.rollback();
       setStatus(next);
-      setMessage("Rollback completed. Restart the App to load the restored version.");
-    } catch (reason) {
-      setMessage(reason instanceof Error ? reason.message : String(reason));
+      setMessage("Previous wordlist restored. Reopen HK-ELE to use it.");
+    } catch {
+      setMessage("Unable to restore the previous wordlist. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -94,11 +92,7 @@ export function DataUpdatePanel() {
 
   return (
     <AppCard title="Wordlist updates">
-      <Text style={styles.note}>
-        The App downloads one versioned data package only after you ask. It checks the package and
-        every included file before replacing active data. A failed or incompatible update is refused
-        and the previous version is kept.
-      </Text>
+      <Text style={styles.note}>Check for a newer wordlist and download it to this device.</Text>
       <View style={styles.actions}>
         <ActionButton
           disabled={!dataUpdateManager.supported || busy || !releaseConfiguration.updateManifestUrl}
@@ -108,7 +102,7 @@ export function DataUpdatePanel() {
         <ActionButton
           disabled={!preview || busy}
           kind="secondary"
-          label="Install verified update"
+          label="Install update"
           onPress={() => void install()}
         />
         <ActionButton
@@ -118,32 +112,17 @@ export function DataUpdatePanel() {
           onPress={() => void rollback()}
         />
       </View>
-      {!dataUpdateManager.supported ? (
-        <Text style={styles.notice}>
-          Offline update installation is available in Android and iOS builds. This Web build uses
-          its packaged/static data and cannot replace native App storage.
-        </Text>
-      ) : null}
-      {dataUpdateManager.supported && !releaseConfiguration.updateManifestUrl ? (
-        <Text style={styles.notice}>
-          Online data updates are not configured for this build. Saved word data remains available
-          offline.
-        </Text>
-      ) : null}
       {preview ? (
-        <View accessibilityRole="summary" style={styles.preview}>
-          <Text style={styles.previewTitle}>Available verified data release</Text>
+        <View style={styles.preview}>
+          <Text style={styles.previewTitle}>New wordlist</Text>
           <Text style={styles.value}>Version: {preview.manifest.dataVersion}</Text>
           <Text style={styles.value}>Released: {preview.manifest.releaseDate}</Text>
-          <Text style={styles.value}>
-            Download: one package · {preview.manifest.fileCount.toLocaleString("en")} verified files
-            · {formatBytes(preview.manifest.byteCount)}
-          </Text>
+          <Text style={styles.value}>Download: {formatBytes(preview.manifest.byteCount)}</Text>
         </View>
       ) : null}
       {progress ? (
         <Text accessibilityLiveRegion="polite" style={styles.message}>
-          Verified {progress.completedFiles.toLocaleString("en")} of{" "}
+          Downloaded {progress.completedFiles.toLocaleString("en")} of{" "}
           {progress.totalFiles.toLocaleString("en")} files ({formatBytes(progress.downloadedBytes)}
           ).
         </Text>
@@ -164,10 +143,6 @@ export function DataUpdatePanel() {
           {status.previousVersion ?? "None"}
         </Text>
       </View>
-      <Text style={styles.privacy}>
-        Update requests contain only ordinary network metadata. The App does not send classroom
-        text, images, teaching-list notes or student answers.
-      </Text>
     </AppCard>
   );
 }

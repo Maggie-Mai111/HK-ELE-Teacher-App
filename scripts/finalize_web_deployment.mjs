@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { relative, resolve, sep } from "node:path";
+import { buildOfflineManifest } from "./build_offline_manifest.mjs";
 
 const [outputDirectory] = process.argv.slice(2);
 if (!outputDirectory)
@@ -83,6 +84,14 @@ const buildAssets = allFiles
   )
   .map(toUrl)
   .sort();
+const visualAssets = allFiles
+  .filter(
+    (path) =>
+      relative(root, path).split(sep).join("/").startsWith("assets/") &&
+      !compactAssets.includes(toUrl(path)),
+  )
+  .map(toUrl)
+  .sort();
 if (compactAssets.length !== 3 || buildAssets.length < 1) {
   throw new Error(
     `Unexpected offline asset inventory: compact=${compactAssets.length}, build=${buildAssets.length}`,
@@ -97,7 +106,11 @@ let serviceWorker = await readFile(serviceWorkerPath, "utf8");
 serviceWorker = serviceWorker
   .replace("__PACKAGE85_CACHE_VERSION__", `package85-${fingerprint}`)
   .replace("__PACKAGE85_COMPACT_DATA_ASSETS__", JSON.stringify(compactAssets, null, 2))
-  .replace("__PACKAGE85_BUILD_ASSETS__", JSON.stringify(buildAssets, null, 2));
+  .replace(
+    "__PACKAGE85_BUILD_ASSETS__",
+    JSON.stringify([...buildAssets, ...visualAssets], null, 2),
+  );
 if (serviceWorker.includes("__PACKAGE85_")) throw new Error("Service worker placeholders remain.");
 await writeFile(serviceWorkerPath, serviceWorker, "utf8");
+await buildOfflineManifest(root);
 process.stdout.write("GitHub Pages /HK-ELE-Teacher-App/ finalization PASS\n");

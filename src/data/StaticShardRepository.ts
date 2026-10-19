@@ -15,6 +15,7 @@ import type {
 import { inflateRecord, loadGzipJson } from "./gzipJson";
 import { registeredGrammaticalRelation } from "../services/grammaticalRelationService";
 import { teacherFamilyRecord, teacherFormRecord } from "../services/externalLevelPresentation";
+import { offlineSessionIsInstalled } from "../services/offline/offlineSession";
 
 interface StaticManifest {
   api_version: string;
@@ -62,7 +63,9 @@ export class StaticShardRepository implements HkeleRepository {
   ) {}
 
   getDataMode(): Exclude<DataMode, "bundled-reference"> {
-    return this.sourceMode;
+    return this.sourceMode === "remote-full" && offlineSessionIsInstalled()
+      ? "installed-full"
+      : this.sourceMode;
   }
 
   private url(path: string): string {
@@ -117,7 +120,7 @@ export class StaticShardRepository implements HkeleRepository {
       totalItems: info.total_items,
       availableItems: info.available_items,
       families,
-      sourceMode: this.sourceMode,
+      sourceMode: this.getDataMode(),
     };
   }
 
@@ -227,7 +230,7 @@ export class StaticShardRepository implements HkeleRepository {
       owners: [],
       alternatives: [],
       identityException: { teacherDisplay, currentClassification },
-      dataMode: this.sourceMode,
+      dataMode: this.getDataMode(),
     };
   }
 
@@ -242,7 +245,7 @@ export class StaticShardRepository implements HkeleRepository {
       owners: [] as SearchFamilyOwner[],
       alternatives: [] as SearchFamilyOwner[],
       identityException: null,
-      dataMode: this.sourceMode,
+      dataMode: this.getDataMode(),
     };
     if (!normalizedQuery) return { status: "UNMATCHED", ...empty };
     const grammaticalRelation = registeredGrammaticalRelation(submittedQuery);
@@ -309,7 +312,7 @@ export class StaticShardRepository implements HkeleRepository {
       owners,
       alternatives,
       identityException: null,
-      dataMode: this.sourceMode,
+      dataMode: this.getDataMode(),
     };
   }
 
@@ -335,7 +338,7 @@ export class StaticShardRepository implements HkeleRepository {
             alternatives: [],
             identityException: null,
             context: contextFor(text, occurrence),
-            dataMode: this.sourceMode,
+            dataMode: this.getDataMode(),
           };
         }
         const result = await unique.get(occurrence.surface);

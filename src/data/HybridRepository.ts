@@ -31,7 +31,8 @@ export class HybridRepository implements HkeleRepository {
       const value = await primary();
       this.mode = this.staticSource.getDataMode();
       return value;
-    } catch {
+    } catch (error) {
+      if (this.staticSource.getDataMode() === "installed-full") throw error;
       const value = await fallback();
       this.mode = "bundled-reference";
       return value;

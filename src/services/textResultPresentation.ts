@@ -36,10 +36,9 @@ export function groupContextReviews(results: ResolvedOccurrence[]): ContextRevie
         displayForm: item.surface,
         count: 1,
         explanation:
-          item.identityException?.teacherDisplay ??
-          (item.status === "AMBIGUOUS"
-            ? "More than one recorded family is possible. Check the meaning in this sentence before choosing."
-            : "This word needs a context or spelling check before a family can be assigned."),
+          item.status === "AMBIGUOUS"
+            ? "Choose the family that fits this sentence."
+            : "Check the spelling or use in this sentence.",
       });
   }
   return [...grouped.values()];
@@ -65,14 +64,14 @@ export function textResultKind(item: ResolvedOccurrence): TextResultKind {
 
 export function textResultStatusLabel(item: ResolvedOccurrence): string {
   const kind = textResultKind(item);
-  if (kind === "grammatical-relation") return "Registered grammatical relation";
-  if (kind === "compound-family") return "Compound match";
-  if (kind === "ordinary-family") return "Ordinary family match";
-  if (kind === "full-check-unavailable") return "Full database check unavailable";
-  if (kind === "unmatched") return "Not matched in this data release";
-  if (item.status === "AMBIGUOUS") return "More than one owner — review";
-  if (item.status === "BLOCKED") return "Context review required";
-  return "Unsupported token — review";
+  if (kind === "grammatical-relation") return "Short form";
+  if (kind === "compound-family") return "Compound";
+  if (kind === "ordinary-family") return "Matched";
+  if (kind === "full-check-unavailable") return "Check online";
+  if (kind === "unmatched") return "No entry";
+  if (item.status === "AMBIGUOUS") return "Choose a family";
+  if (item.status === "BLOCKED") return "Check spelling or use";
+  return "No entry";
 }
 
 export function groupPendingFullDatabaseChecks(
@@ -117,8 +116,7 @@ export function groupUnmatchedWords(results: ResolvedOccurrence[]): UnmatchedWor
         normalizedForm,
         displayForm: item.surface,
         count: 1,
-        explanation:
-          "No recorded family match in this data release. Keep it separate without guessing a family, rank or teaching value.",
+        explanation: "No entry found in the wordlist.",
       });
     }
   }

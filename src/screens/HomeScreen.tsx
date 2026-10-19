@@ -6,14 +6,14 @@ import { colors, spacing } from "../theme/tokens";
 
 const tasks = [
   {
-    route: "browse",
-    title: "Find words",
-    description: "Explore word families, frequency and textbook observations for your lesson.",
-  },
-  {
     route: "check",
     title: "Check a text",
     description: "Paste a passage or scan printed English, then review the words in context.",
+  },
+  {
+    route: "browse",
+    title: "Find words",
+    description: "Explore word families, frequency and textbook observations for your lesson.",
   },
   {
     route: "list",
@@ -81,9 +81,6 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: AppRoute) => vo
           </Pressable>
         ))}
       </View>
-      <Text style={styles.note}>
-        Textbook observations describe the sampled materials. You decide what fits your class.
-      </Text>
     </View>
   );
 }

@@ -34,9 +34,11 @@ export function FeedbackPanel({
 }) {
   const [word, setWord] = useState("");
   const [message, setMessage] = useState("");
+  const [changeWord, setChangeWord] = useState(false);
   useEffect(() => {
     setWord(request?.context.word ?? "");
     setMessage("");
+    setChangeWord(false);
   }, [request]);
   if (!request) return null;
   const canonicalWord = request.context.registeredForms
@@ -64,22 +66,28 @@ export function FeedbackPanel({
           </Text>
           <Text style={styles.body}>
             {rating
-              ? "How easy is this word to teach, and how suitable is it for your students? Your target grade and ratings will be entered in the form."
+              ? "Rate how easy this word is to teach and how suitable it is for your students."
               : "Tell us what happened and what you expected. Please leave out student names, classroom photos and full source texts."}
           </Text>
           {request.context.family ? (
             <View style={styles.context}>
-              <Text style={styles.label}>Word family</Text>
-              <Text style={styles.value}>{request.context.family}</Text>
-              <Text style={styles.label}>Word to {rating ? "rate" : "report"}</Text>
-              <TextInput
-                accessibilityLabel="Word for feedback"
-                value={word}
-                onChangeText={setWord}
-                style={styles.input}
-                autoCapitalize="none"
-                autoCorrect={false}
+              <Text style={styles.value}>{canonicalWord || word}</Text>
+              <Text style={styles.label}>Family: {request.context.family}</Text>
+              <ActionButton
+                kind="secondary"
+                label={changeWord ? "Done" : "Change word"}
+                onPress={() => setChangeWord(!changeWord)}
               />
+              {changeWord ? (
+                <TextInput
+                  accessibilityLabel="Word for feedback"
+                  value={word}
+                  onChangeText={setWord}
+                  style={styles.input}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              ) : null}
               {!canonicalWord ? (
                 <Text accessibilityRole="alert" style={styles.error}>
                   Choose a word form shown in this family.
@@ -89,10 +97,12 @@ export function FeedbackPanel({
           ) : null}
           <Text style={styles.note}>
             {context.product} · {context.page}
-            {context.word ? ` · ${context.word}` : ""}
           </Text>
           <Text style={styles.body}>
-            HK-ELE fills in the reference for you. Complete and submit your response in the form.
+            {request.context.family
+              ? "Your word and page details are filled in."
+              : "Your page details are filled in."}{" "}
+            Submit your response in Google Forms.
           </Text>
           <ActionButton
             disabled={!url}

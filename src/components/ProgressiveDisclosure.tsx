@@ -8,9 +8,16 @@ interface Props extends PropsWithChildren {
   title: string;
   summary?: string;
   defaultOpen?: boolean;
+  keepMounted?: boolean;
 }
 
-export function ProgressiveDisclosure({ title, summary, defaultOpen = false, children }: Props) {
+export function ProgressiveDisclosure({
+  title,
+  summary,
+  defaultOpen = false,
+  keepMounted = false,
+  children,
+}: Props) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <View style={styles.box}>
@@ -18,6 +25,7 @@ export function ProgressiveDisclosure({ title, summary, defaultOpen = false, chi
         accessibilityLabel={`${open ? "Hide" : "Show"} ${title}`}
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
+        aria-expanded={open}
         onPress={() => setOpen((value) => !value)}
         style={({ pressed }) => [styles.trigger, pressed && styles.pressed]}
       >
@@ -31,12 +39,21 @@ export function ProgressiveDisclosure({ title, summary, defaultOpen = false, chi
           {open ? "Hide −" : "Show +"}
         </Text>
       </Pressable>
-      {open ? <View style={styles.body}>{children}</View> : null}
+      {open || keepMounted ? (
+        <View
+          accessibilityElementsHidden={!open}
+          importantForAccessibility={open ? "auto" : "no-hide-descendants"}
+          style={[styles.body, !open && styles.hidden]}
+        >
+          {children}
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  hidden: { display: "none" },
   body: { gap: spacing.md, padding: spacing.md, paddingTop: 0 },
   box: {
     backgroundColor: colors.surface,

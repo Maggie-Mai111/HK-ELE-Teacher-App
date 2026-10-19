@@ -26,7 +26,13 @@ export function OccurrenceCard({
   customRange,
   onOpenFamily,
 }: Props) {
-  const owner = item.owners.length === 1 ? item.owners[0] : null;
+  const owner =
+    item.status === "RESOLVED" &&
+    item.owners.length === 1 &&
+    !item.owners[0]?.blocked &&
+    !item.owners[0]?.display_blocked
+      ? item.owners[0]
+      : null;
   const cpb = matchCpb100(item.surface);
   const hk = owner ? hkFrequencyDisplay(owner.current_hk_frequency_rank) : null;
   const custom =
@@ -89,9 +95,6 @@ export function OccurrenceCard({
             Read the sentence to choose the meaning when more than one full form is shown.
           </Text>
         </View>
-      ) : null}
-      {item.identityException ? (
-        <Text style={styles.warning}>{item.identityException.teacherDisplay}</Text>
       ) : null}
       {item.status === "AMBIGUOUS" ? (
         <Text style={styles.warning}>

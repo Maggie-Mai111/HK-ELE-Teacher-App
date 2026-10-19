@@ -93,16 +93,17 @@ interface Props {
   isAdded: (family: FamilyRecord) => boolean;
   onAdd: (family: FamilyRecord) => void;
   onOpen: (family: FamilyRecord) => void;
+  canAdd?: boolean;
 }
 
-export function WebFamilyTable({ families, isAdded, onAdd, onOpen }: Props) {
+export function WebFamilyTable({ families, isAdded, onAdd, onOpen, canAdd = true }: Props) {
   const [visible, setVisible] = useState(initialVisibility);
   const shown = useMemo(() => columns.filter(([key]) => visible[key]), [visible]);
   if (Platform.OS !== "web") return null;
   return (
     <View style={styles.wrapper}>
       <Text style={styles.settingsTitle}>Full word information · {shown.length} columns</Text>
-      <ProgressiveDisclosure title="Choose columns" summary="All evidence is shown by default.">
+      <ProgressiveDisclosure title="Choose columns">
         <View style={styles.settings}>
           {columns.map(([key, label]) => (
             <ChoiceChip
@@ -138,7 +139,8 @@ export function WebFamilyTable({ families, isAdded, onAdd, onOpen }: Props) {
             >
               {shown.map(([key, _label, width]) => {
                 if (key === "view" || key === "add") {
-                  const disabled = key === "add" && isAdded(family);
+                  const added = key === "add" && isAdded(family);
+                  const disabled = key === "add" && (added || !canAdd);
                   return (
                     <Pressable
                       accessibilityRole="button"
@@ -148,7 +150,7 @@ export function WebFamilyTable({ families, isAdded, onAdd, onOpen }: Props) {
                       style={[styles.action, { width }, disabled && styles.disabled]}
                     >
                       <Text style={styles.actionText}>
-                        {disabled ? "Added" : cellValue(key, family)}
+                        {added ? "Added" : cellValue(key, family)}
                       </Text>
                     </Pressable>
                   );

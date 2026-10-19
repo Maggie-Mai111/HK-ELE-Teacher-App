@@ -176,7 +176,7 @@ test("pending full checks stay out of the unmatched review list", () => {
   assert.equal(groupPendingFullDatabaseChecks([pending, unmatched]).length, 1);
   assert.equal(groupUnmatchedWords([pending]).length, 0);
   assert.equal(groupUnmatchedWords([unmatched]).length, 1);
-  assert.equal(textResultStatusLabel(pending), "Full database check unavailable");
+  assert.equal(textResultStatusLabel(pending), "Check online");
 });
 
 test("bundled search tolerates lower-priority owners outside the 3,430-family payload", async () => {

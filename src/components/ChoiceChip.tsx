@@ -15,6 +15,7 @@ export function ChoiceChip({ label, selected, onPress, accessibilityLabel }: Pro
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      aria-pressed={selected}
       onPress={onPress}
       style={({ pressed }) => [styles.chip, selected && styles.selected, pressed && styles.pressed]}
     >

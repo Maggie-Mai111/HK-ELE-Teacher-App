@@ -29,9 +29,9 @@ test("About remains accessible from the menu and retains version, source, licenc
   assert.ok(readFileSync("DATA_PROVENANCE.md", "utf8").length > 0);
 });
 
-test("Browse has one result surface, More filters, bulk add and responsive mobile cards", () => {
+test("Browse has one result surface, sort options, bulk add and responsive mobile cards", () => {
   const browse = readFileSync("src/screens/BrowseScreen.tsx", "utf8");
-  assert.match(browse, /More filters/);
+  assert.match(browse, /Hide sort options/);
   assert.match(browse, /Add shown words to Teaching list/);
   assert.match(browse, /teaching\.addMany/);
   assert.match(browse, /viewport\.width >= 760/);

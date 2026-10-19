@@ -136,6 +136,7 @@ export function AiFilterAssistant({
         accessibilityLabel={`${expanded ? "Close" : "Open"} Find words with AI`}
         accessibilityRole="button"
         accessibilityState={{ expanded }}
+        aria-expanded={expanded}
         onPress={() => setExpanded((value) => !value)}
         style={({ pressed }) => [styles.compactHeader, pressed && styles.pressed]}
       >
@@ -154,8 +155,7 @@ export function AiFilterAssistant({
       {expanded ? (
         <View style={styles.expandedBody}>
           <Text style={styles.description}>
-            Search {scope === "core" ? "Core list" : "Full database"}. Review the suggested filters
-            before seeing the words. Only this request is shared with the AI service.
+            Describe the words you need from the {scope === "core" ? "Core list" : "Full database"}.
           </Text>
           <TextInput
             accessibilityLabel="Describe the words to find"

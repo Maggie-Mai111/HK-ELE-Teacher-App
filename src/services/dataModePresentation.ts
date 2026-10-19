@@ -17,7 +17,7 @@ export function dataModePresentation(mode: DataMode): DataModePresentation {
     return {
       title: "Installed full database",
       shortLabel: "installed full database",
-      explanation: `All ${FULL_DATABASE_COUNT.toLocaleString("en")} HK-ELE family records have been installed and verified on this device, so full searches remain available offline.`,
+      explanation: `All ${FULL_DATABASE_COUNT.toLocaleString("en")} families are available offline.`,
       fullDatabaseAvailable: true,
       worksOffline: true,
     };
@@ -34,7 +34,7 @@ export function dataModePresentation(mode: DataMode): DataModePresentation {
   return {
     title: "Saved word data (partial)",
     shortLabel: "saved word data",
-    explanation: `The built-in ${BUNDLED_REFERENCE_COUNT.toLocaleString("en")}-family local cache works offline. A word outside this cache is held for a later full-database check, not labelled unmatched.`,
+    explanation: `${BUNDLED_REFERENCE_COUNT.toLocaleString("en")} saved families are available offline. Connect to search the full wordlist.`,
     fullDatabaseAvailable: false,
     worksOffline: true,
   };

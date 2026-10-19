@@ -6,6 +6,7 @@ import { AppCard } from "../components/AppCard";
 import { EvidenceBadge } from "../components/EvidenceBadge";
 import type { FeedbackRequest } from "../components/FeedbackPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
+import { CurrentLesson } from "../components/CurrentLesson";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { MorphologyLegend, SafeMorphologyForm } from "../components/SafeMorphologyForm";
 import {
@@ -22,20 +23,20 @@ import {
   visibleForms,
 } from "../services/progressiveResults";
 import type { TeachingListStore } from "../services/teachingListService";
+import { selectedWordForm, type CheckedTextEvidence } from "../services/textReaderService";
+import { teacherLevelLabel } from "../services/externalLevelPresentation";
 import { colors, spacing } from "../theme/tokens";
-
-interface TextEvidence {
-  members: Array<{ surface: string; count: number }>;
-  count: number;
-}
 
 interface Props {
   basewordKey: string;
+  selectedForm?: string;
   repository: HkeleRepository;
   teaching: TeachingListStore;
   onBack: () => void;
+  backLabel?: string;
   onFeedback: (request: FeedbackRequest) => void;
-  textEvidence?: TextEvidence;
+  textEvidence?: CheckedTextEvidence;
+  sourceLabel?: string;
 }
 
 interface FormTierProps {
@@ -77,8 +78,8 @@ function FormTier({ title, description, forms, family, teaching }: FormTierProps
       {forms.length ? (
         <>
           <Text style={styles.caution}>
-            Showing {shown.length.toLocaleString("en")} of {forms.length.toLocaleString("en")} in
-            this layer.
+            Showing {shown.length.toLocaleString("en")} of {forms.length.toLocaleString("en")}{" "}
+            forms.
           </Text>
           <View style={styles.formRows}>
             {shown.map((form, index) => {
@@ -100,7 +101,7 @@ function FormTier({ title, description, forms, family, teaching }: FormTierProps
                     </Text>
                   </View>
                   <ActionButton
-                    disabled={selected}
+                    disabled={selected || !teaching.ready}
                     kind="secondary"
                     label={selected ? `${form.form} selected` : `Add ${form.form}`}
                     onPress={() => teaching.add(family, form.form)}
@@ -120,7 +121,7 @@ function FormTier({ title, description, forms, family, teaching }: FormTierProps
           ) : null}
         </>
       ) : (
-        <Text style={styles.caution}>No forms in this layer.</Text>
+        <Text style={styles.caution}>No forms in this group.</Text>
       )}
     </ProgressiveDisclosure>
   );
@@ -133,6 +134,9 @@ export function WordDetailScreen({
   onBack,
   onFeedback,
   textEvidence,
+  selectedForm,
+  backLabel = "← Back to results",
+  sourceLabel = "Find words",
 }: Props) {
   const [detail, setDetail] = useState<FamilyDetail | null>(null);
   const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
@@ -160,6 +164,19 @@ export function WordDetailScreen({
       active = false;
     };
   }, [basewordKey, repository]);
+
+  const activeForm = useMemo(
+    () => selectedWordForm(detail?.forms ?? [], selectedForm),
+    [detail, selectedForm],
+  );
+  const chosenWord = selectedForm || detail?.family.display_family || "";
+  const inList = detail
+    ? teaching.items.some(
+        (item) =>
+          item.basewordKey === detail.family.baseword_key &&
+          item.selectedForms.includes(chosenWord),
+      )
+    : false;
 
   const morphology = useMemo(() => {
     if (!detail) return null;
@@ -194,14 +211,13 @@ export function WordDetailScreen({
       {
         key: "external",
         title: "Supported by external level references",
-        description:
-          "Forms with external level references. No HK textbook observation is recorded.",
+        description: "Forms with external level references.",
         forms: external,
       },
       {
         key: "remaining",
         title: "Other word forms",
-        description: "Missing evidence is not interpreted as absence.",
+        description: "Additional forms in this word family.",
         forms: remaining,
       },
     ];
@@ -210,7 +226,7 @@ export function WordDetailScreen({
   return (
     <View style={styles.content}>
       <View style={styles.back}>
-        <ActionButton kind="secondary" label="← Back to results" onPress={onBack} />
+        <ActionButton kind="secondary" label={backLabel} onPress={onBack} />
       </View>
       {error ? (
         <Text accessibilityRole="alert" style={styles.error}>
@@ -228,40 +244,61 @@ export function WordDetailScreen({
         <>
           <View style={styles.hero}>
             <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
-              {detail.family.display_family}
+              {chosenWord}
             </Text>
+            {selectedForm ? (
+              <Text style={styles.caution}>Word family: {detail.family.display_family}</Text>
+            ) : null}
+            {textEvidence?.context ? (
+              <View style={styles.contextBox}>
+                <Text style={styles.caution}>In your text</Text>
+                <Text selectable style={styles.context}>
+                  {textEvidence.context}
+                </Text>
+              </View>
+            ) : null}
+            {activeForm ? <SafeMorphologyForm form={activeForm} /> : null}
             <View style={styles.badges}>
               <Text style={styles.badge}>{familySetLabel(detail.family)}</Text>
               <Text style={styles.rankBadge}>
-                Overall rank {display(detail.family.overall_frequency_order)}
+                {selectedForm ? "Family overall rank" : "Overall rank"}{" "}
+                {display(detail.family.overall_frequency_order)}
               </Text>
               <Text style={styles.rankBadge}>
-                HK rank {display(detail.family.current_hk_frequency_rank)}
+                {selectedForm ? "Family HK rank" : "HK rank"}{" "}
+                {display(detail.family.current_hk_frequency_rank)}
               </Text>
             </View>
             <View style={styles.badges}>
               <EvidenceBadge
-                label="Family · earliest HK textbook"
-                value={detail.family.textbook_first_seen_level}
+                label={
+                  activeForm
+                    ? "Word · first seen in HK textbooks"
+                    : "Family · first seen in HK textbooks"
+                }
+                value={
+                  activeForm
+                    ? activeForm.first_seen_hk_textbooks
+                    : detail.family.textbook_first_seen_level
+                }
                 tone="textbook"
               />
               <EvidenceBadge
                 label="External level"
-                value={detail.family.external_level_reference_display}
+                value={
+                  activeForm
+                    ? (teacherLevelLabel(activeForm.external_level_reference) ?? null)
+                    : detail.family.external_level_reference_display
+                }
                 tone="external"
               />
             </View>
             <ActionButton
-              disabled={teaching.items.some(
-                (item) => item.basewordKey === detail.family.baseword_key,
-              )}
-              label={
-                teaching.items.some((item) => item.basewordKey === detail.family.baseword_key)
-                  ? "In Teaching list"
-                  : "Add family to Teaching list"
-              }
-              onPress={() => teaching.add(detail.family)}
+              disabled={inList || !teaching.ready}
+              label={inList ? "In teaching list" : `Add ${chosenWord} to teaching list`}
+              onPress={() => teaching.add(detail.family, chosenWord, sourceLabel)}
             />
+            <CurrentLesson teaching={teaching} />
             <View style={styles.feedbackActions}>
               <ActionButton
                 kind="secondary"
@@ -275,6 +312,7 @@ export function WordDetailScreen({
                       family: detail.family.display_family,
                       familyKey: detail.family.baseword_key,
                       word:
+                        activeForm?.form ??
                         textEvidence?.members.find((member) =>
                           detail.forms.some(
                             (form) => form.form.toLowerCase() === member.surface.toLowerCase(),
@@ -302,7 +340,7 @@ export function WordDetailScreen({
                       page: "Word detail",
                       family: detail.family.display_family,
                       familyKey: detail.family.baseword_key,
-                      word: detail.family.display_family,
+                      word: activeForm?.form ?? chosenWord,
                       registeredForms: detail.forms.map((form) => form.form),
                     },
                   })
@@ -314,7 +352,7 @@ export function WordDetailScreen({
           {textEvidence ? (
             <AppCard title="In the checked text">
               <DetailRow
-                label="Current-text family members"
+                label="Forms in your text"
                 value={textEvidence.members
                   .map((member) => `${member.surface} × ${member.count}`)
                   .join(" · ")}
@@ -322,17 +360,8 @@ export function WordDetailScreen({
               <DetailRow label="Total occurrences" value={textEvidence.count} />
             </AppCard>
           ) : null}
-          {detail.family.general_evidence_status?.toLowerCase().includes("unavailable") ? (
-            <View style={styles.notice}>
-              <Text style={styles.noticeTitle}>Some frequency information is missing</Text>
-              <Text style={styles.noticeText}>
-                This word is still in the wordlist. A missing value doesn't mean the word is never
-                used.
-              </Text>
-            </View>
-          ) : null}
           <ProgressiveDisclosure
-            summary="Set, frequency, grade, list and subject evidence."
+            summary="Frequency, textbook levels and subject links."
             title="Word information"
           >
             <DetailRow label="Word list" value={familySetLabel(detail.family)} />
@@ -358,11 +387,7 @@ export function WordDetailScreen({
               value={hasFlag(detail.family.earlier_hk) ? "Yes" : "No / not recorded"}
             />
           </ProgressiveDisclosure>
-          <ProgressiveDisclosure
-            summary="Explore roots, prefixes and suffixes."
-            title="Recorded morphology"
-          >
-            <Text style={styles.caution}>Word parts are shown where recorded in the wordlist.</Text>
+          <ProgressiveDisclosure summary="Explore roots, prefixes and suffixes." title="Word parts">
             <DetailRow label="Root" value={morphology?.root} />
             <DetailRow label="Root meaning" value={morphology?.meaning} />
             <DetailRow label="Prefix" value={morphology?.prefix} />
@@ -394,6 +419,13 @@ export function WordDetailScreen({
 }
 
 const styles = StyleSheet.create({
+  context: { color: colors.ink, fontSize: 17, lineHeight: 26 },
+  contextBox: {
+    backgroundColor: colors.canvas,
+    padding: spacing.sm,
+    borderRadius: 10,
+    gap: spacing.xs,
+  },
   feedbackActions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   back: { alignSelf: "flex-start" },
   badge: {

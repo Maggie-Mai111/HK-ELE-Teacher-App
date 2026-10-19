@@ -27,6 +27,7 @@ const manifest = JSON.parse(await readFile(resolve(dist, "manifest.webmanifest")
 const index = await readFile(resolve(dist, "index.html"), "utf8");
 const fallback = await readFile(resolve(dist, "404.html"), "utf8");
 const serviceWorker = await readFile(resolve(dist, "sw.js"), "utf8");
+const offlinePackage = JSON.parse(await readFile(resolve(dist, "offline-package.json"), "utf8"));
 const icon192 = pngDimensions(await readFile(resolve(dist, "pwa-icon-192.png")));
 const icon512 = pngDimensions(await readFile(resolve(dist, "pwa-icon-512.png")));
 
@@ -65,6 +66,11 @@ const checks = {
     )
     .includes("hkele-data"),
   fullDataFetchBypass: serviceWorker.includes('url.pathname.includes("/hkele-data/")'),
+  installedPackageColdStart: serviceWorker.includes("installedResponse(`${BASE_PATH}index.html`)"),
+  installedOcrRouting: serviceWorker.includes("url.pathname.startsWith(`${BASE_PATH}ocr/`)"),
+  fullOfflineInventory:
+    offlinePackage.files.filter((file) => file.path.startsWith("hkele-data/")).length === 1193 &&
+    offlinePackage.counts.totalFamilies === 163784,
 };
 if (Object.values(checks).some((value) => !value)) {
   throw new Error(`PWA validation failed: ${JSON.stringify(checks)}`);
@@ -92,8 +98,8 @@ if (archiveSha256 !== "CB767B54582C8D37716BDE18FCD88768440715B7BCA03497532A13FAF
 }
 
 const report = {
-  schemaVersion: "HK_ELE_PACKAGE85_PWA_VALIDATION_1.0.0",
-  checkedOn: "2026-09-26",
+  schemaVersion: "HK_ELE_OFFLINE_V14_PWA_VALIDATION_1.0.0",
+  checkedOn: "2026-10-19",
   status: "PASS",
   basePath: "/HK-ELE-Teacher-App/",
   checks,
@@ -107,6 +113,12 @@ const report = {
   fullDatabasePrecached: false,
   updateArchivePrecached: false,
   onlineFullDatabaseSupported: true,
+  fullDatabaseUserDownloadSupported: true,
+  offlinePackage: {
+    releaseId: offlinePackage.releaseId,
+    bytes: offlinePackage.byteCount,
+    files: offlinePackage.files.length,
+  },
   nativeOcrClaimedForWeb: false,
   site: {
     files: entries.length,
@@ -115,7 +127,7 @@ const report = {
     largestFile: largest,
     everyFileUnder100Megabytes: true,
     rawSqliteFiles: 0,
-    databaseDownloadButtons: 0,
+    databaseDownloadButtons: 1,
   },
   updateArchive: { bytes: archiveBytes.length, sha256: archiveSha256 },
 };

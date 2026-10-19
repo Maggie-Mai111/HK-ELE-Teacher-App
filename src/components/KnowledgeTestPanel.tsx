@@ -5,9 +5,7 @@ import type { ResolvedOccurrence } from "../domain/hkele";
 import {
   calculateCoverage,
   collectEligibleFamilies,
-  knowledgeCheckScope,
   seededKnowledgeSample,
-  tokenCoverageGuidance,
   type KnowledgeFamily,
   type KnowledgeResponses,
 } from "../services/knowledgeTestService";
@@ -26,16 +24,20 @@ export function KnowledgeTestPanel({
   results,
   teaching,
   onNotKnownChange,
+  onHasResponsesChange,
 }: {
   text: string;
   results: ResolvedOccurrence[];
   teaching: TeachingListStore;
   onNotKnownChange?: (families: KnowledgeFamily[]) => void;
+  onHasResponsesChange?: (hasResponses: boolean) => void;
 }) {
   const eligible = useMemo(() => collectEligibleFamilies(results), [results]);
-  const scope = useMemo(() => knowledgeCheckScope(results), [results]);
   const [mode, setMode] = useState<Mode>(null);
   const [responses, setResponses] = useState<KnowledgeResponses>({});
+  const hasResponses = Object.keys(responses).length > 0;
+  useEffect(() => onHasResponsesChange?.(hasResponses), [hasResponses, onHasResponsesChange]);
+  useEffect(() => () => onHasResponsesChange?.(false), [onHasResponsesChange]);
   const seed = useMemo(() => `hkele:${text.length}:${text}`, [text]);
 
   useEffect(() => {
@@ -62,61 +64,31 @@ export function KnowledgeTestPanel({
 
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
-        Check word knowledge
-      </Text>
       <Text style={styles.intro}>
-        A teacher or learner can mark words as Known or Not known to estimate an unfamiliar-word
-        rate. Check up to {eligible.length} matched word families. Answers stay in this session.
-      </Text>
-      <Text style={styles.caution}>
-        This check includes {scope.eligibleOccurrences} of {scope.totalOccurrences} word
-        occurrences.
-        {scope.excludedOccurrences
-          ? ` The other ${scope.excludedOccurrences} are outside this check; they are not marked Known or Not known.`
-          : ""}
-      </Text>
-      <Text style={styles.caution}>
-        Unfamiliar words depend on the individual learner. Vocabulary coverage is not the same as
-        reading comprehension.
+        Mark whether your students know each word in context. Answers stay in this session.
       </Text>
       <View style={styles.actions}>
         <ActionButton
           disabled={!eligible.length}
           kind={mode === "n10" ? "primary" : "secondary"}
-          label="Quick sample (10)"
+          label="Quick check (10)"
           onPress={() => start("n10")}
         />
         <ActionButton
           disabled={!eligible.length}
           kind={mode === "n20" ? "primary" : "secondary"}
-          label="Larger sample (20)"
+          label="More words (20)"
           onPress={() => start("n20")}
         />
         <ActionButton
           disabled={!eligible.length}
           kind={mode === "full" ? "primary" : "secondary"}
-          label="Full check"
+          label={`All matched families (${eligible.length})`}
           onPress={() => start("full")}
         />
       </View>
       {mode ? (
         <>
-          {mode === "n10" ? (
-            <Text style={styles.caution}>
-              N=10 is a small sample and cannot accurately distinguish 95% from 98% coverage.
-            </Text>
-          ) : null}
-          {mode === "n20" ? (
-            <Text style={styles.caution}>
-              N=20 is still a sample and cannot accurately measure 98% coverage.
-            </Text>
-          ) : null}
-          {mode !== "full" && active.length < (mode === "n10" ? 10 : 20) ? (
-            <Text style={styles.caution}>
-              Only {active.length} eligible families were available; all were included.
-            </Text>
-          ) : null}
           {active.map((item, index) => {
             const answer = responses[item.basewordKey];
             return (
@@ -153,7 +125,7 @@ export function KnowledgeTestPanel({
                 </View>
                 {answer === false ? (
                   <View style={styles.notKnownAction}>
-                    <Text style={styles.note}>Learner/teacher marked as Not known.</Text>
+                    <Text style={styles.note}>Marked Not known</Text>
                     <ActionButton
                       disabled={teaching.items.some(
                         (entry) =>
@@ -167,8 +139,8 @@ export function KnowledgeTestPanel({
                             entry.basewordKey === item.basewordKey &&
                             entry.selectedForms.includes(item.actualForm),
                         )
-                          ? "In Teaching list"
-                          : "Add marked word to Teaching list"
+                          ? "Added"
+                          : "Add to teaching list"
                       }
                       onPress={() =>
                         teaching.add(
@@ -191,8 +163,8 @@ export function KnowledgeTestPanel({
               <>
                 <Text style={styles.resultLabel}>
                   {mode === "full"
-                    ? "Result for matched families only"
-                    : "Sample estimate for matched families"}
+                    ? `Checked word families (${active.length})`
+                    : `Sample of ${active.length} matched word families`}
                 </Text>
                 <Text style={styles.resultLine}>
                   Known families: {coverage.knownFamilies}/{coverage.totalFamilies} (
@@ -210,24 +182,9 @@ export function KnowledgeTestPanel({
                   Unfamiliar occurrences in this check:{" "}
                   {percent(coverage.unfamiliarTokenRatePercent)}
                 </Text>
-                {coverage.tokenCoveragePercent !== null &&
-                mode === "full" &&
-                !scope.excludedOccurrences ? (
-                  <Text style={styles.guidance}>
-                    {tokenCoverageGuidance(coverage.tokenCoveragePercent)}
-                  </Text>
-                ) : null}
-                <Text style={styles.note}>
-                  {mode === "full"
-                    ? "These percentages cover the matched words included in this check, not every word in the passage."
-                    : "This sample gives a rough estimate for the matched words. Choose Full check to review all matched families."}
-                </Text>
               </>
             ) : (
-              <Text style={styles.note}>
-                Continue marking every shown family. Final percentages remain hidden until this
-                check is complete.
-              </Text>
+              <Text style={styles.note}>Mark the remaining words to see the results.</Text>
             )}
           </View>
         </>

@@ -20,16 +20,20 @@ import {
   validConsentChoice,
 } from "./src/services/privacyPreferences";
 import { repository } from "./src/data/repository";
+import type { CheckedTextEvidence } from "./src/services/textReaderService";
 import { BrowseScreen } from "./src/screens/BrowseScreen";
 import { HomeScreen } from "./src/screens/HomeScreen";
 import { CheckTextScreen } from "./src/screens/CheckTextScreen";
 import { DataVersionScreen } from "./src/screens/DataVersionScreen";
+import { OfflineScreen } from "./src/screens/OfflineScreen";
 import { TeachingListScreen } from "./src/screens/TeachingListScreen";
 import { WordDetailScreen } from "./src/screens/WordDetailScreen";
 import { useTeachingList } from "./src/services/teachingListService";
 import { colors } from "./src/theme/tokens";
+import { EMPTY_SESSION_WORK } from "./src/services/reopenSession";
 
 export default function App() {
+  const [sessionWork, setSessionWork] = useState(EMPTY_SESSION_WORK);
   const [feedbackRequest, setFeedbackRequest] = useState<FeedbackRequest | null>(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [firstVisit, setFirstVisit] = useState(true);
@@ -104,25 +108,47 @@ export default function App() {
   const [detail, setDetail] = useState<{
     basewordKey: string;
     previousRoute: AppRoute;
-    textEvidence?: { members: Array<{ surface: string; count: number }>; count: number };
+    selectedForm?: string;
+    textEvidence?: CheckedTextEvidence;
   } | null>(null);
   const appRepository = useMemo(() => repository, []);
   const teaching = useTeachingList(appRepository);
   const scrollRef = useRef<ScrollView>(null);
+  const pageRef = useRef<View>(null);
+  const revealTextSection = (section: View | null) => {
+    if (!section) return;
+    if (Platform.OS === "web") {
+      const element = section as unknown as {
+        scrollIntoView?: (options: { block: string; behavior: string }) => void;
+        focus?: (options: { preventScroll: boolean }) => void;
+      };
+      element.scrollIntoView?.({ block: "start", behavior: "smooth" });
+      element.focus?.({ preventScroll: true });
+    } else if (pageRef.current) {
+      section.measureLayout(
+        pageRef.current,
+        (_x, y) => scrollRef.current?.scrollTo({ y, animated: true }),
+        () => undefined,
+      );
+    }
+  };
   const scrollPositions = useRef<Record<AppRoute, number>>({
     home: 0,
     browse: 0,
     check: 0,
     list: 0,
     data: 0,
+    offline: 0,
   });
   const openFamily = (
     basewordKey: string,
-    textEvidence?: { members: Array<{ surface: string; count: number }>; count: number },
+    textEvidence?: CheckedTextEvidence,
+    selectedForm?: string,
   ) => {
     setDetail({
       basewordKey,
       previousRoute: route,
+      ...(selectedForm ? { selectedForm } : {}),
       ...(textEvidence ? { textEvidence } : {}),
     });
   };
@@ -160,8 +186,9 @@ export default function App() {
               scrollEventThrottle={32}
               style={styles.scroll}
             >
-              <View style={styles.page}>
+              <View ref={pageRef} style={styles.page}>
                 <AppMenu
+                  onOffline={() => navigate("offline")}
                   onOpenAbout={() => navigate("data")}
                   onFeedback={() =>
                     setFeedbackRequest({
@@ -176,6 +203,7 @@ export default function App() {
                               check: "Check a text",
                               list: "Teaching list",
                               data: "About",
+                              offline: "Offline use",
                             }[route],
                       },
                     })
@@ -189,12 +217,27 @@ export default function App() {
                   <WordDetailScreen
                     onFeedback={(request) => setFeedbackRequest(request)}
                     basewordKey={detail.basewordKey}
+                    backLabel={
+                      detail.previousRoute === "check"
+                        ? "← Back to text"
+                        : detail.previousRoute === "list"
+                          ? "← Back to teaching list"
+                          : "← Back to results"
+                    }
+                    {...(detail.selectedForm ? { selectedForm: detail.selectedForm } : {})}
                     onBack={() => {
                       setRoute(detail.previousRoute);
                       setDetail(null);
                     }}
                     repository={appRepository}
                     teaching={teaching}
+                    sourceLabel={
+                      detail.previousRoute === "check"
+                        ? "Check a text"
+                        : detail.previousRoute === "list"
+                          ? "Teaching list"
+                          : "Find words"
+                    }
                     {...(detail.textEvidence ? { textEvidence: detail.textEvidence } : {})}
                   />
                 ) : null}
@@ -203,13 +246,15 @@ export default function App() {
                 </View>
                 <View {...screenVisibility("browse")}>
                   <BrowseScreen
-                    onOpenFamily={openFamily}
+                    onOpenFamily={(key, form) => openFamily(key, undefined, form)}
                     repository={appRepository}
                     teaching={teaching}
                   />
                 </View>
                 <View {...screenVisibility("check")}>
                   <CheckTextScreen
+                    onSessionWorkChange={setSessionWork}
+                    onRevealSection={revealTextSection}
                     onOpenTeachingList={() => navigate("list")}
                     onOpenFamily={openFamily}
                     repository={appRepository}
@@ -220,16 +265,31 @@ export default function App() {
                   <TeachingListScreen
                     onCheckText={() => navigate("check")}
                     onFindWords={() => navigate("browse")}
-                    onOpenFamily={openFamily}
+                    onOpenFamily={(key, form) => openFamily(key, undefined, form)}
                     teaching={teaching}
                   />
                 </View>
                 <View {...screenVisibility("data")}>
                   <DataVersionScreen repository={appRepository} />
                 </View>
+                <View {...screenVisibility("offline")}>
+                  <OfflineScreen
+                    sessionWork={sessionWork}
+                    onBackToText={() => navigate("check")}
+                    active={route === "offline" && !detail}
+                    canReopen={teaching.ready && !teaching.saving && !teaching.saveError}
+                  />
+                </View>
               </View>
             </ScrollView>
-            <NavigationBar activeRoute={route} onNavigate={navigate} />
+            <NavigationBar
+              activeRoute={route}
+              onNavigate={navigate}
+              lessonWordCount={teaching.items.reduce(
+                (sum, item) => sum + item.selectedForms.length,
+                0,
+              )}
+            />
             <FeedbackPanel request={feedbackRequest} onClose={() => setFeedbackRequest(null)} />
           </>
         ) : !privacyReady ? (

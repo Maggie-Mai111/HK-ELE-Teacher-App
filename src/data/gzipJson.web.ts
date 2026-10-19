@@ -1,7 +1,8 @@
 import { gunzipSync, strFromU8 } from "fflate";
+import { readInstalledData } from "../services/offline/offlineStorage.web";
 
 export async function loadGzipJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, { cache: "force-cache" });
+  const response = (await readInstalledData(url)) ?? (await fetch(url, { cache: "force-cache" }));
   if (!response.ok) throw new Error(`Data file unavailable (${response.status}): ${url}`);
   const bytes = new Uint8Array(await response.arrayBuffer());
   return JSON.parse(strFromU8(gunzipSync(bytes))) as T;

@@ -41,19 +41,17 @@ export function PrivacyPanel({
           <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
             {firstVisit ? "Welcome to HK-ELE" : "Your data choices"}
           </Text>
-          <Text style={styles.body}>
-            Help us improve vocabulary teaching. With your agreement, we can use:
-          </Text>
+          <Text style={styles.body}>Help us improve vocabulary teaching by sharing:</Text>
           <View style={styles.card}>
             <Text style={styles.item}>• Feedback about problems you report</Text>
             <Text style={styles.item}>• Your ratings of words for teaching and your class</Text>
-            <Text style={styles.item}>• Basic records of clicks and features used</Text>
           </View>
           <Text style={styles.body}>
             Your classroom texts, photos and teaching notes are not included in these records.
           </Text>
           <Text style={styles.note}>
-            In this trial, your choice is saved on this device. Usage records are not sent.
+            Feedback is shared only when you submit a Google Form. Click and feature-use records are
+            not currently collected. We will ask again before enabling them.
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -69,8 +67,8 @@ export function PrivacyPanel({
           {detailsOpen ? (
             <View style={styles.details}>
               <Text style={styles.note}>
-                Feedback and ratings are shared only when you submit a linked Google Form. Please
-                leave out student names and other identifying information.
+                Your choice is saved on this device. Please leave student names and other
+                identifying information out of your feedback.
               </Text>
               <Text style={styles.note}>
                 Text checking and photo recognition happen on your device. Your teaching list and
@@ -78,9 +76,8 @@ export function PrivacyPanel({
                 only your search request is sent to the AI service.
               </Text>
               <Text style={styles.note}>
-                You can review or withdraw this choice from Menu → Your data choices. This trial
-                does not enrol you in a research study. Study information will be provided before
-                research usage collection begins, and you will be asked again.
+                Review or withdraw your choice from Menu → Your data choices. Research participation
+                requires a separate invitation and consent.
               </Text>
             </View>
           ) : null}

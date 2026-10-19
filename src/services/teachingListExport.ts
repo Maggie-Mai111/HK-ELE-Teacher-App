@@ -186,22 +186,29 @@ export function buildTeachingListExport(
   lessonTitle = "",
 ) {
   const date = new Date().toISOString().slice(0, 10);
+  const lessonName = lessonTitle
+    .normalize("NFKC")
+    .trim()
+    .replace(/[^\p{L}\p{N}._-]+/gu, "-")
+    .replace(/^[.-]+|[.-]+$/g, "")
+    .slice(0, 70);
+  const filename = `HK-ELE-Teaching-List-${lessonName ? `${lessonName}-` : ""}${date}`;
   if (format === "csv") {
     return {
-      filename: `HK-ELE-Teaching-List-${date}.csv`,
+      filename: `${filename}.csv`,
       mimeType: "text/csv;charset=utf-8",
       data: teachingListToCsv(items, lessonTitle),
     };
   }
   if (format === "md") {
     return {
-      filename: `HK-ELE-Teaching-List-${date}.md`,
+      filename: `${filename}.md`,
       mimeType: "text/markdown;charset=utf-8",
       data: teachingListToMarkdown(items, lessonTitle),
     };
   }
   return {
-    filename: `HK-ELE-Teaching-List-${date}.xlsx`,
+    filename: `${filename}.xlsx`,
     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     data: teachingListToXlsx(items, lessonTitle),
   };

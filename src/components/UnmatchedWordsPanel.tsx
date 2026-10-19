@@ -8,10 +8,7 @@ export function UnmatchedWordsPanel({ items }: { items: UnmatchedWordSummary[] }
   if (items.length === 0) return null;
   return (
     <AppCard title="Words without a data match">
-      <Text style={styles.note}>
-        These words aren't in the current wordlist. They may still be common or familiar to your
-        students, including compound words such as classroom.
-      </Text>
+      <Text style={styles.note}>No wordlist entry was found for these words.</Text>
       {items.map((item) => (
         <View
           accessibilityLabel={`${item.displayForm}, ${item.count} occurrences, unmatched word to review`}

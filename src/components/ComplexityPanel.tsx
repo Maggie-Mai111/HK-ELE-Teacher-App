@@ -21,8 +21,7 @@ export function ComplexityPanel({
         Estimated text complexity
       </Text>
       <Text style={styles.meta}>
-        {value.words} recognized English words · {value.sentences} sentences · {value.syllables}{" "}
-        estimated syllables
+        {value.words} English words · {value.sentences} sentences
       </Text>
       {value.status === "TOO_SHORT" ? (
         <Text style={styles.notice}>
@@ -36,14 +35,11 @@ export function ComplexityPanel({
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{value.fleschKincaidGrade?.toFixed(1)}</Text>
-            <Text style={styles.metricLabel}>Flesch–Kincaid Grade</Text>
+            <Text style={styles.metricLabel}>Flesch–Kincaid (U.S. grade)</Text>
           </View>
         </View>
       )}
-      <Text style={styles.note}>
-        These are approximate reading measures, not Lexile scores or Hong Kong school levels. Use
-        them alongside your knowledge of the class and lesson.
-      </Text>
+      <Text style={styles.note}>Higher Reading Ease scores indicate easier text.</Text>
     </View>
   );
 }
