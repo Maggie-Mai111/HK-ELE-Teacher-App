@@ -151,4 +151,9 @@ test("Pages deployment is manual-only and selects controlled staging or producti
   assert.match(workflow, /HKELE_STAGING_TURNSTILE_SITE_KEY/);
   assert.match(workflow, /HKELE_PRODUCTION_TURNSTILE_SITE_KEY/);
   assert.match(workflow, /options:\s*\n\s*- staging\s*\n\s*- production/);
+  // Package fingerprint tests must inspect this run's build before upload, never a local cache.
+  const build = workflow.indexOf("run: pnpm run build:web");
+  const tests = workflow.indexOf("run: pnpm test");
+  const upload = workflow.indexOf("uses: actions/upload-pages-artifact");
+  assert.ok(build >= 0 && build < tests && tests < upload);
 });

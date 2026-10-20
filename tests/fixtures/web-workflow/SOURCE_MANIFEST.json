@@ -1,0 +1,17 @@
+{
+  "purpose": "Read-only captured Web behavior contracts for independent App repository tests; not runtime UI code",
+  "files": [
+    {
+      "path": "text_workspace.js.txt",
+      "sourceProduct": "HK-ELE Web v21",
+      "sourceFile": "text_workspace.js",
+      "sha256": "dbec45ed5e2283567bfe472f3991ea00e149e507d69b6426e7d99b9e021128c4"
+    },
+    {
+      "path": "lesson_contract.js.txt",
+      "sourceProduct": "HK-ELE Web v21",
+      "sourceFile": "lesson_contract.js",
+      "sha256": "72c5d7a2d8c2f7e9e0783c014d37ec9cd9148c38949e9e586670df8ae1f82f95"
+    }
+  ]
+}

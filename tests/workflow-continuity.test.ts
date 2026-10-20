@@ -18,7 +18,11 @@ import { makeFamily, makeOccurrence } from "./support/phase3-fixtures.js";
 
 type WebOccurrence = Record<string, unknown>;
 const webContext: Record<string, unknown> = {};
-runInNewContext(readFileSync("../web/text_workspace.js", "utf8"), webContext);
+// Captured Web contracts are test fixtures; this repository builds independently.
+runInNewContext(
+  readFileSync("tests/fixtures/web-workflow/text_workspace.js.txt", "utf8"),
+  webContext,
+);
 const web = webContext.HKELE_TEXT_WORKSPACE as {
   segments: (text: string, items: WebOccurrence[]) => Array<{ text: string; item?: WebOccurrence }>;
   suggestions: (
@@ -118,7 +122,10 @@ test("entry counts measure selected words rather than families", () => {
   assert.equal(items.length, 2);
   assert.equal(selectedWordCount(items), 3);
   const context: Record<string, unknown> = {};
-  runInNewContext(readFileSync("../web/lesson_contract.js", "utf8"), context);
+  runInNewContext(
+    readFileSync("tests/fixtures/web-workflow/lesson_contract.js.txt", "utf8"),
+    context,
+  );
   const contract = context.HKELE_LESSON as { wordCount: (items: unknown[]) => number };
   assert.equal(
     contract.wordCount(items.map((item) => ({ selected_forms: item.selectedForms }))),

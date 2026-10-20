@@ -37,7 +37,6 @@ jobs:
       - run: pnpm run validate:public
       - run: pnpm run typecheck
       - run: pnpm run lint
-      - run: pnpm test
       - name: Build controlled Web/PWA deployment
         run: pnpm run build:web
         env:
@@ -47,6 +46,8 @@ jobs:
           EXPO_PUBLIC_HKELE_RELEASE_CHANNEL: web-${{ inputs.environment }}
           EXPO_PUBLIC_HKELE_ENDPOINT_STATUS: CONFIGURED_BY_MANUAL_GITHUB_ACTIONS_DEPLOYMENT
       - run: pnpm run validate:pwa
+      - name: Test source and the freshly built offline package
+        run: pnpm test
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
