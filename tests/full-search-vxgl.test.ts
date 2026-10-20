@@ -13,6 +13,8 @@ import {
   teacherFamilyRecord,
   teacherFormRecord,
   teacherLevelLabel,
+  displayedWordEvidence,
+  vocabularyListLabel,
 } from "../src/services/externalLevelPresentation";
 import { makeFamily } from "./support/phase3-fixtures";
 
@@ -26,7 +28,7 @@ test("full database includes non-Candidate words and retries failed manifests an
   const failOnce = new Set(["manifest.json.gz", "search/n.json.gz"]);
   globalThis.fetch = async (input) => {
     const url = String(input);
-    const failure = [...failOnce].find((path) => url.endsWith(path));
+    const failure = [...failOnce].find((path) => url.split("?")[0]!.endsWith(path));
     if (failure) {
       failOnce.delete(failure);
       return new Response("temporarily unavailable", { status: 503 });
@@ -41,10 +43,46 @@ test("full database includes non-Candidate words and retries failed manifests an
     assert.equal(result.status, "RESOLVED");
     assert.equal(result.owners[0]?.candidate_member, 0);
     const page = await repository.browse({ scope: "full", sort: "overall", page: 1, pageSize: 25 });
-    assert.equal(page.availableItems, 163784);
+    assert.equal(page.availableItems, 163906);
   } finally {
     globalThis.fetch = original;
   }
+});
+
+test("displayed word uses its own grade, including a higher grade and an absent grade", () => {
+  const data = JSON.parse(
+    gunzipSync(
+      readFileSync(
+        join(process.cwd(), "data/releases/2026-10-20-a-main-v1/reference/forms.json.gz"),
+      ),
+    ).toString("utf8"),
+  );
+  const forms = data.rows.map((row: unknown[]) =>
+    Object.fromEntries(data.fields.map((field: string, index: number) => [field, row[index]])),
+  );
+  const family = {
+    ...makeFamily("be", 1),
+    display_family: "be",
+    external_level_reference_display: "Kindergarten–Grade 1; Grades 10–11",
+  };
+  const own = forms.filter((form: { baseword_key: string }) => form.baseword_key === "be");
+  for (const [word, expected] of [
+    ["be", "Kindergarten–Grade 1"],
+    ["BEINGNESS", "Grades 10–11"],
+    ["beinghood", null],
+    ["unregistered-form", null],
+  ] as const) {
+    const row = displayedWordEvidence(family, own, word);
+    assert.equal(row.browse_external_level_reference, expected, word);
+    assert.equal(row.external_level_reference_display, family.external_level_reference_display);
+  }
+});
+
+test("MSVL shows a dash for negative or absent records and preserves subject records", () => {
+  for (const value of [0, "0", null, undefined, false, "", "No"]) {
+    assert.equal(vocabularyListLabel(value), "—");
+  }
+  assert.equal(vocabularyListLabel("Science | Mathematics"), "Science | Mathematics");
 });
 
 test("one failed shard does not discard full-only text matches and the same check recovers", async () => {
@@ -52,7 +90,7 @@ test("one failed shard does not discard full-only text matches and the same chec
   let fail = true;
   globalThis.fetch = async (input) => {
     const url = String(input);
-    return fail && url.endsWith("search/p.json.gz")
+    return fail && url.split("?")[0]!.endsWith("search/p.json.gz")
       ? new Response("unavailable", { status: 503 })
       : dataResponse(url);
   };
@@ -135,7 +173,7 @@ test("all compact family and form VXGL values use the registered source labels w
     const table = JSON.parse(
       gunzipSync(
         readFileSync(
-          join(process.cwd(), `data/releases/2026-09-14-package67-v1/reference/${kind}.json.gz`),
+          join(process.cwd(), `data/releases/2026-10-20-a-main-v1/reference/${kind}.json.gz`),
         ),
       ).toString("utf8"),
     ) as { fields: string[]; rows: unknown[][] };

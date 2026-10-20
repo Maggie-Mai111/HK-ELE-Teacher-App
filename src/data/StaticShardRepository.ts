@@ -83,6 +83,10 @@ export class StaticShardRepository implements HkeleRepository {
     return request;
   }
 
+  async getDataVersion(): Promise<string> {
+    return (await this.manifest()).metadata.data_version || "2026-09-14-package67-v1";
+  }
+
   private manifest(): Promise<StaticManifest> {
     return this.load<StaticManifest>("manifest.json.gz");
   }
@@ -150,14 +154,11 @@ export class StaticShardRepository implements HkeleRepository {
         teacherFamilyRecord(inflateRecord<FamilyRecord>(projection.fields, row)),
       );
     }
-    const first = await this.browse({ scope: "broader", sort: "overall", page: 1, pageSize: 100 });
-    const pageCount = Math.ceil(first.availableItems / first.pageSize);
-    const remaining = await Promise.all(
-      Array.from({ length: Math.max(0, pageCount - 1) }, (_, index) =>
-        this.browse({ scope: "broader", sort: "overall", page: index + 2, pageSize: 100 }),
-      ),
-    );
-    return [first, ...remaining].flatMap((page) => page.families);
+    // Both scopes use the same form-enriched generation, including pinned offline releases.
+    const projection = await this.fullAiProjection();
+    return projection.rows
+      .map((row) => teacherFamilyRecord(inflateRecord<FamilyRecord>(projection.fields, row)))
+      .filter((family) => family.candidate_member === true || family.candidate_member === 1);
   }
 
   async aiFilterCpbFamilyKeys(): Promise<ReadonlySet<string>> {

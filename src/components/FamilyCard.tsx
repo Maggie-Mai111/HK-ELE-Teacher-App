@@ -16,7 +16,7 @@ interface Props {
 }
 
 const shown = (value: unknown) =>
-  value === null || value === undefined || value === "" ? "Not available" : String(value);
+  value === null || value === undefined || value === "" ? "—" : String(value);
 
 export function FamilyCard({
   family,
@@ -56,10 +56,8 @@ export function FamilyCard({
             tone="textbook"
           />
           <EvidenceBadge
-            label={selectedForm ? "Family · external level" : "External level"}
-            value={
-              family.browse_external_level_reference ?? family.external_level_reference_display
-            }
+            label="External level"
+            value={family.browse_external_level_reference}
             tone="external"
           />
         </View>

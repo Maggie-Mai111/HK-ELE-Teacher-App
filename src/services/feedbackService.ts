@@ -2,6 +2,7 @@ export type FeedbackKind = "report" | "rating";
 export interface FeedbackContext {
   product: "App/PWA" | "Web";
   page: string;
+  dataVersion?: string;
   word?: string;
   family?: string;
   familyKey?: string;
@@ -31,7 +32,7 @@ export function feedbackValues(context: FeedbackContext, config: FeedbackConfigu
     family: (context.family ?? "").slice(0, 160),
     familyKey: (context.familyKey ?? "").slice(0, 160),
     productVersion: config.productVersion.slice(0, 100),
-    dataVersion: config.dataVersion.slice(0, 100),
+    dataVersion: (context.dataVersion ?? config.dataVersion).slice(0, 100),
   };
   const reference = [
     values.word && `Word: ${values.word}`,

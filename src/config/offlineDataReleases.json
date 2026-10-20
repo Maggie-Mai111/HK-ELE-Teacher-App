@@ -11,5 +11,18 @@
       "totalFamilies": 163784,
       "unranked": 214
     }
+  },
+  "2026-10-20-a-main-v1": {
+    "dataInventorySha256": "af5392158802ca5591eb7edfed792736cdf9968124928bf7d078cb22f2f955f7",
+    "sourceManifestSha256": "745c4a08c11e79cbed1b06bfac84cd76c5b4be49ecc33363d9b5fe71ac1376db",
+    "counts": {
+      "candidate": 2871,
+      "forms": 319961,
+      "inclusiveReference": 2871,
+      "ranked": 163371,
+      "referenceOnly": 0,
+      "totalFamilies": 163906,
+      "unranked": 535
+    }
   }
 }

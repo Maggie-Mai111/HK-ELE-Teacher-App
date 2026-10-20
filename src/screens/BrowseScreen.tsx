@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -32,6 +32,7 @@ import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 import { inTeacherWordScope } from "../services/wordListPresentation";
 import { hasSelectedForm, searchSelectedForm } from "../services/lessonSelectionPresentation";
+import { displayedWordEvidence } from "../services/externalLevelPresentation";
 
 interface Props {
   repository: HkeleRepository;
@@ -188,11 +189,42 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   );
   const outsideCore =
     scope === "core" && Boolean(search?.owners.length) && searchFamilies.length === 0;
-  const activeFamilies = state.aiActive
-    ? (aiSelection?.families ?? [])
-    : state.searchActive
-      ? searchFamilies
-      : (page?.families ?? []);
+  const activeFamilies = useMemo(
+    () =>
+      state.aiActive
+        ? (aiSelection?.families ?? [])
+        : state.searchActive
+          ? (search?.owners ?? []).filter((family) => inTeacherWordScope(family, scope))
+          : (page?.families ?? []),
+    [state.aiActive, state.searchActive, aiSelection, search, scope, page],
+  );
+  const [wordEvidence, setWordEvidence] = useState<{
+    source: FamilyRecord[];
+    families: FamilyRecord[];
+  } | null>(null);
+  useEffect(() => {
+    let active = true;
+    void Promise.all(
+      activeFamilies.map(async (family) => {
+        const word = state.searchActive ? searchSelectedForm(family, search) : undefined;
+        try {
+          const detail = await repository.getFamily(family.baseword_key);
+          return displayedWordEvidence(family, detail.forms, word);
+        } catch {
+          return displayedWordEvidence(family, [], word);
+        }
+      }),
+    ).then((families) => {
+      if (active) setWordEvidence({ source: activeFamilies, families });
+    });
+    return () => {
+      active = false;
+    };
+  }, [activeFamilies, repository, state.searchActive, search]);
+  const displayedFamilies =
+    wordEvidence?.source === activeFamilies
+      ? wordEvidence.families
+      : activeFamilies.map((family) => displayedWordEvidence(family, []));
 
   const showManualFilters = () => {
     activateBrowse();
@@ -430,14 +462,14 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       {activeFamilies.length > 0 ? (
         useTable ? (
           <WebFamilyTable
-            families={activeFamilies}
+            families={displayedFamilies}
             isAdded={isAdded}
             onAdd={addFamily}
             onOpen={openFamily}
             canAdd={teaching.ready}
           />
         ) : (
-          activeFamilies.map((family) => (
+          displayedFamilies.map((family) => (
             <FamilyCard
               added={isAdded(family)}
               family={family}

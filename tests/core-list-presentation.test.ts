@@ -34,10 +34,10 @@ test("teacher membership unifies Reference-only and other records without mutati
   assert.equal(teacherWordListLabel(null), "Not recorded");
 });
 
-test("the unchanged Package67 saved data contains 3185 Core families and 245 additional records", () => {
+test("the A-main compact data contains 2871 Core families and four related-owner records", () => {
   const packed = JSON.parse(
     gunzipSync(
-      readFileSync("data/releases/2026-09-14-package67-v1/reference/families.json.gz"),
+      readFileSync("data/releases/2026-10-20-a-main-v1/reference/families.json.gz"),
     ).toString(),
   ) as { fields: string[]; rows: unknown[][] };
   const families = packed.rows.map(
@@ -46,9 +46,9 @@ test("the unchanged Package67 saved data contains 3185 Core families and 245 add
         packed.fields.map((field, index) => [field, row[index]]),
       ) as unknown as FamilyRecord,
   );
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 3185);
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 3430);
-  const fabric = families.find((family) => family.baseword_key === "fabric")!;
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 2871);
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 2875);
+  const fabric = families.find((family) => family.baseword_key === "coincide")!;
   assert.equal(familySetLabel(fabric), "Full database");
   assert.equal(inTeacherWordScope(fabric, "core"), false);
   assert.equal(inTeacherWordScope(fabric, "full"), true);

@@ -25,7 +25,8 @@ export async function buildOfflineManifest(root) {
     files.push(entry);
   };
   for (const file of source.files) await add(`hkele-data/${file.path}`, file);
-  await add("hkele-data/ai_full_projection.json.gz");
+  if (!source.files.some((f) => f.path === "ai_full_projection.json.gz"))
+    await add("hkele-data/ai_full_projection.json.gz");
   const dataInventory = files
     .map((f) => [f.path, f.byteSize, f.sha256])
     .sort((a, b) => (a[0] < b[0] ? -1 : 1));

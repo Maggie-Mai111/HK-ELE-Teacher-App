@@ -15,7 +15,7 @@ const approved = JSON.parse(await readFile(resolve("src/config/offlineDataReleas
 if (!approved)
   throw new Error("Select and approve the data release before checking product parity.");
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
-const inventory = [...source.files.map((f) => f.path), "ai_full_projection.json.gz"];
+const inventory = [...new Set([...source.files.map((f) => f.path), "ai_full_projection.json.gz"])];
 for (const path of inventory) {
   const a = await readFile(resolve(appData, path));
   const b = await readFile(resolve(webData, path));

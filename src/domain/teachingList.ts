@@ -16,6 +16,10 @@ export interface TeachingListItem {
   addedAt: string;
   updatedAt: string;
   dataVersion: string;
+  dataReviewStatus?: string | undefined;
+  previousEvidence?:
+    | { dataVersion: string; displayFamily: string; derived: TeachingListItem["derived"] }
+    | undefined;
   derived: Pick<
     FamilyRecord,
     | "set_membership"

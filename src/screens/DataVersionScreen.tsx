@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import approved from "../config/approvedDataReleases.json";
 import { StyleSheet, Text, View } from "react-native";
 
 import manifestJson from "../../data/current-manifest.json";
@@ -14,15 +16,31 @@ import { colors, spacing } from "../theme/tokens";
 const manifest = manifestJson as DataManifest;
 assertCompatibleManifest(manifest, APP_VERSION);
 
-const rows: ReadonlyArray<[string, string]> = [
-  ["Data version", manifest.dataVersion],
-  ["Released", manifest.releaseDate],
-  ["Core list families", manifest.counts.candidate.toLocaleString("en")],
-  ["Full database families", manifest.counts.totalFamilies.toLocaleString("en")],
-  ["Word forms", manifest.counts.forms.toLocaleString("en")],
-];
+function versionRows(version: string): ReadonlyArray<[string, string]> {
+  const counts = (approved.releases as Record<string, typeof manifest.counts>)[version];
+  return [
+    ["Data version", version],
+    ["Released", version === manifest.dataVersion ? manifest.releaseDate : version.slice(0, 10)],
+    ["Core list families", counts?.candidate.toLocaleString("en") ?? "—"],
+    ["Full database families", counts?.totalFamilies.toLocaleString("en") ?? "—"],
+    ["Word forms", counts?.forms.toLocaleString("en") ?? "—"],
+  ];
+}
 
 export function DataVersionScreen({ repository }: { repository: HkeleRepository }) {
+  const [version, setVersion] = useState(manifest.dataVersion);
+  useEffect(() => {
+    let active = true;
+    void repository
+      .getDataVersion?.()
+      .then((value) => {
+        if (active) setVersion(value);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [repository]);
   return (
     <View style={styles.content}>
       <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
@@ -35,9 +53,9 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
       <DataModeNotice detailed mode={repository.getDataMode()} />
       <ProgressiveDisclosure
         title="Wordlist information"
-        summary={`Updated ${manifest.releaseDate}`}
+        summary={`Updated ${version.slice(0, 10)}`}
       >
-        {rows.map(([label, value]) => (
+        {versionRows(version).map(([label, value]) => (
           <View key={label} style={styles.row}>
             <Text style={styles.label}>{label}</Text>
             <Text selectable style={styles.value}>

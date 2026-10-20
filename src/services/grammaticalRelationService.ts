@@ -1,4 +1,4 @@
-import registryJson from "../../data/releases/2026-09-14-package67-v1/identity/grammatical-relations.json";
+import registryJson from "../../data/releases/2026-10-20-a-main-v1/identity/grammatical-relations.json";
 import type { RegisteredGrammaticalRelation } from "../domain/contracts";
 
 interface RegistryPayload {

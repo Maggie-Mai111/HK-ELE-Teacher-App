@@ -190,7 +190,7 @@ test("offline manifest rejects traversal, duplicate files, missing OCR and incom
 test("actual built package includes full data, OCR and cold-start assets with exact fingerprints", async () => {
   const m = validateOfflineManifest(
     JSON.parse(readFileSync("dist/offline-package.json", "utf8")),
-    "0.4.0",
+    "0.5.0",
   );
   const approvals = JSON.parse(readFileSync("src/config/offlineDataReleases.json", "utf8"));
   const data = m.files
@@ -201,8 +201,8 @@ test("actual built package includes full data, OCR and cold-start assets with ex
     await hash(new TextEncoder().encode(JSON.stringify(data))),
     approvals[m.dataVersion].dataInventorySha256,
   );
-  assert.equal(m.counts.totalFamilies, 163784);
-  assert.equal(m.counts.candidate, 3185);
+  assert.equal(m.counts.totalFamilies, 163906);
+  assert.equal(m.counts.candidate, 2871);
   for (const file of m.files) {
     const actual = readFileSync("dist/" + file.path);
     assert.equal(actual.length, file.byteSize, file.path);
@@ -249,6 +249,7 @@ function storageFixture() {
       },
     },
     caches: { open: cache, has: async (name: string) => buckets.has(name) },
+    crypto: globalThis.crypto,
     URL,
     Response,
     Request,
@@ -267,6 +268,17 @@ test("a running tab reads one pinned data generation across an update", async ()
   await (
     await fixture.cache(next.cacheName)
   ).put("/HK-ELE-Teacher-App/hkele-data/manifest.json.gz", new Response("new bytes"));
+  for (const [selection, text] of [
+    [old, "old bytes"],
+    [next, "new bytes"],
+  ] as const) {
+    const file = selection.manifest.files.find(
+      (file) => file.path === "hkele-data/manifest.json.gz",
+    )!;
+    selection.manifest.byteCount += text.length - file.byteSize;
+    file.byteSize = text.length;
+    file.sha256 = createHash("sha256").update(text).digest("hex");
+  }
   await fixture.api.writeOfflineState!({ active: old, previous: null });
   assert.equal(
     await (

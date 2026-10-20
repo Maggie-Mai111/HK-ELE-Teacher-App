@@ -24,7 +24,7 @@ import {
 } from "../services/progressiveResults";
 import type { TeachingListStore } from "../services/teachingListService";
 import { selectedWordForm, type CheckedTextEvidence } from "../services/textReaderService";
-import { teacherLevelLabel } from "../services/externalLevelPresentation";
+import { teacherLevelLabel, vocabularyListLabel } from "../services/externalLevelPresentation";
 import { colors, spacing } from "../theme/tokens";
 
 interface Props {
@@ -48,12 +48,12 @@ interface FormTierProps {
 }
 
 function display(value: unknown): string {
-  return value === null || value === undefined || value === "" ? "Not available" : String(value);
+  return value === null || value === undefined || value === "" ? "—" : String(value);
 }
 
 function unique(values: Array<string | null | undefined>): string {
   const found = [...new Set(values.map((value) => value?.trim()).filter(Boolean))];
-  return found.length ? found.join(" · ") : "Not recorded";
+  return found.length ? found.join(" · ") : "—";
 }
 
 function DetailRow({ label, value }: { label: string; value: unknown }) {
@@ -166,7 +166,7 @@ export function WordDetailScreen({
   }, [basewordKey, repository]);
 
   const activeForm = useMemo(
-    () => selectedWordForm(detail?.forms ?? [], selectedForm),
+    () => selectedWordForm(detail?.forms ?? [], selectedForm || detail?.family.display_family),
     [detail, selectedForm],
   );
   const chosenWord = selectedForm || detail?.family.display_family || "";
@@ -285,11 +285,7 @@ export function WordDetailScreen({
               />
               <EvidenceBadge
                 label="External level"
-                value={
-                  activeForm
-                    ? (teacherLevelLabel(activeForm.external_level_reference) ?? null)
-                    : detail.family.external_level_reference_display
-                }
+                value={teacherLevelLabel(activeForm?.external_level_reference)}
                 tone="external"
               />
             </View>
@@ -374,17 +370,14 @@ export function WordDetailScreen({
             />
             <DetailRow
               label="External level reference"
-              value={detail.family.external_level_reference_display}
+              value={teacherLevelLabel(activeForm?.external_level_reference)}
             />
-            <DetailRow
-              label="AWL"
-              value={hasFlag(detail.family.awl) ? "Yes" : "No / not recorded"}
-            />
-            <DetailRow label="MSVL" value={detail.family.msvl} />
+            <DetailRow label="AWL" value={hasFlag(detail.family.awl) ? "Yes" : "—"} />
+            <DetailRow label="MSVL" value={vocabularyListLabel(detail.family.msvl)} />
             <DetailRow label="Academic subject evidence" value={morphology?.subjects} />
             <DetailRow
               label="Earlier HK list"
-              value={hasFlag(detail.family.earlier_hk) ? "Yes" : "No / not recorded"}
+              value={hasFlag(detail.family.earlier_hk) ? "Yes" : "—"}
             />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure summary="Explore roots, prefixes and suffixes." title="Word parts">

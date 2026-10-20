@@ -8,6 +8,34 @@ export function teacherLevelLabel(value: unknown): string | null {
   return label;
 }
 
+/** Match the visible word exactly; never substitute a family aggregate or another form. */
+export function displayedWordEvidence(
+  family: FamilyRecord,
+  forms: FormRecord[],
+  currentWord = family.display_family,
+): FamilyRecord {
+  const normalize = (value: string) =>
+    value.normalize("NFKC").trim().replace(/[’‘]/g, "'").toLocaleLowerCase();
+  const word = normalize(currentWord);
+  const form = forms.find(
+    (item) => normalize(item.form) === word || normalize(item.normalized_form) === word,
+  );
+  return {
+    ...family,
+    browse_display_word: currentWord,
+    browse_external_level_reference: form
+      ? registeredExternalLevel(form, "external_level_reference")
+      : null,
+  };
+}
+
+/** Negative membership and absent evidence share a dash only in presentation. */
+export function vocabularyListLabel(value: unknown): string {
+  if (value === null || value === undefined || value === false || value === 0) return "—";
+  const text = String(value).trim();
+  return !text || /^(0|no|false|null|none)$/i.test(text) ? "—" : text;
+}
+
 export function registeredExternalLevel(
   record: Record<string, unknown>,
   field: string,
@@ -22,6 +50,7 @@ export function teacherFamilyRecord<T extends FamilyRecord>(family: T): T {
   const label = registeredExternalLevel(family, "external_level_reference_display");
   return {
     ...family,
+    data_version: family.data_version ?? "2026-09-14-package67-v1",
     external_level_reference_display: label,
     ...(Object.hasOwn(family, "browse_external_level_reference")
       ? {

@@ -58,6 +58,7 @@ function ListItem({
         </Text>
         <Text style={styles.meta}>Family: {item.displayFamily}</Text>
       </View>
+      {item.dataReviewStatus ? <Text style={styles.meta}>{item.dataReviewStatus}</Text> : null}
       {!open && item.notes ? (
         <Text numberOfLines={2} style={styles.notePreview}>
           {item.notes}
@@ -136,7 +137,7 @@ function ListItem({
               onPress={() =>
                 item.selectedForms.length > 1
                   ? setChooseWord(!chooseWord)
-                  : onOpenFamily(item.basewordKey, item.selectedForms[0])
+                  : !item.dataReviewStatus && onOpenFamily(item.basewordKey, item.selectedForms[0])
               }
             />
             <ActionButton
@@ -164,7 +165,7 @@ function ListItem({
                   key={form}
                   kind="secondary"
                   label={`View ${form}`}
-                  onPress={() => onOpenFamily(item.basewordKey, form)}
+                  onPress={() => !item.dataReviewStatus && onOpenFamily(item.basewordKey, form)}
                 />
               ))}
             </View>

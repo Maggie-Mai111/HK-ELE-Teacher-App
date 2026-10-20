@@ -1,6 +1,5 @@
 import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import classroomHero from "../../assets/learning-classroom-hero.png";
-import { ActionButton } from "../components/ActionButton";
 import type { AppRoute } from "../components/NavigationBar";
 import { colors, spacing } from "../theme/tokens";
 
@@ -45,14 +44,6 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: AppRoute) => vo
             Explore word information and evidence from Hong Kong English and textbooks, then use
             your knowledge of your students to make the final choice.
           </Text>
-          <View style={styles.actions}>
-            <ActionButton label="Check a text" onPress={() => onNavigate("check")} />
-            <ActionButton
-              kind="secondary"
-              label="Find words"
-              onPress={() => onNavigate("browse")}
-            />
-          </View>
         </View>
         <View style={[styles.illustration, wide && styles.half]}>
           <Image
@@ -73,7 +64,11 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: AppRoute) => vo
             accessibilityRole="button"
             key={task.route}
             onPress={() => onNavigate(task.route)}
-            style={({ pressed }) => [styles.task, pressed && styles.pressed]}
+            style={({ pressed }) => [
+              styles.task,
+              index === 0 && styles.primaryTask,
+              pressed && styles.pressed,
+            ]}
           >
             <Text style={styles.number}>0{index + 1}</Text>
             <Text style={styles.taskTitle}>{task.title} →</Text>
@@ -101,7 +96,6 @@ const styles = StyleSheet.create({
   heading: { color: colors.ink, fontSize: 34, fontWeight: "700", lineHeight: 41 },
   headingWide: { fontSize: 46, lineHeight: 54 },
   description: { color: colors.ink, fontSize: 18, lineHeight: 28 },
-  actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.sm },
   illustration: {
     overflow: "hidden",
     borderRadius: 20,
@@ -122,6 +116,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     minHeight: 160,
   },
+  primaryTask: { backgroundColor: "#e7f2eb", borderColor: "#b4d2c0" },
   number: { color: colors.primary, fontSize: 16, fontWeight: "600", lineHeight: 23 },
   taskTitle: { color: colors.ink, fontSize: 21, fontWeight: "600", lineHeight: 28 },
   taskDescription: { color: colors.muted, fontSize: 16, lineHeight: 24 },

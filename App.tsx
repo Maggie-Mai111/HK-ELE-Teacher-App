@@ -140,6 +140,10 @@ export default function App() {
     data: 0,
     offline: 0,
   });
+  const requestFeedback = async (request: FeedbackRequest) => {
+    const version = await appRepository.getDataVersion?.().catch(() => "Not checked") ?? "Not checked";
+    setFeedbackRequest({...request, context:{...request.context, dataVersion:version}});
+  };
   const openFamily = (
     basewordKey: string,
     textEvidence?: CheckedTextEvidence,
@@ -191,7 +195,7 @@ export default function App() {
                   onOffline={() => navigate("offline")}
                   onOpenAbout={() => navigate("data")}
                   onFeedback={() =>
-                    setFeedbackRequest({
+                    void requestFeedback({
                       kind: "report",
                       context: {
                         product: "App/PWA",
@@ -215,7 +219,7 @@ export default function App() {
                 />
                 {detail ? (
                   <WordDetailScreen
-                    onFeedback={(request) => setFeedbackRequest(request)}
+                    onFeedback={(request) => void requestFeedback(request)}
                     basewordKey={detail.basewordKey}
                     backLabel={
                       detail.previousRoute === "check"

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { familySetLabel, hasFlag, type FamilyRecord } from "../domain/hkele";
+import { vocabularyListLabel } from "../services/externalLevelPresentation";
 import { colors, spacing } from "../theme/tokens";
 import { ChoiceChip } from "./ChoiceChip";
 import { ProgressiveDisclosure } from "./ProgressiveDisclosure";
@@ -50,7 +51,10 @@ function display(value: unknown): string {
 function cellValue(key: ColumnKey, family: FamilyRecord): string {
   switch (key) {
     case "family":
-      return family.display_family;
+      return typeof family.browse_display_word === "string" &&
+        family.browse_display_word !== family.display_family
+        ? `${family.browse_display_word}\nFamily: ${family.display_family}`
+        : family.display_family;
     case "status":
       return familySetLabel(family);
     case "overall":
@@ -64,13 +68,11 @@ function cellValue(key: ColumnKey, family: FamilyRecord): string {
     case "first_seen":
       return display(family.textbook_first_seen_level);
     case "external":
-      return display(
-        family.browse_external_level_reference ?? family.external_level_reference_display,
-      );
+      return display(family.browse_external_level_reference);
     case "academic":
       return hasFlag(family.awl) ? "Yes" : "—";
     case "subjects":
-      return display(family.msvl);
+      return vocabularyListLabel(family.msvl);
     case "earlier":
       return hasFlag(family.earlier_hk) ? "Yes" : "—";
     case "root":

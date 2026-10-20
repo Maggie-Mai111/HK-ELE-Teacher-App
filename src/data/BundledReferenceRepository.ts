@@ -1,3 +1,4 @@
+import currentManifest from "../../data/current-manifest.json";
 import { Asset } from "expo-asset";
 import { gunzipSync, strFromU8 } from "fflate";
 
@@ -96,6 +97,10 @@ export class BundledReferenceRepository implements HkeleRepository {
   private familiesPromise: Promise<FamilyRecord[]> | null = null;
   private formsPromise: Promise<FormRecord[]> | null = null;
   private routesPromise: Promise<CompactTable> | null = null;
+
+  async getDataVersion(): Promise<string> {
+    return currentManifest.dataVersion;
+  }
 
   getDataMode(): "bundled-reference" {
     return "bundled-reference";

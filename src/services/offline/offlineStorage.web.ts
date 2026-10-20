@@ -89,5 +89,15 @@ export async function readInstalledData(url: string): Promise<Response | null> {
   ).match(target.origin + target.pathname);
   if (!cached)
     throw new Error("Some offline data is missing. Open Offline use to download it again.");
+  const file = selection.manifest.files.find(
+    (file) => OFFLINE_BASE + file.path === target.pathname,
+  );
+  const bytes = new Uint8Array(await cached.clone().arrayBuffer());
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const actual = Array.from(new Uint8Array(digest), (n) => n.toString(16).padStart(2, "0")).join(
+    "",
+  );
+  if (!file || bytes.length !== file.byteSize || actual !== file.sha256.toLowerCase())
+    throw new Error("Some offline data needs downloading again. Your saved lessons are kept.");
   return cached;
 }

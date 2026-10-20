@@ -1,0 +1,84 @@
+{
+  "compatibilityRules": {
+    "compatibleSchemaMajor": 1,
+    "generalUnavailableMeaning": "SOURCE_COMPONENT_UNAVAILABLE_NOT_ZERO",
+    "incompatibleSchemaAction": "REFUSE_LOAD",
+    "incompatibleStructureUpdateChanges": "schemaVersion",
+    "ordinaryDataUpdateChanges": "dataVersion",
+    "stableFamilyKey": "baseword_key",
+    "stableFormKey": "form_key"
+  },
+  "counts": {
+    "candidate": 2871,
+    "forms": 319961,
+    "inclusiveReference": 2871,
+    "ranked": 163371,
+    "referenceOnly": 0,
+    "totalFamilies": 163906,
+    "unranked": 535
+  },
+  "dataVersion": "2026-10-20-a-main-v1",
+  "files": [
+    {
+      "path": "cpb/cpb-sight-words-100.json",
+      "byteSize": 29356,
+      "sha256": "880c87a5a686289353891926176b284b3957a240da74faea56a0b10c964f64a5",
+      "compressionFormat": "none",
+      "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
+    },
+    {
+      "path": "identity/grammatical-relations.json",
+      "byteSize": 38053,
+      "sha256": "7aca47bfa405a6355300e444303d26934d158faf45bbb5cfc45bd5967279818a",
+      "compressionFormat": "none",
+      "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
+    },
+    {
+      "path": "identity/identity-contract.json",
+      "byteSize": 1103,
+      "sha256": "69362ca81cc3268fd2ff3d29d8820ee6df9f45a6ec74807bee7a8c35c352ec64",
+      "compressionFormat": "none",
+      "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
+    },
+    {
+      "path": "manifest.json",
+      "byteSize": 2916,
+      "sha256": "11ea35f97ab3d168c529c4e24968c9b277caf682c5d66456ca66c4eef6ce98d2",
+      "compressionFormat": "none",
+      "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
+    },
+    {
+      "path": "reference/families.json.gz",
+      "byteSize": 219204,
+      "sha256": "c1b1e4388c19c45149af14903ae980b3e797c3ad03a2dbe6c93fe846f7a28386",
+      "compressionFormat": "gzip",
+      "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
+    },
+    {
+      "path": "reference/forms.json.gz",
+      "byteSize": 3083648,
+      "sha256": "ce04272b205c6cf5254ac44d26bfb0ed09fbee6db0fbb7f7afb76c41642265d9",
+      "compressionFormat": "gzip",
+      "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
+    },
+    {
+      "path": "reference/search-routes.json.gz",
+      "byteSize": 602547,
+      "sha256": "e9709979a946ca8cc130ca242299047a1816f1144998643603d01a059c6eb8ea",
+      "compressionFormat": "gzip",
+      "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
+    }
+  ],
+  "minimumAppVersion": "0.5.0",
+  "releaseDate": "2026-10-20",
+  "schemaVersion": "1.0.0",
+  "sourcePackages": [
+    {
+      "packageId": "A_MAIN_SUPPORT_20261019",
+      "path": "DATA_PROVENANCE.md",
+      "sha256": "8e738179f27adec887a027c171133da3ccd9c73d5cbc5e5f1d8a60dca2f71444",
+      "sourceEntrySha256": "ea44d28fc48b9698dc393db1ff3a65d32b6978862a303e4ccf8acedbcd9475d4",
+      "role": "A_main_research_projection"
+    }
+  ]
+}

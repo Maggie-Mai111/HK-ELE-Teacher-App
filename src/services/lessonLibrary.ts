@@ -159,6 +159,8 @@ export function mergeRefreshedLessonItems(
           displayFamily: fresh.displayFamily,
           derived: fresh.derived,
           dataVersion: fresh.dataVersion,
+          dataReviewStatus: fresh.dataReviewStatus,
+          previousEvidence: fresh.previousEvidence,
         }
       : item;
   });

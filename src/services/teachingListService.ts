@@ -1,3 +1,4 @@
+import { refreshSavedSelection } from "./lessonDataRefresh";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
@@ -90,6 +91,14 @@ async function readLibrary(): Promise<LessonLibrary> {
     Platform.OS === "web" && typeof localStorage !== "undefined"
       ? localStorage.getItem(LESSON_LIBRARY_STORAGE_KEY)
       : await AsyncStorage.getItem(LESSON_LIBRARY_STORAGE_KEY);
+  if (raw !== null) {
+    parseLessonLibrary(raw);
+    const backupKey = LESSON_LIBRARY_STORAGE_KEY + ":before-a-main-v1";
+    if (Platform.OS === "web" && typeof localStorage !== "undefined") {
+      if (localStorage.getItem(backupKey) === null) localStorage.setItem(backupKey, raw);
+    } else if ((await AsyncStorage.getItem(backupKey)) === null)
+      await AsyncStorage.setItem(backupKey, raw);
+  }
   return raw !== null
     ? parseLessonLibrary(raw)
     : parseLessonLibrary(
@@ -122,7 +131,8 @@ export function createTeachingItem(
     customOrder: order,
     addedAt: now,
     updatedAt: now,
-    dataVersion: manifestJson.dataVersion,
+    dataVersion:
+      typeof family.data_version === "string" ? family.data_version : manifestJson.dataVersion,
     derived: derivedFields(family),
   };
 }
@@ -134,15 +144,12 @@ export async function refreshTeachingItems(
   return Promise.all(
     items.map(async (item) => {
       try {
-        const { family } = await repository.getFamily(item.basewordKey);
+        return refreshSavedSelection(item, await repository.getFamily(item.basewordKey));
+      } catch {
         return {
           ...item,
-          displayFamily: family.display_family,
-          dataVersion: manifestJson.dataVersion,
-          derived: derivedFields(family),
+          dataReviewStatus: "Saved selection kept — reconnect to check its word details.",
         };
-      } catch {
-        return item;
       }
     }),
   );

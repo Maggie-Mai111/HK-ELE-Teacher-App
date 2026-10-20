@@ -21,9 +21,9 @@ const families = projection.rows.map(
     ) as unknown as FamilyRecord,
 );
 
-test("full AI index covers all 163784 Package67 families with the unchanged 3185 Core members", () => {
-  assert.equal(families.length, 163784);
-  assert.equal(families.filter((f) => Boolean(f.candidate_member)).length, 3185);
+test("full AI index covers all 163906 A-main families with the A-main 2871 Core members", () => {
+  assert.equal(families.length, 163906);
+  assert.equal(families.filter((f) => Boolean(f.candidate_member)).length, 2871);
   const context = { families, cpbFamilyKeys: new Set(projection.cpb100FamilyKeys) };
   const filters = [
     { scope: "full", earliestObservedTo: "P2", limit: 10, sort: "overall" },
@@ -57,7 +57,7 @@ test("static full AI loading rejects an incompatible index and permits retry", a
   const original = globalThis.fetch;
   let attempts = 0;
   globalThis.fetch = async (input) => {
-    const rel = String(input).replace("/fixture/", "");
+    const rel = String(input).split("?")[0]!.replace("/fixture/", "");
     if (rel === "ai_full_projection.json.gz" && attempts++ === 0) {
       const stale = {
         ...JSON.parse(gunzipSync(rawProjection).toString()),
@@ -70,7 +70,7 @@ test("static full AI loading rejects an incompatible index and permits retry", a
   try {
     const repository = new StaticShardRepository("/fixture");
     await assert.rejects(repository.aiFilterFamilies("full"), /does not match/);
-    assert.equal((await repository.aiFilterFamilies("full")).length, 163784);
+    assert.equal((await repository.aiFilterFamilies("full")).length, 163906);
     assert.equal(attempts, 2);
     assert.ok((await repository.aiFilterCpbFamilyKeys()).size > 0);
   } finally {
@@ -108,7 +108,7 @@ test("full AI cannot silently fall back to the smaller saved wordlist", async ()
   const hybrid = new HybridRepository(full, saved);
   await assert.rejects(hybrid.aiFilterFamilies("full"), /offline/);
   assert.equal(fallbackCalls, 0);
-  assert.equal((await hybrid.aiFilterFamilies("core")).length, 3430);
+  assert.equal((await hybrid.aiFilterFamilies("core")).length, 2871);
   assert.equal(fallbackCalls, 1);
 });
 

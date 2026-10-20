@@ -1,0 +1,928 @@
+{
+  "dataVersion": "2026-09-14-package67-v1",
+  "extractedOn": "2026-09-21",
+  "itemCount": 100,
+  "items": [
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "the",
+      "rank": 1,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 2,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "the"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "and",
+      "rank": 2,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 3,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "and"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "a",
+      "rank": 3,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 4,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "a"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "to",
+      "rank": 4,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 5,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "to"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "i",
+      "rank": 5,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 6,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "i"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "you",
+      "rank": 6,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 7,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "you"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "in",
+      "rank": 7,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 8,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "in"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "of",
+      "rank": 8,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 9,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "of"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "it",
+      "rank": 9,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 10,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "it"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "he",
+      "rank": 10,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 11,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "he"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "is",
+      "rank": 11,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 12,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "is"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "was",
+      "rank": 12,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 13,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "was"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "for",
+      "rank": 13,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 14,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "for"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "on",
+      "rank": 14,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 15,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "on"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "that",
+      "rank": 15,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 16,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "that"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "with",
+      "rank": 16,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 17,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "with"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "but",
+      "rank": 17,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 18,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "but"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "his",
+      "rank": 18,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 19,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "his"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "all",
+      "rank": 19,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 20,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "all"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "they",
+      "rank": 20,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 21,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "they"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "my",
+      "rank": 21,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 22,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "my"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "so",
+      "rank": 22,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 23,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "so"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "be",
+      "rank": 23,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 24,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "be"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "she",
+      "rank": 24,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 25,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "she"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "up",
+      "rank": 25,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 26,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "up"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "at",
+      "rank": 26,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 27,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "at"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "are",
+      "rank": 27,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 28,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "are"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "one",
+      "rank": 28,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 29,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "one"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "said",
+      "rank": 29,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 30,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "said"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "what",
+      "rank": 30,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 31,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "what"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "this",
+      "rank": 31,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 32,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "this"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "when",
+      "rank": 32,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 33,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "when"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "we",
+      "rank": 33,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 34,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "we"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "me",
+      "rank": 34,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 35,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "me"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "have",
+      "rank": 35,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 36,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "have"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "as",
+      "rank": 36,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 37,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "as"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "do",
+      "rank": 37,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 38,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "do"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "like",
+      "rank": 38,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 39,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "like"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "out",
+      "rank": 39,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 40,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "out"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "can",
+      "rank": 40,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 41,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "can"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "her",
+      "rank": 41,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 42,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "her"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "not",
+      "rank": 42,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 43,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "not"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "then",
+      "rank": 43,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 44,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "then"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "your",
+      "rank": 44,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 45,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "your"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "no",
+      "rank": 45,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 46,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "no"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "there",
+      "rank": 46,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 47,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "there"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "day",
+      "rank": 47,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 48,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "day"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "just",
+      "rank": 48,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 49,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "just"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "it's",
+      "rank": 49,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 50,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "it's"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "see",
+      "rank": 50,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 51,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "see"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "little",
+      "rank": 51,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 52,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "little"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "time",
+      "rank": 52,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 53,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "time"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "from",
+      "rank": 53,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 54,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "from"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "had",
+      "rank": 54,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 55,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "had"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "now",
+      "rank": 55,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 56,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "now"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "will",
+      "rank": 56,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 57,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "will"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "i'm",
+      "rank": 57,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 58,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "i'm"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "go",
+      "rank": 58,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 59,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "go"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "were",
+      "rank": 59,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 60,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "were"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "too",
+      "rank": 60,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 61,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "too"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "them",
+      "rank": 61,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 62,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "them"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "him",
+      "rank": 62,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 63,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "him"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "some",
+      "rank": 63,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 64,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "some"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "big",
+      "rank": 64,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 65,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "big"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "get",
+      "rank": 65,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 66,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "get"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "if",
+      "rank": 66,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 67,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "if"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "good",
+      "rank": 67,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 68,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "good"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "don't",
+      "rank": 68,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 69,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "don't"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "down",
+      "rank": 69,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 70,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "down"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "by",
+      "rank": 70,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 71,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "by"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "how",
+      "rank": 71,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 72,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "how"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "know",
+      "rank": 72,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 73,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "know"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "an",
+      "rank": 73,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 74,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "an"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "oh",
+      "rank": 74,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 75,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "oh"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "more",
+      "rank": 75,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 76,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "more"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "their",
+      "rank": 76,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 77,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "their"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "could",
+      "rank": 77,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 78,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "could"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "about",
+      "rank": 78,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 79,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "about"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "back",
+      "rank": 79,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 80,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "back"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "who",
+      "rank": 80,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 81,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "who"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "or",
+      "rank": 81,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 82,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "or"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "make",
+      "rank": 82,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 83,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "make"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "into",
+      "rank": 83,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 84,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "into"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "look",
+      "rank": 84,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 85,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "look"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "very",
+      "rank": 85,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 86,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "very"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "would",
+      "rank": 86,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 87,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "would"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "right",
+      "rank": 87,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 88,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "right"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "here",
+      "rank": 88,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 89,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "here"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "love",
+      "rank": 89,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 90,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "love"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "way",
+      "rank": 90,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 91,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "way"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "night",
+      "rank": 91,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 92,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "night"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "did",
+      "rank": 92,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 93,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "did"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "new",
+      "rank": 93,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 94,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "new"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "come",
+      "rank": 94,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 95,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "come"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "our",
+      "rank": 95,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 96,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "our"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "two",
+      "rank": 96,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 97,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "two"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "want",
+      "rank": 97,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 98,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "want"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "made",
+      "rank": 98,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 99,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "made"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "over",
+      "rank": 99,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 100,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "over"
+    },
+    {
+      "extractedOn": "2026-09-21",
+      "matchKey": "around",
+      "rank": 100,
+      "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+      "sourceRow": 101,
+      "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787",
+      "word": "around"
+    }
+  ],
+  "listId": "CPB_SIGHT_WORDS_100",
+  "matching": {
+    "display": "original Word value",
+    "independentFromHkeleFamilyAssignment": true,
+    "normalization": "NFKC, trim, casefold, U+2018/U+2019 to U+0027"
+  },
+  "redistributionLicenseStatus": "RELEASE_GATE_PERMISSION_NOT_CONFIRMED",
+  "schemaVersion": "1.0.0",
+  "scope": "CPB ranks 1-100 only",
+  "sourceFileName": "CPB Sight Words (1000) Final.xlsx",
+  "sourceHeaders": [
+    "rank",
+    "Word",
+    "Mean Text Freq",
+    "DP(norm)",
+    "DP(inverted)",
+    "Word Prevalence Rank Value"
+  ],
+  "sourceRange": "Sheet1!A1:F1001",
+  "sourceRankCount": 1000,
+  "sourceSha256": "AF89DD46383C3DF1FE7BB9EDD2462DF808081C637CA17FB568D6E27BB6DB1787"
+}

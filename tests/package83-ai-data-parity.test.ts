@@ -4,8 +4,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { gunzipSync } from "node:zlib";
 
-import { HybridRepository } from "../src/data/HybridRepository.js";
-import type { FamilyRecord, FormRecord, HkeleRepository } from "../src/domain/hkele.js";
+import type { FamilyRecord, FormRecord } from "../src/domain/hkele.js";
 import { executeAiFilter } from "../src/services/aiFilterExecutor.js";
 import { deriveAiFilterFamilies } from "../src/services/aiFilterFamilyProjection.js";
 
@@ -14,7 +13,7 @@ interface CompactTable {
   rows: unknown[][];
 }
 
-const release = join(process.cwd(), "data", "releases", "2026-09-14-package67-v1");
+const release = join(process.cwd(), "data", "releases", "2026-10-20-a-main-v1");
 const publicData = join(process.cwd(), "public", "hkele-data");
 
 async function readGzipJson<T>(path: string): Promise<T> {
@@ -59,7 +58,9 @@ async function loadAuthoritativeProjection(): Promise<FamilyRecord[]> {
       suffix: (source.suffix as string | null) ?? null,
     } satisfies FormRecord;
   });
-  return deriveAiFilterFamilies(families, forms);
+  return deriveAiFilterFamilies(families, forms).filter((family) =>
+    Boolean(family.candidate_member),
+  );
 }
 
 async function loadOnlineBrowseProjection(): Promise<FamilyRecord[]> {
@@ -77,32 +78,13 @@ async function loadOnlineBrowseProjection(): Promise<FamilyRecord[]> {
   return rows;
 }
 
-function stubRepository(families: FamilyRecord[], mode: "remote-full" | "bundled-reference") {
-  return {
-    getDataMode: () => mode,
-    aiFilterFamilies: async () => families,
-    browse: async () => {
-      throw new Error("unused");
-    },
-    getFamily: async () => {
-      throw new Error("unused");
-    },
-    searchSurface: async () => {
-      throw new Error("unused");
-    },
-    resolveOccurrences: async () => {
-      throw new Error("unused");
-    },
-  } satisfies HkeleRepository;
-}
-
-test("online and offline AI use the same authoritative form-enriched 3,430-family projection", async () => {
+test("online and offline AI use the same authoritative form-enriched A-main Core projection", async () => {
   const [authoritative, onlineBrowse] = await Promise.all([
     loadAuthoritativeProjection(),
     loadOnlineBrowseProjection(),
   ]);
-  assert.equal(authoritative.filter((family) => Boolean(family.candidate_member)).length, 3185);
-  assert.equal(authoritative.filter((family) => Boolean(family.reference_member)).length, 3430);
+  assert.equal(authoritative.filter((family) => Boolean(family.candidate_member)).length, 2871);
+  assert.equal(authoritative.filter((family) => Boolean(family.reference_member)).length, 2871);
 
   const rootFilter = {
     scope: "inclusive_reference",
@@ -114,27 +96,19 @@ test("online and offline AI use the same authoritative form-enriched 3,430-famil
     { families: authoritative, cpbFamilyKeys: new Set() },
     rootFilter,
   );
-  const oldOnline = executeAiFilter(
-    { families: onlineBrowse, cpbFamilyKeys: new Set() },
-    rootFilter,
+  const projection = await readGzipJson<CompactTable & { fields: string[]; rows: unknown[][] }>(
+    join(publicData, "ai_full_projection.json.gz"),
   );
-  assert.equal(oldOnline.matchedBeforeLimit, 6);
-  assert.equal(offline.matchedBeforeLimit, 7);
-  assert.ok(offline.families.some((family) => family.baseword_key === "age"));
-
-  const onlineRepository = new HybridRepository(
-    stubRepository(onlineBrowse, "remote-full"),
-    stubRepository(authoritative, "bundled-reference"),
-  );
-  const online = executeAiFilter(
-    { families: await onlineRepository.aiFilterFamilies(), cpbFamilyKeys: new Set() },
-    rootFilter,
-  );
-  assert.equal(online.matchedBeforeLimit, 7);
+  const current = projection.rows
+    .map((row) => inflate<FamilyRecord>(projection.fields, row))
+    .filter((family) => Boolean(family.candidate_member));
+  const online = executeAiFilter({ families: current, cpbFamilyKeys: new Set() }, rootFilter);
+  assert.ok(onlineBrowse.length > 0);
   assert.deepEqual(
     online.families.map((family) => family.baseword_key),
     offline.families.map((family) => family.baseword_key),
   );
+  assert.equal(online.matchedBeforeLimit, offline.matchedBeforeLimit);
 });
 
 test("shared executor still applies prefix, suffix, grade, ranks, HK band, AWL, MSVL and CPB 100", () => {

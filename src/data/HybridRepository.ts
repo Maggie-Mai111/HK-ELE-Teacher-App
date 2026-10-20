@@ -22,6 +22,19 @@ export class HybridRepository implements HkeleRepository {
     this.mode = staticSource.getDataMode();
   }
 
+  getDataVersion(): Promise<string> {
+    return this.withFallback(
+      () =>
+        this.staticSource.getDataVersion
+          ? this.staticSource.getDataVersion()
+          : Promise.reject(new Error("Version not available")),
+      () =>
+        this.bundledSource.getDataVersion
+          ? this.bundledSource.getDataVersion()
+          : Promise.resolve("Not checked"),
+    );
+  }
+
   getDataMode(): DataMode {
     return this.mode;
   }
@@ -69,22 +82,18 @@ export class HybridRepository implements HkeleRepository {
       return primary.call(this.staticSource, "full");
     }
     if (!fallback) return Promise.reject(new Error("AI filter data is unavailable."));
-    try {
-      // Core searches can use the authoritative form-enriched local cache.
-      return await fallback.call(this.bundledSource);
-    } catch {
-      if (!primary) throw new Error("AI filter data is unavailable.");
-      return primary.call(this.staticSource);
-    }
+    if (!primary) return fallback.call(this.bundledSource, scope);
+    return this.withFallback(
+      () => primary.call(this.staticSource, scope),
+      () => fallback.call(this.bundledSource, scope),
+    );
   }
 
   async aiFilterCpbFamilyKeys(scope: BrowseScope = "broader"): Promise<ReadonlySet<string>> {
     if (scope === "full" && this.staticSource.aiFilterCpbFamilyKeys) {
       return this.staticSource.aiFilterCpbFamilyKeys("full");
     }
-    const results = await Promise.all(
-      CPB_ITEMS.map((item) => this.bundledSource.searchSurface(item.word)),
-    );
+    const results = await Promise.all(CPB_ITEMS.map((item) => this.searchSurface(item.word)));
     return new Set(
       results.flatMap((result) =>
         result.status === "RESOLVED" || result.status === "AMBIGUOUS"

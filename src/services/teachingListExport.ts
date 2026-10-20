@@ -25,6 +25,7 @@ const columns = [
   "External level",
   "Data version",
   "Earlier teaching depth",
+  "Saved selection status",
 ] as const;
 
 function row(item: TeachingListItem, index: number, lessonTitle = ""): Array<string | number> {
@@ -46,6 +47,7 @@ function row(item: TeachingListItem, index: number, lessonTitle = ""): Array<str
     teacherLevelLabel(item.derived.external_level_reference_display) ?? "",
     item.dataVersion,
     item.status,
+    item.dataReviewStatus ?? "",
   ];
 }
 
@@ -74,6 +76,7 @@ export function teachingListToMarkdown(items: TeachingListItem[], lessonTitle = 
     "Added from",
     "Word list",
     "Earlier teaching depth",
+    "Saved selection status",
   ];
   const lines = items.map(
     (item) =>
@@ -86,6 +89,7 @@ export function teachingListToMarkdown(items: TeachingListItem[], lessonTitle = 
         (item.sourceLabels ?? []).join(", "),
         teacherWordListLabel(item.derived.set_membership),
         item.status,
+        item.dataReviewStatus ?? "",
       ]
         .map(markdownCell)
         .join(" | ")} |`,

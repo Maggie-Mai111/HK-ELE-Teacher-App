@@ -4,18 +4,18 @@ import { join } from "node:path";
 import test from "node:test";
 import { gunzipSync } from "node:zlib";
 
-const release = join(process.cwd(), "data", "releases", "2026-09-14-package67-v1");
+const release = join(process.cwd(), "data", "releases", "2026-10-20-a-main-v1");
 
 async function readJson(path: string, gzip = false): Promise<unknown> {
   const bytes = await readFile(join(release, path));
   return JSON.parse((gzip ? gunzipSync(bytes) : bytes).toString("utf8"));
 }
 
-test("offline Candidate + Reference package has exact family and form boundaries", async () => {
+test("offline A-main compact Core with ambiguity context package has exact family and form boundaries", async () => {
   const families = (await readJson("reference/families.json.gz", true)) as { rows: unknown[][] };
   const forms = (await readJson("reference/forms.json.gz", true)) as { rows: unknown[][] };
-  assert.equal(families.rows.length, 3430);
-  assert.equal(forms.rows.length, 64641);
+  assert.equal(families.rows.length, 2875);
+  assert.equal(forms.rows.length, 58228);
 });
 
 test("CPB output contains exactly unique ranks 1-100", async () => {
