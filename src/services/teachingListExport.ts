@@ -28,7 +28,17 @@ const columns = [
   "Saved selection status",
 ] as const;
 
-function row(item: TeachingListItem, index: number, lessonTitle = ""): Array<string | number> {
+const expressionColumns = ["Record type", "Expression ID", "Compound data version"];
+const exportColumns = (items: TeachingListItem[]) =>
+  items.some((item) => item.recordType === "compound")
+    ? [...columns, ...expressionColumns]
+    : columns;
+function row(
+  item: TeachingListItem,
+  index: number,
+  lessonTitle = "",
+  expressions = false,
+): Array<string | number> {
   return [
     lessonTitle,
     index + 1,
@@ -36,10 +46,10 @@ function row(item: TeachingListItem, index: number, lessonTitle = ""): Array<str
     lessonFocusLabel(item.teachingFocus),
     item.notes,
     item.connections,
-    item.displayFamily,
+    item.recordType === "compound" ? "" : item.displayFamily,
     (item.sourceLabels ?? []).join(" | "),
-    item.basewordKey,
-    teacherWordListLabel(item.derived.set_membership),
+    item.recordType === "compound" ? "" : item.basewordKey,
+    item.recordType === "compound" ? "Compound" : teacherWordListLabel(item.derived.set_membership),
     item.derived.overall_frequency_order ?? "",
     item.derived.current_hk_frequency_rank ?? "",
     item.derived.current_hk_frequency_band ?? "",
@@ -48,6 +58,13 @@ function row(item: TeachingListItem, index: number, lessonTitle = ""): Array<str
     item.dataVersion,
     item.status,
     item.dataReviewStatus ?? "",
+    ...(expressions
+      ? [
+          item.recordType === "compound" ? "Compound" : "Word family",
+          item.expression?.expressionId || "",
+          item.expression?.sourceVersion || "",
+        ]
+      : []),
   ];
 }
 
@@ -57,7 +74,17 @@ function csvCell(value: string | number): string {
 }
 
 export function teachingListToCsv(items: TeachingListItem[], lessonTitle = ""): string {
-  return [columns, ...items.map((item, index) => row(item, index, lessonTitle))]
+  return [
+    exportColumns(items),
+    ...items.map((item, index) =>
+      row(
+        item,
+        index,
+        lessonTitle,
+        items.some((item) => item.recordType === "compound"),
+      ),
+    ),
+  ]
     .map((values) => values.map(csvCell).join(","))
     .join("\r\n");
 }
@@ -85,9 +112,11 @@ export function teachingListToMarkdown(items: TeachingListItem[], lessonTitle = 
         lessonFocusLabel(item.teachingFocus),
         item.notes,
         item.connections,
-        item.displayFamily,
+        item.recordType === "compound" ? "" : item.displayFamily,
         (item.sourceLabels ?? []).join(", "),
-        teacherWordListLabel(item.derived.set_membership),
+        item.recordType === "compound"
+          ? `Compound (${item.expression?.expressionId}; ${item.expression?.sourceVersion})`
+          : teacherWordListLabel(item.derived.set_membership),
         item.status,
         item.dataReviewStatus ?? "",
       ]
@@ -129,8 +158,15 @@ function columnName(index: number): string {
 
 function sheetXml(items: TeachingListItem[], lessonTitle = ""): string {
   const values: Array<ReadonlyArray<string | number>> = [
-    columns,
-    ...items.map((item, index) => row(item, index, lessonTitle)),
+    exportColumns(items),
+    ...items.map((item, index) =>
+      row(
+        item,
+        index,
+        lessonTitle,
+        items.some((item) => item.recordType === "compound"),
+      ),
+    ),
   ];
   const rows = values
     .map((valuesRow, rowIndex) => {

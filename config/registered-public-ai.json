@@ -1,0 +1,7 @@
+{
+  "environment": "staging",
+  "endpoint": "https://hkele-ai-filter-staging.hkele-teacher-webapp.workers.dev/api/ai/interpret-filter",
+  "turnstileSiteKey": "0x4AAAAAAFEC-oIBhn_yPS6O",
+  "allowedOrigin": "https://maggie-mai111.github.io",
+  "source": "Existing public HK-ELE-Teacher-App bundle index-73e028c2ad82385230c99ed48627fbaa.js, read 2026-10-22; public values only"
+}

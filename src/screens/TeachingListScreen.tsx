@@ -10,6 +10,7 @@ import { LESSON_FOCUS_OPTIONS, lessonFocusLabel } from "../services/lessonPlanni
 import { exportTeachingList } from "../services/shareExport";
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
+import { CompoundCard } from "../components/CompoundCard";
 
 interface Props {
   teaching: TeachingListStore;
@@ -34,6 +35,7 @@ function ListItem({
   const [open, setOpen] = useState(false);
   const [chooseWord, setChooseWord] = useState(false);
   const [relatedOpen, setRelatedOpen] = useState(Boolean(item.connections));
+  const [compoundOpen, setCompoundOpen] = useState(false);
   return (
     <View style={styles.card}>
       <View style={styles.titleRow}>
@@ -56,7 +58,9 @@ function ListItem({
         <Text style={[styles.plan, item.teachingFocus === "focus" && styles.focusPlan]}>
           {lessonFocusLabel(item.teachingFocus)}
         </Text>
-        <Text style={styles.meta}>Family: {item.displayFamily}</Text>
+        <Text style={styles.meta}>
+          {item.recordType === "compound" ? "Compound" : `Family: ${item.displayFamily}`}
+        </Text>
       </View>
       {item.dataReviewStatus ? <Text style={styles.meta}>{item.dataReviewStatus}</Text> : null}
       {!open && item.notes ? (
@@ -135,9 +139,12 @@ function ListItem({
               kind="secondary"
               label="View word information"
               onPress={() =>
-                item.selectedForms.length > 1
-                  ? setChooseWord(!chooseWord)
-                  : !item.dataReviewStatus && onOpenFamily(item.basewordKey, item.selectedForms[0])
+                item.recordType === "compound"
+                  ? setCompoundOpen(!compoundOpen)
+                  : item.selectedForms.length > 1
+                    ? setChooseWord(!chooseWord)
+                    : !item.dataReviewStatus &&
+                      onOpenFamily(item.basewordKey, item.selectedForms[0])
               }
             />
             <ActionButton
@@ -158,6 +165,14 @@ function ListItem({
               onPress={() => teaching.remove(item.basewordKey)}
             />
           </View>
+          {compoundOpen && item.expression ? (
+            <CompoundCard
+              expression={item.expression}
+              teaching={teaching}
+              onOpenFamily={onOpenFamily}
+              source="Teaching list"
+            />
+          ) : null}
           {chooseWord ? (
             <View style={styles.actions}>
               {item.selectedForms.map((form) => (
@@ -255,7 +270,13 @@ export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onChec
               <View style={styles.exportBox}>
                 <Text style={styles.exportTitle}>
                   {selectedWordCount} selected {selectedWordCount === 1 ? "word" : "words"} ·{" "}
-                  {teaching.items.length} {teaching.items.length === 1 ? "family" : "families"}
+                  {teaching.items.filter((item) => item.recordType !== "compound").length}{" "}
+                  {teaching.items.filter((item) => item.recordType !== "compound").length === 1
+                    ? "family"
+                    : "families"}
+                  {teaching.items.some((item) => item.recordType === "compound")
+                    ? ` · ${teaching.items.filter((item) => item.recordType === "compound").length} ${teaching.items.filter((item) => item.recordType === "compound").length === 1 ? "compound" : "compounds"}`
+                    : ""}
                 </Text>
                 <Text style={styles.meta}>
                   In depth {focusCount} · Brief {mentionCount} · Undecided{" "}

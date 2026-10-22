@@ -51,12 +51,12 @@ export function FamilyCard({
         </Text>
         <View style={styles.evidence}>
           <EvidenceBadge
-            label="Family · earliest HK textbook"
+            label="First seen in HK textbooks"
             value={family.textbook_first_seen_level}
             tone="textbook"
           />
           <EvidenceBadge
-            label="External level"
+            label="US grade reference"
             value={family.browse_external_level_reference}
             tone="external"
           />

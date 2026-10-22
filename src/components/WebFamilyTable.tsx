@@ -6,6 +6,7 @@ import { vocabularyListLabel } from "../services/externalLevelPresentation";
 import { colors, spacing } from "../theme/tokens";
 import { ChoiceChip } from "./ChoiceChip";
 import { ProgressiveDisclosure } from "./ProgressiveDisclosure";
+import { EvidenceTokens } from "./EvidenceTokens";
 
 const STORAGE_KEY = "hkele-phase1v-columns-v1";
 const columns = [
@@ -13,11 +14,10 @@ const columns = [
   ["status", "Word list", 150],
   ["overall", "Overall frequency rank", 125],
   ["hk", "HK frequency rank / band", 155],
-  ["first_seen", "Earliest observed in HK textbooks", 155],
-  ["external", "External level reference", 185],
+  ["first_seen", "First seen in HK textbooks", 155],
+  ["external", "US grade reference", 185],
   ["academic", "Academic Word List (AWL)", 125],
-  ["subjects", "Middle School Vocabulary Lists (MSVL)", 210],
-  ["earlier", "Earlier HK list", 110],
+  ["subjects", "Middle School Vocabulary List (MSVL)", 210],
   ["root", "Root", 135],
   ["root_meaning", "Root meaning", 175],
   ["prefix", "Prefix", 120],
@@ -73,8 +73,6 @@ function cellValue(key: ColumnKey, family: FamilyRecord): string {
       return hasFlag(family.awl) ? "Yes" : "—";
     case "subjects":
       return vocabularyListLabel(family.msvl);
-    case "earlier":
-      return hasFlag(family.earlier_hk) ? "Yes" : "—";
     case "root":
       return display(family.browse_root);
     case "root_meaning":
@@ -155,6 +153,16 @@ export function WebFamilyTable({ families, isAdded, onAdd, onOpen, canAdd = true
                         {added ? "Added" : cellValue(key, family)}
                       </Text>
                     </Pressable>
+                  );
+                }
+                if (key === "subjects" || key === "root" || key === "root_meaning") {
+                  return (
+                    <View key={key} style={[styles.cell, { width }]}>
+                      <EvidenceTokens
+                        value={cellValue(key, family)}
+                        kind={key === "subjects" ? "subject" : key === "root" ? "root" : "meaning"}
+                      />
+                    </View>
                   );
                 }
                 return (

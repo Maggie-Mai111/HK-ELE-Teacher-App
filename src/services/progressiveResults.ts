@@ -26,7 +26,9 @@ export function groupOccurrences(items: ResolvedOccurrence[]): OccurrenceGroup[]
     const family =
       item.status === "RESOLVED" && item.owners.length === 1
         ? (item.owners[0]?.display_family ?? "No family")
-        : "No single family";
+        : item.status === "REGISTERED_EXPRESSION"
+          ? "Compound"
+          : "No single family";
     const status = textResultStatusLabel(item);
     const key = `${item.normalizedToken ?? item.surface.normalize("NFKC").toLowerCase()}\u0000${family}\u0000${status}`;
     const existing = groups.get(key);

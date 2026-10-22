@@ -7,6 +7,8 @@ export interface SupplementaryExpression {
   sourceVersion: string;
   componentFamilyKeys: readonly string[] | null;
   componentMappingStatus: "VERIFIED" | "UNOWNED" | "AMBIGUOUS" | "NOT_PROVIDED";
+  parts?: readonly { form: string; familyKey: string | null; familyLabel: string | null }[];
+  researchItemId?: string;
 }
 export interface ExpressionLayerDescriptor {
   schemaVersion: "1.0.0";

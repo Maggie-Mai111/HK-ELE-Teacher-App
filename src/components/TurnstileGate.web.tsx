@@ -43,9 +43,16 @@ function loadTurnstile(): Promise<TurnstileApi> {
     const finish = () =>
       window.turnstile ? resolve(window.turnstile) : reject(new Error("Turnstile unavailable"));
     script.addEventListener("load", finish, { once: true });
-    script.addEventListener("error", () => reject(new Error("Turnstile unavailable")), {
-      once: true,
-    });
+    script.addEventListener(
+      "error",
+      () => {
+        script.remove();
+        reject(new Error("Turnstile unavailable"));
+      },
+      {
+        once: true,
+      },
+    );
     if (!existing) {
       script.id = SCRIPT_ID;
       script.src = SCRIPT_URL;

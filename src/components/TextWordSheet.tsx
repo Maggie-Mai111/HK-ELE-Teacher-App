@@ -4,17 +4,21 @@ import { grammaticalRelationDisplay } from "../services/grammaticalRelationServi
 import { textWordAction } from "../services/textReaderService";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
+import { CompoundCard } from "./CompoundCard";
+import type { TeachingListStore } from "../services/teachingListService";
 
 export function TextWordSheet({
   item,
   onClose,
   onOpenFamily,
   onRetry,
+  teaching,
 }: {
   item: ResolvedOccurrence | null;
   onClose: () => void;
   onOpenFamily: (key: string, surface: string, context: string) => void;
   onRetry: () => void;
+  teaching?: TeachingListStore;
 }) {
   if (!item) return null;
   const action = textWordAction(item);
@@ -32,7 +36,17 @@ export function TextWordSheet({
           <Text accessibilityRole="header" aria-level={2} style={styles.word}>
             {item.surface}
           </Text>
-          {action === "choices" ? (
+          {action === "compound" && item.expression && teaching ? (
+            <CompoundCard
+              expression={item.expression}
+              teaching={teaching}
+              source="Check a text"
+              onOpenFamily={(key, form) => {
+                onClose();
+                onOpenFamily(key, form || item.surface, item.context);
+              }}
+            />
+          ) : action === "choices" ? (
             <>
               <Text style={styles.note}>Choose a word family</Text>
               {owners.map((owner) => (

@@ -14,7 +14,9 @@ import { AiFilterAssistant } from "../components/AiFilterAssistant";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { CurrentLesson } from "../components/CurrentLesson";
+import { FamilySearchResults } from "../components/FamilySearchResults";
 import { FamilyCard } from "../components/FamilyCard";
+import { CompoundCard } from "../components/CompoundCard";
 import { ScreenHeader } from "../components/ScreenHeader";
 import { WebFamilyTable } from "../components/WebFamilyTable";
 import type {
@@ -51,6 +53,7 @@ const sorts: Array<[BrowseSort, string]> = [
 ];
 
 function searchStatus(result: SurfaceSearchResult): string {
+  if (result.status === "REGISTERED_EXPRESSION") return "Compound found";
   if (result.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "Connect to check more words";
   if (result.status === "UNMATCHED") return "No match in the current wordlist";
   if (result.status === "RESOLVED") return "Family found";
@@ -83,6 +86,13 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const retrySearch = useRef(false);
   const [query, setQuery] = useState("");
   const currentQuery = useRef("");
+  const searchRequest = useRef(0);
+  useEffect(
+    () => () => {
+      searchRequest.current += 1;
+    },
+    [],
+  );
   const [search, setSearch] = useState<SurfaceSearchResult | null>(null);
   const [searching, setSearching] = useState(false);
   const [aiSelection, setAiSelection] = useState<AiFilterExecution | null>(null);
@@ -130,12 +140,20 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   }, [pageNumber, repository, scope, sort, reload]);
 
   const activateBrowse = () => {
+    searchRequest.current += 1;
+    setSearching(false);
     setResultMode("browse");
     setSearch(null);
     setAiSelection(null);
     setBatchMessage("");
   };
   const selectScope = (next: BrowseScope) => {
+    if (resultMode === "search" && search) {
+      setScope(next);
+      setPageNumber(1);
+      focusAndReveal(resultSummaryRef.current);
+      return;
+    }
     activateBrowse();
     focusAfterBrowseLoad.current = true;
     setScope(next);
@@ -149,12 +167,13 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   };
   const searchNow = async () => {
     if (!query.trim()) return;
+    const request = ++searchRequest.current;
     setSearching(true);
     setError("");
     setBatchMessage("");
     try {
       const result = await repository.searchSurface(query);
-      if (currentQuery.current !== query) return;
+      if (request !== searchRequest.current || currentQuery.current !== query) return;
       setSearch(result);
       setAiSelection(null);
       setResultMode("search");
@@ -162,13 +181,16 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       focusAndReveal(resultSummaryRef.current);
     } catch (reason) {
       void reason;
+      if (request !== searchRequest.current) return;
       retrySearch.current = true;
       setError("We couldn't complete the search. Check your connection and try again.");
     } finally {
-      setSearching(false);
+      if (request === searchRequest.current) setSearching(false);
     }
   };
   const clearSearch = () => {
+    searchRequest.current += 1;
+    setSearching(false);
     currentQuery.current = "";
     setQuery("");
     setSearch(null);
@@ -184,8 +206,8 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const openFamily = (family: FamilyRecord) =>
     onOpenFamily(family.baseword_key, selectedFormFor(family));
   const useTable = Platform.OS === "web" && viewport.width >= 760;
-  const searchFamilies = (search?.owners ?? []).filter((family) =>
-    inTeacherWordScope(family, scope),
+  const searchFamilies = (search?.owners ?? []).filter(
+    (family) => !family.blocked && inTeacherWordScope(family, scope),
   );
   const outsideCore =
     scope === "core" && Boolean(search?.owners.length) && searchFamilies.length === 0;
@@ -194,7 +216,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       state.aiActive
         ? (aiSelection?.families ?? [])
         : state.searchActive
-          ? (search?.owners ?? []).filter((family) => inTeacherWordScope(family, scope))
+          ? (search?.owners ?? []).filter(
+              (family) => !family.blocked && inTeacherWordScope(family, scope),
+            )
           : (page?.families ?? []),
     [state.aiActive, state.searchActive, aiSelection, search, scope, page],
   );
@@ -203,6 +227,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     families: FamilyRecord[];
   } | null>(null);
   useEffect(() => {
+    if (state.searchActive) return;
     let active = true;
     void Promise.all(
       activeFamilies.map(async (family) => {
@@ -232,6 +257,8 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     focusAndReveal(manualFiltersRef.current);
   };
   const applyAi = (execution: AiFilterExecution) => {
+    searchRequest.current += 1;
+    setSearching(false);
     setScope(execution.filters.scope === "full" ? "full" : "core");
     setAiSelection(execution);
     setSearch(null);
@@ -248,6 +275,8 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           accessibilityLabel="Search a word or form"
           autoCapitalize="none"
           onChangeText={(value) => {
+            searchRequest.current += 1;
+            setSearching(false);
             currentQuery.current = value;
             setQuery(value);
             if (resultMode === "search") {
@@ -279,6 +308,16 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       </View>
       <DataModeNotice mode={dataMode} />
       <CurrentLesson teaching={teaching} />
+      {state.searchActive && search?.expression ? (
+        <CompoundCard
+          expression={search.expression}
+          teaching={teaching}
+          onOpenFamily={onOpenFamily}
+        />
+      ) : null}
+      {state.searchActive && search?.expressionLayerStatus === "UNAVAILABLE" ? (
+        <Text style={styles.label}>Connect or update Offline use to check compound words.</Text>
+      ) : null}
       <AiFilterAssistant
         scope={scope}
         editRequestNonce={editRequestNonce}
@@ -286,28 +325,30 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         onUseManualFilters={showManualFilters}
         repository={repository}
       />
-      <View ref={manualFiltersRef} style={styles.moreFilters} tabIndex={-1}>
-        <ActionButton
-          kind="secondary"
-          label={moreFiltersOpen ? "Hide sort options" : "Sort"}
-          onPress={() => setMoreFiltersOpen((value) => !value)}
-        />
-        {moreFiltersOpen ? (
-          <View style={styles.filterBody}>
-            <Text style={styles.label}>Sort</Text>
-            <View style={styles.chips}>
-              {sorts.map(([value, label]) => (
-                <ChoiceChip
-                  key={value}
-                  label={label}
-                  onPress={() => selectSort(value)}
-                  selected={sort === value}
-                />
-              ))}
+      {!state.searchActive ? (
+        <View ref={manualFiltersRef} style={styles.moreFilters} tabIndex={-1}>
+          <ActionButton
+            kind="secondary"
+            label={moreFiltersOpen ? "Hide sort options" : "Sort"}
+            onPress={() => setMoreFiltersOpen((value) => !value)}
+          />
+          {moreFiltersOpen ? (
+            <View style={styles.filterBody}>
+              <Text style={styles.label}>Sort</Text>
+              <View style={styles.chips}>
+                {sorts.map(([value, label]) => (
+                  <ChoiceChip
+                    key={value}
+                    label={label}
+                    onPress={() => selectSort(value)}
+                    selected={sort === value}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
-        ) : null}
-      </View>
+          ) : null}
+        </View>
+      ) : null}
       {error ? (
         <View style={styles.filterBody}>
           <Text accessibilityRole="alert" style={styles.error}>
@@ -344,8 +385,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         {state.searchActive && search ? (
           <>
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
-              {searchFamilies.length.toLocaleString("en")} result
-              {searchFamilies.length === 1 ? "" : "s"} for “{search.submittedQuery}”
+              {(searchFamilies.length + (search.expression ? 1 : 0)).toLocaleString("en")} result
+              {searchFamilies.length + (search.expression ? 1 : 0) === 1 ? "" : "s"} for “
+              {search.submittedQuery}”
             </Text>
             <Text style={styles.resultStatus}>
               {outsideCore ? "Outside the Core list" : searchStatus(search)}
@@ -371,7 +413,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             {search.identityException ? (
               <Text style={styles.warning}>{search.identityException.teacherDisplay}</Text>
             ) : null}
-            {search.owners.length === 0 ? (
+            {search.owners.length === 0 && !search.expression ? (
               <Text style={styles.muted}>
                 {search.status === "FULL_DATABASE_CHECK_UNAVAILABLE"
                   ? "This word isn't in the saved wordlist. Connect to the internet and search again."
@@ -459,7 +501,15 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           </>
         ) : null}
       </View>
-      {activeFamilies.length > 0 ? (
+      {state.searchActive && activeFamilies.length > 0 ? (
+        <FamilySearchResults
+          families={activeFamilies}
+          query={search!.submittedQuery}
+          repository={repository}
+          teaching={teaching}
+          onOpenFamily={onOpenFamily}
+        />
+      ) : activeFamilies.length > 0 ? (
         useTable ? (
           <WebFamilyTable
             families={displayedFamilies}

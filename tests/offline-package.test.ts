@@ -258,6 +258,49 @@ function storageFixture() {
   });
   return { api: exports, buckets, cache };
 }
+
+test("installed compound assets remain pinned during an update and fail on missing or corrupt bytes", async () => {
+  const fixture = storageFixture(),
+    path = "assets/compounds/fixture/c.json.gz";
+  const record = JSON.stringify({ classroom: { expressionId: "hc_fixture" } });
+  const selected = { cacheName: "hkele-offline-package-compound-old", manifest: manifest() };
+  selected.manifest.files.push({
+    path,
+    byteSize: record.length,
+    sha256: createHash("sha256").update(record).digest("hex"),
+  });
+  selected.manifest.byteCount += record.length;
+  await (
+    await fixture.cache(selected.cacheName)
+  ).put("/HK-ELE-Teacher-App/" + path, new Response(record));
+  await fixture.api.writeOfflineState!({ active: selected, previous: null });
+  const read = () =>
+    fixture.api.readInstalledData!("/HK-ELE-Teacher-App/" + path) as Promise<Response>;
+  assert.equal(await (await read()).text(), record);
+  const next = { cacheName: "hkele-offline-package-compound-new", manifest: manifest("new") };
+  await fixture.api.writeOfflineState!({ active: next, previous: selected });
+  assert.equal(await (await read()).text(), record);
+  await (
+    await fixture.cache(selected.cacheName)
+  ).put("/HK-ELE-Teacher-App/" + path, new Response("corrupt"));
+  await assert.rejects(read(), /downloading again/);
+  fixture.buckets
+    .get(selected.cacheName)!
+    .delete("https://fixture.test/HK-ELE-Teacher-App/" + path);
+  await assert.rejects(read(), /missing/);
+});
+
+test("an older installed package cannot silently fetch a new compound asset from another generation", async () => {
+  const fixture = storageFixture();
+  await fixture.api.writeOfflineState!({
+    active: { cacheName: "hkele-offline-package-old", manifest: manifest() },
+    previous: null,
+  });
+  await assert.rejects(
+    fixture.api.readInstalledData!("/HK-ELE-Teacher-App/assets/compounds/new/c.json.gz"),
+    /missing/,
+  );
+});
 test("a running tab reads one pinned data generation across an update", async () => {
   const fixture = storageFixture();
   const old = { cacheName: "hkele-offline-package-old", manifest: manifest("old") };

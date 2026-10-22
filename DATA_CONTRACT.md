@@ -15,3 +15,7 @@ Only explicitly registered evidence is shown. Empty/unknown annotations are not 
 Teacher text is not filtered by the research dictionary. The registered conservative product matcher preserves ambiguous/contextual forms for review. It is not the research corpus context adjudicator and does not apply the paper's calibrated coverage percentages to arbitrary classroom passages. No compound layer or new family assignment is added.
 
 This update does not enable telemetry or authentication, change Worker environments, or publish a native application.
+
+## Word-form search frequency
+
+The optional `a-main-word-frequency-20261022-v1` resource uses the frozen A ICE-HK and GloWbE-HK normalized spelling counts, with the same bytes as the registered Web projection. These counts describe spellings, not disambiguated senses. The existing family, core membership, form ownership and education records are unchanged. The full update inventory includes all 128 frequency shards; PWA installation verifies them before switching its active generation. A session pinned to an older installed package does not fetch missing frequency shards from another generation. Forms remain viewable with a frequency-update prompt. No absent frequency is filled as zero.

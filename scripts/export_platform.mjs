@@ -1,19 +1,32 @@
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { resolvePublicAiBuildConfig } from "./resolve_public_ai_build_config.mjs";
 
 const [platform, outputDirectory] = process.argv.slice(2);
 if (!new Set(["web", "android", "ios"]).has(platform) || !outputDirectory) {
   throw new Error("Usage: node scripts/export_platform.mjs <web|android|ios> <output-directory>");
 }
 
+const registeredAi = JSON.parse(
+  readFileSync(new URL("../config/registered-public-ai.json", import.meta.url), "utf8"),
+);
 const environment = {
-  ...process.env,
+  ...(platform === "web" ? resolvePublicAiBuildConfig(process.env, registeredAi) : process.env),
   EXPO_PUBLIC_FOLDER: platform === "web" ? "public" : "public-native",
 };
 const expoCli = resolve(process.cwd(), "node_modules", "expo", "bin", "cli");
 const result = spawnSync(
   process.execPath,
-  [expoCli, "export", "--platform", platform, "--output-dir", outputDirectory],
+  [
+    expoCli,
+    "export",
+    ...(platform === "web" ? ["--clear"] : []),
+    "--platform",
+    platform,
+    "--output-dir",
+    outputDirectory,
+  ],
   { env: environment, stdio: "inherit" },
 );
 if (result.error) throw result.error;

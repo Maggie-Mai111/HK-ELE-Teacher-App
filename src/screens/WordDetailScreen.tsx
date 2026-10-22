@@ -4,6 +4,8 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { ActionButton } from "../components/ActionButton";
 import { AppCard } from "../components/AppCard";
 import { EvidenceBadge } from "../components/EvidenceBadge";
+import { EvidenceTokens } from "../components/EvidenceTokens";
+import { evidenceKind } from "../services/evidenceTokens";
 import type { FeedbackRequest } from "../components/FeedbackPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { CurrentLesson } from "../components/CurrentLesson";
@@ -11,7 +13,6 @@ import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { MorphologyLegend, SafeMorphologyForm } from "../components/SafeMorphologyForm";
 import {
   familySetLabel,
-  hasFlag,
   type DataMode,
   type FamilyDetail,
   type FormRecord,
@@ -23,7 +24,11 @@ import {
   visibleForms,
 } from "../services/progressiveResults";
 import type { TeachingListStore } from "../services/teachingListService";
-import { selectedWordForm, type CheckedTextEvidence } from "../services/textReaderService";
+import {
+  selectedWordForm,
+  selectedFormEvidence,
+  type CheckedTextEvidence,
+} from "../services/textReaderService";
 import { teacherLevelLabel, vocabularyListLabel } from "../services/externalLevelPresentation";
 import { colors, spacing } from "../theme/tokens";
 
@@ -51,18 +56,18 @@ function display(value: unknown): string {
   return value === null || value === undefined || value === "" ? "—" : String(value);
 }
 
-function unique(values: Array<string | null | undefined>): string {
-  const found = [...new Set(values.map((value) => value?.trim()).filter(Boolean))];
-  return found.length ? found.join(" · ") : "—";
-}
-
 function DetailRow({ label, value }: { label: string; value: unknown }) {
+  const kind = evidenceKind(label);
   return (
     <View style={styles.row}>
       <Text style={styles.rowLabel}>{label}</Text>
-      <Text selectable style={styles.rowValue}>
-        {display(value)}
-      </Text>
+      {kind ? (
+        <EvidenceTokens value={value} kind={kind} />
+      ) : (
+        <Text selectable style={styles.rowValue}>
+          {display(value)}
+        </Text>
+      )}
     </View>
   );
 }
@@ -96,8 +101,8 @@ function FormTier({ title, description, forms, family, teaching }: FormTierProps
                   <View style={styles.formEvidence}>
                     <SafeMorphologyForm form={form} />
                     <Text style={styles.formNote}>
-                      Textbook: {display(form.first_seen_hk_textbooks)} · External:{" "}
-                      {display(form.external_level_reference)}
+                      First seen in HK textbooks: {display(form.first_seen_hk_textbooks)} · US grade
+                      reference: {display(form.external_level_reference)}
                     </Text>
                   </View>
                   <ActionButton
@@ -178,19 +183,7 @@ export function WordDetailScreen({
       )
     : false;
 
-  const morphology = useMemo(() => {
-    if (!detail) return null;
-    return {
-      root: unique([detail.family.browse_root, ...detail.forms.map((form) => form.root)]),
-      meaning: unique([
-        detail.family.browse_root_meaning,
-        ...detail.forms.map((form) => form.root_meaning),
-      ]),
-      prefix: unique([detail.family.browse_prefix, ...detail.forms.map((form) => form.prefix)]),
-      suffix: unique([detail.family.browse_suffix, ...detail.forms.map((form) => form.suffix)]),
-      subjects: unique(detail.forms.map((form) => form.academic_subject_evidence)),
-    };
-  }, [detail]);
+  const morphology = useMemo(() => selectedFormEvidence(activeForm), [activeForm]);
 
   const formTiers = useMemo(() => {
     if (!detail) return [];
@@ -284,7 +277,7 @@ export function WordDetailScreen({
                 tone="textbook"
               />
               <EvidenceBadge
-                label="External level"
+                label="US grade reference"
                 value={teacherLevelLabel(activeForm?.external_level_reference)}
                 tone="external"
               />
@@ -364,21 +357,17 @@ export function WordDetailScreen({
             <DetailRow label="Overall rank" value={detail.family.overall_frequency_order} />
             <DetailRow label="HK frequency rank" value={detail.family.current_hk_frequency_rank} />
             <DetailRow label="HK frequency band" value={detail.family.current_hk_frequency_band} />
+            <DetailRow label="First seen in HK textbooks" value={morphology.firstSeen} />
             <DetailRow
-              label="Earliest observed in HK textbooks"
-              value={detail.family.textbook_first_seen_level}
-            />
-            <DetailRow
-              label="External level reference"
+              label="US grade reference"
               value={teacherLevelLabel(activeForm?.external_level_reference)}
             />
-            <DetailRow label="AWL" value={hasFlag(detail.family.awl) ? "Yes" : "—"} />
-            <DetailRow label="MSVL" value={vocabularyListLabel(detail.family.msvl)} />
-            <DetailRow label="Academic subject evidence" value={morphology?.subjects} />
+            <DetailRow label="Academic Word List (AWL)" value={morphology.awl ? "Yes" : "—"} />
             <DetailRow
-              label="Earlier HK list"
-              value={hasFlag(detail.family.earlier_hk) ? "Yes" : "—"}
+              label="Middle School Vocabulary List (MSVL)"
+              value={vocabularyListLabel(morphology.msvl)}
             />
+            <DetailRow label="Academic subject evidence" value={morphology?.subjects} />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure summary="Explore roots, prefixes and suffixes." title="Word parts">
             <DetailRow label="Root" value={morphology?.root} />

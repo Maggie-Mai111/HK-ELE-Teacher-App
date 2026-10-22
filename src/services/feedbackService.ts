@@ -7,6 +7,8 @@ export interface FeedbackContext {
   family?: string;
   familyKey?: string;
   registeredForms?: readonly string[];
+  expressionId?: string;
+  expressionVersion?: string;
 }
 export interface FeedbackConfiguration {
   productVersion: string;
@@ -35,6 +37,9 @@ export function feedbackValues(context: FeedbackContext, config: FeedbackConfigu
     dataVersion: (context.dataVersion ?? config.dataVersion).slice(0, 100),
   };
   const reference = [
+    context.expressionId && "Record type: Compound",
+    context.expressionId && `Expression ID: ${context.expressionId}`,
+    context.expressionVersion && `Compound data version: ${context.expressionVersion}`,
     values.word && `Word: ${values.word}`,
     values.family && `Family: ${values.family}`,
     values.familyKey && `Family key: ${values.familyKey}`,
@@ -53,7 +58,8 @@ export function buildFeedbackUrl(
   context: FeedbackContext,
   config: FeedbackConfiguration,
 ): string | null {
-  if (kind === "rating" && (!context.word || !context.familyKey)) return null;
+  if (kind === "rating" && (!context.word || (!context.familyKey && !context.expressionId)))
+    return null;
   const target = config[kind];
   try {
     // Never open a configured contextual form until its real reference field exists.

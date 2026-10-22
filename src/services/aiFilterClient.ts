@@ -8,6 +8,7 @@ import {
 } from "../domain/aiFilterSchema";
 import { aiRuntimeConfiguration } from "../config/runtime";
 import { interpretAiFilterFixture } from "./aiFilterFixture";
+import { AI_OFFLINE_MESSAGE, isAiNetworkOnline } from "./aiConnectivity";
 
 export type AiFilterClientErrorCode =
   "OFFLINE" | "NOT_CONFIGURED" | "RATE_LIMITED" | "SERVICE_UNAVAILABLE" | "INVALID_RESPONSE";
@@ -26,6 +27,8 @@ interface ClientOptions {
   endpoint?: string | null;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
+  isOnline?: () => boolean;
+  signal?: AbortSignal;
 }
 
 export async function interpretAiFilter(
@@ -35,6 +38,8 @@ export async function interpretAiFilter(
 ): Promise<AiFilterResult> {
   const checked = validateAiFilterRequest(request);
   if (aiRuntimeConfiguration.fixtureMode) return interpretAiFilterFixture(checked.query);
+  const isOnline = options.isOnline ?? isAiNetworkOnline;
+  if (!isOnline()) throw new AiFilterClientError("OFFLINE", AI_OFFLINE_MESSAGE);
   let gateway: AiFilterGatewayRequest;
   try {
     gateway = validateAiFilterGatewayRequest({ ...checked, ...security });
@@ -52,6 +57,9 @@ export async function interpretAiFilter(
       "We couldn't start this search. Use the word filters below.",
     );
   const controller = new AbortController();
+  const cancel = () => controller.abort();
+  options.signal?.addEventListener("abort", cancel, { once: true });
+  if (options.signal?.aborted) controller.abort();
   const timer = setTimeout(
     () => controller.abort(),
     options.timeoutMs ?? aiRuntimeConfiguration.requestTimeoutMs,
@@ -84,10 +92,11 @@ export async function interpretAiFilter(
   } catch (error) {
     if (error instanceof AiFilterClientError) throw error;
     throw new AiFilterClientError(
-      "OFFLINE",
-      "We couldn't connect. Check your connection and try again, or use word filters.",
+      isOnline() ? "SERVICE_UNAVAILABLE" : "OFFLINE",
+      isOnline() ? "We couldn't connect. Check your connection and try again." : AI_OFFLINE_MESSAGE,
     );
   } finally {
     clearTimeout(timer);
+    options.signal?.removeEventListener("abort", cancel);
   }
 }

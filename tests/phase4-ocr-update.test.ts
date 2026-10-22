@@ -300,15 +300,31 @@ test("published update manifest matches the frozen static inventory", async () =
     await readFile(resolve(process.cwd(), "public/hkele-data/update-manifest.json"), "utf8"),
   ) as DataUpdateManifest;
   const checked = validateUpdateManifest(value, "0.5.0");
-  assert.equal(checked.fileCount, 1_188);
-  assert.equal(checked.byteCount, 68859565);
+  const frequency = checked.files.filter((file) =>
+    file.path.startsWith("word-frequency/a-main-word-frequency-20261022-v1/"),
+  );
+  const base = checked.files.filter((file) => !frequency.includes(file));
+  assert.equal(base.length, 1_188);
+  assert.equal(
+    base.reduce((total, file) => total + file.byteSize, 0),
+    68859565,
+  );
+  assert.equal(frequency.length, 128);
+  for (const file of frequency) {
+    const bytes = new Uint8Array(
+      await readFile(resolve(process.cwd(), "public/hkele-data", file.path)),
+    );
+    assert.equal(bytes.byteLength, file.byteSize);
+    assert.equal(await sha256Hex(bytes), file.sha256);
+  }
+  assert.equal(checked.fileCount, 1_316);
   assert.equal(
     checked.sourceManifestSha256,
     "745c4a08c11e79cbed1b06bfac84cd76c5b4be49ecc33363d9b5fe71ac1376db",
   );
   assert.equal(checked.counts.totalFamilies, 163_906);
   assert.equal(checked.counts.forms, 319_961);
-  assert.equal(checked.archive?.fileCount, 1_188);
+  assert.equal(checked.archive?.fileCount, 1_316);
   assert.equal(checked.archive?.format, "zip-store");
   assert.ok((checked.archive?.byteSize ?? 0) > checked.byteCount);
 });

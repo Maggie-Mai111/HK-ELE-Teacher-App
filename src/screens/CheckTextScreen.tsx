@@ -15,6 +15,7 @@ import { PreteachPanel } from "../components/PreteachPanel";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { ScreenHeader } from "../components/ScreenHeader";
 import { TextWordSheet } from "../components/TextWordSheet";
+import { CompoundCard } from "../components/CompoundCard";
 import type { DataMode, HkeleRepository, ResolvedOccurrence } from "../domain/hkele";
 import { matchCpb100 } from "../services/cpbService";
 import { validHkRange } from "../services/frequencyService";
@@ -32,7 +33,15 @@ import { colors, spacing } from "../theme/tokens";
 import type { SessionWork } from "../services/reopenSession";
 
 type ResultFilter =
-  "all" | "candidate" | "other" | "grammar" | "cpb" | "unavailable" | "unmatched" | "review";
+  | "all"
+  | "candidate"
+  | "other"
+  | "grammar"
+  | "cpb"
+  | "unavailable"
+  | "unmatched"
+  | "review"
+  | "compound";
 type ResultSort = "occurrence" | "family";
 type Category = Exclude<ResultFilter, "all" | "cpb">;
 interface Props {
@@ -49,6 +58,7 @@ interface Props {
 }
 function category(item: ResolvedOccurrence): Category {
   const kind = textResultKind(item);
+  if (kind === "compound-expression") return "compound";
   if (kind === "grammatical-relation") return "grammar";
   if (kind === "full-check-unavailable") return "unavailable";
   if (kind === "unmatched") return "unmatched";
@@ -136,6 +146,7 @@ export function CheckTextScreen({
   const counts = useMemo(() => {
     const values = {
       candidate: 0,
+      compound: 0,
       other: 0,
       grammar: 0,
       unavailable: 0,
@@ -251,6 +262,9 @@ export function CheckTextScreen({
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
         </Text>
+      ) : null}
+      {showResults && results.some((item) => item.expressionLayerStatus === "UNAVAILABLE") ? (
+        <Text style={styles.meta}>Connect or update Offline use to check compound words.</Text>
       ) : null}
       {loading ? (
         <ActivityIndicator accessibilityLabel="Checking text" color={colors.primary} size="large" />
@@ -373,6 +387,25 @@ export function CheckTextScreen({
               onOpenList={onOpenTeachingList}
             />
           </View>
+          {results.some((item) => item.expression) ? (
+            <ProgressiveDisclosure title="Compound words in this text">
+              {[
+                ...new Map(
+                  results
+                    .filter((item) => item.expression)
+                    .map((item) => [item.expression!.expressionId, item.expression!]),
+                ).values(),
+              ].map((expression) => (
+                <CompoundCard
+                  key={expression.expressionId}
+                  expression={expression}
+                  teaching={teaching}
+                  onOpenFamily={(key, form) => onOpenFamily(key, undefined, form)}
+                  source="Check a text"
+                />
+              ))}
+            </ProgressiveDisclosure>
+          ) : null}
           <ProgressiveDisclosure title="Check word knowledge" keepMounted>
             <KnowledgeTestPanel
               key={teaching.activeLessonId}
@@ -403,6 +436,7 @@ export function CheckTextScreen({
                     ["all", `All (${results.length})`],
                     ["candidate", `Core list (${counts.candidate})`],
                     ["other", `Other words (${counts.other})`],
+                    ["compound", `Compounds (${counts.compound})`],
                     ["grammar", `Short forms (${counts.grammar})`],
                     ["cpb", `Common words (${counts.cpb})`],
                     ["unavailable", `Check online (${counts.unavailable})`],
@@ -495,6 +529,7 @@ export function CheckTextScreen({
         </View>
       ) : null}
       <TextWordSheet
+        teaching={teaching}
         item={wordSheet}
         onClose={() => setWordSheet(null)}
         onOpenFamily={(key, surface, context) =>

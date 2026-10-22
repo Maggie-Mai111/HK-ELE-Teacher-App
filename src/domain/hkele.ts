@@ -1,4 +1,5 @@
 import type { RegisteredGrammaticalRelation, ResolutionStatus, TokenOccurrence } from "./contracts";
+import type { SupplementaryExpression } from "./supplementaryExpressions";
 
 export type BrowseScope = "core" | "broader" | "full";
 export type BrowseSort = "overall" | "hk" | "az";
@@ -51,6 +52,8 @@ export interface FamilyDetail {
   forms: FormRecord[];
 }
 
+export type WordFormFrequencies = Record<string, [number | null, number | null]>;
+
 export interface BrowseRequest {
   scope: BrowseScope;
   sort: BrowseSort;
@@ -77,6 +80,8 @@ export interface SearchFamilyOwner extends FamilyRecord {
 }
 
 export interface SurfaceSearchResult {
+  expression?: SupplementaryExpression | null;
+  expressionLayerStatus?: "READY" | "UNAVAILABLE";
   status: Exclude<ResolutionStatus, "UNSUPPORTED">;
   submittedQuery: string;
   normalizedQuery: string;
@@ -93,6 +98,8 @@ export interface SurfaceSearchResult {
 }
 
 export interface ResolvedOccurrence extends TokenOccurrence {
+  expression?: SupplementaryExpression | null;
+  expressionLayerStatus?: "READY" | "UNAVAILABLE";
   status: ResolutionStatus;
   bestOwnerCount: number;
   owners: SearchFamilyOwner[];
@@ -109,6 +116,7 @@ export interface HkeleRepository {
   aiFilterFamilies?(scope?: BrowseScope): Promise<FamilyRecord[]>;
   aiFilterCpbFamilyKeys?(scope?: BrowseScope): Promise<ReadonlySet<string>>;
   getFamily(basewordKey: string): Promise<FamilyDetail>;
+  getWordFormFrequencies?(basewordKey: string): Promise<WordFormFrequencies>;
   searchSurface(surface: string): Promise<SurfaceSearchResult>;
   resolveOccurrences(text: string, occurrences: TokenOccurrence[]): Promise<ResolvedOccurrence[]>;
   getDataMode(): DataMode;

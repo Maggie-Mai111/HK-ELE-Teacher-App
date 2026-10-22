@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import test from "node:test";
 
 import { AiFilterClientError, interpretAiFilter } from "../src/services/aiFilterClient.js";
+import { AI_OFFLINE_MESSAGE } from "../src/services/aiConnectivity.js";
 import { handleRequest, type WorkerEnv } from "../worker/src/index.js";
 
 const SESSION = "123e4567-e89b-42d3-a456-426614174000";
@@ -51,6 +52,7 @@ test("client fails closed for missing protection, offline, 429 and unknown respo
   await assert.rejects(
     interpretAiFilter({ query: "Find words", locale: "en-HK", surface: "browse" }, SECURITY, {
       endpoint: "https://worker.example",
+      isOnline: () => false,
       fetchImpl: async () => {
         throw new Error("offline");
       },
@@ -72,6 +74,80 @@ test("client fails closed for missing protection, offline, 429 and unknown respo
     }),
     (error: unknown) => error instanceof AiFilterClientError && error.code === "INVALID_RESPONSE",
   );
+});
+
+test("offline AI makes no request; reconnecting waits for an explicit retry of the same query", async () => {
+  let online = false;
+  let calls = 0;
+  const request = { query: "Find ten words by P4", locale: "en-HK", surface: "browse" } as const;
+  const options = {
+    endpoint: "https://worker.example/api/ai/interpret-filter",
+    isOnline: () => online,
+    fetchImpl: async (_input: RequestInfo | URL, init?: RequestInit) => {
+      calls++;
+      assert.equal(JSON.parse(String(init?.body)).query, request.query);
+      return new Response(JSON.stringify(ready), { status: 200 });
+    },
+  };
+  await assert.rejects(
+    interpretAiFilter(request, SECURITY, options),
+    (error: unknown) =>
+      error instanceof AiFilterClientError &&
+      error.code === "OFFLINE" &&
+      error.message === AI_OFFLINE_MESSAGE,
+  );
+  assert.equal(calls, 0);
+  online = true;
+  assert.equal(calls, 0);
+  assert.equal((await interpretAiFilter(request, SECURITY, options)).status, "ready");
+  assert.equal(calls, 1);
+});
+
+test("disconnecting can cancel an in-flight AI request and preserve a later retry", async () => {
+  let online = true;
+  const controller = new AbortController();
+  const pending = interpretAiFilter(
+    { query: "Find words", locale: "en-HK", surface: "browse" },
+    SECURITY,
+    {
+      endpoint: "https://worker.example/api/ai/interpret-filter",
+      isOnline: () => online,
+      signal: controller.signal,
+      fetchImpl: async (_input, init) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => reject(new Error("aborted")), {
+            once: true,
+          });
+        }),
+    },
+  );
+  online = false;
+  controller.abort();
+  await assert.rejects(
+    pending,
+    (error: unknown) => error instanceof AiFilterClientError && error.code === "OFFLINE",
+  );
+});
+
+test("an online service or connection failure is not mislabelled as offline", async () => {
+  for (const fetchImpl of [
+    async () => new Response("", { status: 403 }),
+    async (): Promise<Response> => {
+      throw new Error("connection failed");
+    },
+  ]) {
+    await assert.rejects(
+      interpretAiFilter({ query: "Find words", locale: "en-HK", surface: "browse" }, SECURITY, {
+        endpoint: "https://worker.example/api/ai/interpret-filter",
+        isOnline: () => true,
+        fetchImpl,
+      }),
+      (error: unknown) =>
+        error instanceof AiFilterClientError &&
+        error.code === "SERVICE_UNAVAILABLE" &&
+        error.message !== AI_OFFLINE_MESSAGE,
+    );
+  }
 });
 
 function limiter(success = true) {

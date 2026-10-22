@@ -69,10 +69,12 @@ export function FeedbackPanel({
               ? "Rate how easy this word is to teach and how suitable it is for your students."
               : "Tell us what happened and what you expected. Please leave out student names, classroom photos and full source texts."}
           </Text>
-          {request.context.family ? (
+          {request.context.family || request.context.expressionId ? (
             <View style={styles.context}>
               <Text style={styles.value}>{canonicalWord || word}</Text>
-              <Text style={styles.label}>Family: {request.context.family}</Text>
+              <Text style={styles.label}>
+                {request.context.expressionId ? "Compound" : `Family: ${request.context.family}`}
+              </Text>
               <ActionButton
                 kind="secondary"
                 label={changeWord ? "Done" : "Change word"}
@@ -99,7 +101,7 @@ export function FeedbackPanel({
             {context.product} · {context.page}
           </Text>
           <Text style={styles.body}>
-            {request.context.family
+            {request.context.family || request.context.expressionId
               ? "Your word and page details are filled in."
               : "Your page details are filled in."}{" "}
             Submit your response in Google Forms.

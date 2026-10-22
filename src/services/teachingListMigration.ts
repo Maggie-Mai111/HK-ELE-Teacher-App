@@ -32,6 +32,15 @@ export function migratePackage72TeachingList(
     return [
       {
         basewordKey: legacy.baseword_key,
+        ...(legacy.record_type === "compound" &&
+        legacy.expression &&
+        typeof legacy.expression === "object"
+          ? {
+              recordType: "compound" as const,
+              expression:
+                legacy.expression as import("../domain/supplementaryExpressions").SupplementaryExpression,
+            }
+          : {}),
         displayFamily: legacy.display_family,
         status,
         notes: typeof legacy.notes === "string" ? legacy.notes : "",

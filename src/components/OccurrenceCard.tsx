@@ -8,6 +8,7 @@ import { textFormAndFamily, textResultStatusLabel } from "../services/textResult
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
+import { CompoundCard } from "./CompoundCard";
 
 interface Props {
   item: ResolvedOccurrence;
@@ -84,6 +85,14 @@ export function OccurrenceCard({
           <Text style={styles.mappingLabel}>HK-ELE family</Text>
           <Text style={styles.mappingValue}>{mapping.family}</Text>
         </View>
+      ) : null}
+      {item.status === "REGISTERED_EXPRESSION" && item.expression ? (
+        <CompoundCard
+          expression={item.expression}
+          teaching={teaching}
+          source="Check a text"
+          onOpenFamily={onOpenFamily}
+        />
       ) : null}
       {relation ? (
         <View style={styles.relation}>

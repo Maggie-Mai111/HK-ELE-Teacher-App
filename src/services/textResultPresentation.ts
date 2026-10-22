@@ -1,6 +1,7 @@
 import type { ResolvedOccurrence } from "../domain/hkele";
 
 export type TextResultKind =
+  | "compound-expression"
   | "ordinary-family"
   | "compound-family"
   | "grammatical-relation"
@@ -55,6 +56,7 @@ export function isCompoundMatch(item: ResolvedOccurrence): boolean {
 }
 
 export function textResultKind(item: ResolvedOccurrence): TextResultKind {
+  if (item.status === "REGISTERED_EXPRESSION" && item.expression) return "compound-expression";
   if (item.status === "REGISTERED_GRAMMATICAL_RELATION") return "grammatical-relation";
   if (item.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "full-check-unavailable";
   if (item.status === "UNMATCHED") return "unmatched";
@@ -64,6 +66,7 @@ export function textResultKind(item: ResolvedOccurrence): TextResultKind {
 
 export function textResultStatusLabel(item: ResolvedOccurrence): string {
   const kind = textResultKind(item);
+  if (kind === "compound-expression") return "Compound";
   if (kind === "grammatical-relation") return "Short form";
   if (kind === "compound-family") return "Compound";
   if (kind === "ordinary-family") return "Matched";

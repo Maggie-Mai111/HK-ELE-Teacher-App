@@ -15,6 +15,7 @@ import { VERIFIED_AI_QUICK_EXAMPLES } from "../domain/verifiedAiExamples";
 import type { BrowseScope, HkeleRepository } from "../domain/hkele";
 import { getAnonymousSessionId } from "../services/anonymousSession";
 import { AiFilterClientError, interpretAiFilter } from "../services/aiFilterClient";
+import { AI_OFFLINE_MESSAGE, isAiNetworkOnline } from "../services/aiConnectivity";
 import {
   teacherAiResult,
   teacherAiScope,
@@ -53,9 +54,30 @@ export function AiFilterAssistant({
   const [turnstileResetNonce, setTurnstileResetNonce] = useState(0);
   const [anonymousSessionId] = useState(() => getAnonymousSessionId());
   const [expanded, setExpanded] = useState(false);
+  const [online, setOnline] = useState(isAiNetworkOnline);
+  const pendingRequest = useRef<AbortController | null>(null);
   const inputRef = useRef<TextInput>(null);
   const latestScope = useRef(scope);
   latestScope.current = scope;
+
+  useEffect(() => {
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
+    const update = () => {
+      const connected = isAiNetworkOnline();
+      setOnline(connected);
+      setTurnstileToken(null);
+      setTurnstileResetNonce((value) => value + 1);
+      setError("");
+      if (!connected) pendingRequest.current?.abort();
+    };
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+      pendingRequest.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     setInterpretation(null);
@@ -72,6 +94,10 @@ export function AiFilterAssistant({
 
   const interpret = async () => {
     if (!query.trim()) return;
+    if (!isAiNetworkOnline()) {
+      setOnline(false);
+      return;
+    }
     if (!aiRuntimeConfiguration.configured || !turnstileToken || !anonymousSessionId) {
       setError("Please finish the verification below, then try again.");
       return;
@@ -79,6 +105,8 @@ export function AiFilterAssistant({
     setBusy(true);
     setError("");
     setInterpretation(null);
+    const controller = new AbortController();
+    pendingRequest.current = controller;
     try {
       setInterpretation(
         teacherAiResult(
@@ -89,11 +117,13 @@ export function AiFilterAssistant({
               surface: "browse",
             },
             { turnstileToken, anonymousSessionId },
+            { signal: controller.signal },
           ),
           teacherAiScope(query, latestScope.current),
         ),
       );
     } catch (reason) {
+      if (controller.signal.aborted) return;
       setError(
         reason instanceof AiFilterClientError
           ? reason.message
@@ -103,6 +133,7 @@ export function AiFilterAssistant({
       setTurnstileToken(null);
       setTurnstileResetNonce((value) => value + 1);
       setBusy(false);
+      if (pendingRequest.current === controller) pendingRequest.current = null;
     }
   };
 
@@ -128,7 +159,7 @@ export function AiFilterAssistant({
     }
   };
 
-  if (Platform.OS !== "web" || !aiRuntimeConfiguration.configured) return null;
+  if (Platform.OS !== "web") return null;
 
   return (
     <View style={styles.panel}>
@@ -152,8 +183,19 @@ export function AiFilterAssistant({
           {expanded ? "Close −" : "Open +"}
         </Text>
       </Pressable>
-      {expanded ? (
+      {expanded && !aiRuntimeConfiguration.configured ? (
+        <View style={styles.unavailableRow}>
+          <Text role="status" style={styles.unavailableText}>
+            AI search is temporarily unavailable here. You can still search for a word above.
+          </Text>
+        </View>
+      ) : expanded ? (
         <View style={styles.expandedBody}>
+          {!online ? (
+            <Text role="status" style={styles.description}>
+              {AI_OFFLINE_MESSAGE}
+            </Text>
+          ) : null}
           <Text style={styles.description}>
             Describe the words you need from the {scope === "core" ? "Core list" : "Full database"}.
           </Text>
@@ -184,10 +226,12 @@ export function AiFilterAssistant({
               />
             ))}
           </View>
-          <TurnstileGate onTokenChange={setTurnstileToken} resetNonce={turnstileResetNonce} />
+          {online ? (
+            <TurnstileGate onTokenChange={setTurnstileToken} resetNonce={turnstileResetNonce} />
+          ) : null}
           <View style={styles.actions}>
             <ActionButton
-              disabled={busy || !query.trim() || !turnstileToken || !anonymousSessionId}
+              disabled={!online || busy || !query.trim() || !turnstileToken || !anonymousSessionId}
               label={busy ? "Finding filters…" : "Review suggested filters"}
               onPress={() => void interpret()}
             />
@@ -204,7 +248,7 @@ export function AiFilterAssistant({
             ) : null}
           </View>
           {busy ? <ActivityIndicator accessibilityLabel="Working" color={colors.primary} /> : null}
-          {error ? (
+          {error && online ? (
             <View style={styles.errorBox}>
               <Text accessibilityRole="alert" style={styles.error}>
                 {error}

@@ -9,6 +9,7 @@ import type {
   DataMode,
   FamilyRecord,
   BrowseScope,
+  WordFormFrequencies,
 } from "../domain/hkele";
 import { CPB_ITEMS } from "../services/cpbService";
 
@@ -108,6 +109,13 @@ export class HybridRepository implements HkeleRepository {
       () => this.staticSource.getFamily(basewordKey),
       () => this.bundledSource.getFamily(basewordKey),
     );
+  }
+
+  getWordFormFrequencies(basewordKey: string): Promise<WordFormFrequencies> {
+    // Never replace form frequencies with family totals or another data generation.
+    if (!this.staticSource.getWordFormFrequencies)
+      return Promise.reject(new Error("Word frequencies need updating."));
+    return this.staticSource.getWordFormFrequencies(basewordKey);
   }
 
   searchSurface(surface: string): Promise<SurfaceSearchResult> {

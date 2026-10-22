@@ -79,7 +79,10 @@ export async function readInstalledData(url: string): Promise<Response | null> {
   const target = new URL(url, window.location.href);
   if (
     target.origin !== window.location.origin ||
-    !target.pathname.startsWith(`${OFFLINE_BASE}hkele-data/`)
+    !(
+      target.pathname.startsWith(`${OFFLINE_BASE}hkele-data/`) ||
+      target.pathname.startsWith(`${OFFLINE_BASE}assets/compounds/`)
+    )
   )
     return null;
   const selection = await selectSession();

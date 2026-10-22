@@ -1,4 +1,11 @@
 import { refreshSavedSelection } from "./lessonDataRefresh";
+import {
+  createCompoundTeachingItem,
+  expressionItemKey,
+  refreshCompoundTeachingItem,
+} from "./compoundTeaching";
+import { lookupCompound } from "./compoundData";
+import type { SupplementaryExpression } from "../domain/supplementaryExpressions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Platform } from "react-native";
@@ -143,6 +150,19 @@ export async function refreshTeachingItems(
 ): Promise<TeachingListItem[]> {
   return Promise.all(
     items.map(async (item) => {
+      if (item.recordType === "compound") {
+        try {
+          return refreshCompoundTeachingItem(
+            item,
+            await lookupCompound(
+              item.expression?.normalizedExpression || item.displayFamily,
+              item.dataVersion,
+            ),
+          );
+        } catch {
+          return refreshCompoundTeachingItem(item, null);
+        }
+      }
       try {
         return refreshSavedSelection(item, await repository.getFamily(item.basewordKey));
       } catch {
@@ -352,6 +372,21 @@ export function useTeachingList(repository: HkeleRepository) {
     [addSelections],
   );
 
+  const addExpression = useCallback(
+    (expression: SupplementaryExpression, source = "Find words") => {
+      const key = expressionItemKey(expression);
+      if (itemsRef.current.some((item) => item.basewordKey === key)) return;
+      commit(
+        [
+          ...itemsRef.current,
+          createCompoundTeachingItem(expression, itemsRef.current.length, source),
+        ],
+        "Added compound word",
+      );
+    },
+    [commit],
+  );
+
   const remove = useCallback(
     (basewordKey: string) => {
       commit(
@@ -426,6 +461,7 @@ export function useTeachingList(repository: HkeleRepository) {
       saveError,
       add,
       addMany,
+      addExpression,
       addSelections,
       remove,
       removeSelectedForm,
@@ -453,6 +489,7 @@ export function useTeachingList(repository: HkeleRepository) {
       sessionSources,
       add,
       addMany,
+      addExpression,
       addSelections,
       remove,
       removeSelectedForm,

@@ -13,7 +13,7 @@
     }
   },
   "2026-10-20-a-main-v1": {
-    "dataInventorySha256": "af5392158802ca5591eb7edfed792736cdf9968124928bf7d078cb22f2f955f7",
+    "dataInventorySha256": "6b153c9f52ed68abd7e3dee1ff352953e83b4fc98750e8c29280a3d872b3d17c",
     "sourceManifestSha256": "745c4a08c11e79cbed1b06bfac84cd76c5b4be49ecc33363d9b5fe71ac1376db",
     "counts": {
       "candidate": 2871,

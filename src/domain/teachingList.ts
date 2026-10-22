@@ -1,9 +1,12 @@
 import type { FamilyRecord } from "./hkele";
+import type { SupplementaryExpression } from "./supplementaryExpressions";
 
 export type TeachingStatus = "Notice" | "Practise" | "Master";
 export type TeachingFocus = "focus" | "mention" | "";
 
 export interface TeachingListItem {
+  recordType?: "compound";
+  expression?: SupplementaryExpression;
   basewordKey: string;
   displayFamily: string;
   status: TeachingStatus;

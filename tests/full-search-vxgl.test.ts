@@ -17,6 +17,34 @@ import {
   vocabularyListLabel,
 } from "../src/services/externalLevelPresentation";
 import { makeFamily } from "./support/phase3-fixtures";
+import { selectedFormEvidence } from "../src/services/textReaderService";
+
+test("word-card annotations and parts use the selected real form without inheriting the family's union", async () => {
+  const original = globalThis.fetch;
+  globalThis.fetch = async (input) => dataResponse(String(input));
+  try {
+    const detail = await new StaticShardRepository("https://fixture.invalid/hkele-data").getFamily(
+      "stress",
+    );
+    const stressed = detail.forms.find((form) => form.form === "stressed")!,
+      stressors = detail.forms.find((form) => form.form === "stressors")!;
+    assert.notEqual(stressed.msvl, detail.family.msvl);
+    assert.equal(selectedFormEvidence(stressed).msvl, stressed.msvl);
+    assert.equal(selectedFormEvidence(stressors).awl, false);
+    assert.equal(selectedFormEvidence(stressors).suffix, "or");
+    assert.equal(selectedFormEvidence(null).msvl, null);
+    assert.equal(
+      selectedFormEvidence({ ...stressors, phase1c_evidence_withheld_fields: "suffix" }).suffix,
+      null,
+    );
+    assert.equal(
+      selectedFormEvidence({ ...stressed, root_meaning_alignment_status: "AMBIGUOUS" }).meaning,
+      null,
+    );
+  } finally {
+    globalThis.fetch = original;
+  }
+});
 
 function dataResponse(url: string): Response {
   const path = new URL(url, "https://fixture.invalid").pathname.replace(/^\/hkele-data\//, "");

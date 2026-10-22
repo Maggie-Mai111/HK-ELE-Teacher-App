@@ -1,4 +1,20 @@
 import type { FormRecord, ResolvedOccurrence } from "../domain/hkele";
+import { hasFlag } from "../domain/hkele";
+
+export function selectedFormEvidence(form: FormRecord | null | undefined) {
+  const withheld = String(form?.phase1c_evidence_withheld_fields ?? "").toLowerCase();
+  return {
+    firstSeen: form?.first_seen_hk_textbooks ?? null,
+    awl: hasFlag(form?.awl),
+    msvl: form?.msvl ?? null,
+    root: form?.root ?? null,
+    meaning:
+      form?.root_meaning_alignment_status === "MATCHED_UNIQUE_EXACT" ? form.root_meaning : null,
+    prefix: withheld.includes("prefix") ? null : (form?.prefix ?? null),
+    suffix: withheld.includes("suffix") ? null : (form?.suffix ?? null),
+    subjects: form?.academic_subject_evidence ?? null,
+  };
+}
 
 export type ReaderSegment = { key: string; text: string; occurrence?: ResolvedOccurrence };
 
@@ -40,7 +56,8 @@ export function textReaderSegments(text: string, results: ResolvedOccurrence[]):
 
 export function textWordAction(
   item: ResolvedOccurrence,
-): "family" | "choices" | "grammar" | "offline" | "missing" {
+): "family" | "choices" | "grammar" | "offline" | "missing" | "compound" {
+  if (item.status === "REGISTERED_EXPRESSION" && item.expression) return "compound";
   const owners = item.owners.filter((owner) => !owner.blocked && !owner.display_blocked);
   if (item.status === "RESOLVED" && item.owners.length === 1 && owners.length === 1)
     return "family";

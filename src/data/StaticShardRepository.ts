@@ -11,6 +11,7 @@ import type {
   ResolvedOccurrence,
   SearchFamilyOwner,
   SurfaceSearchResult,
+  WordFormFrequencies,
 } from "../domain/hkele";
 import { inflateRecord, loadGzipJson } from "./gzipJson";
 import { registeredGrammaticalRelation } from "../services/grammaticalRelationService";
@@ -189,6 +190,25 @@ export class StaticShardRepository implements HkeleRepository {
         teacherFormRecord(inflateRecord<FormRecord>(manifest.form_fields, row)),
       ),
     };
+  }
+
+  async getWordFormFrequencies(basewordKey: string): Promise<WordFormFrequencies> {
+    const version = "a-main-word-frequency-20261022-v1";
+    const normalized = normalize(basewordKey);
+    const bucket = String(this.fnvBucket(normalized, 128)).padStart(3, "0");
+    const [manifest, data] = await Promise.all([
+      this.manifest(),
+      this.load<{
+        dataVersion: string;
+        version: string;
+        families: Record<string, WordFormFrequencies>;
+      }>(`word-frequency/${version}/${bucket}.json.gz`),
+    ]);
+    if (data.version !== version || data.dataVersion !== manifest.metadata.data_version) {
+      this.cache.delete(`word-frequency/${version}/${bucket}.json.gz`);
+      throw new Error("The word frequencies do not match this database.");
+    }
+    return data.families[normalized] ?? {};
   }
 
   private searchBucket(value: string): string {
