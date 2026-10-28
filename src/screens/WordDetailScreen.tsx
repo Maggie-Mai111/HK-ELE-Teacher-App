@@ -50,6 +50,7 @@ interface FormTierProps {
   forms: FormRecord[];
   family: FamilyDetail["family"];
   teaching: TeachingListStore;
+  sourceLabel: string;
 }
 
 function display(value: unknown): string {
@@ -72,7 +73,7 @@ function DetailRow({ label, value }: { label: string; value: unknown }) {
   );
 }
 
-function FormTier({ title, description, forms, family, teaching }: FormTierProps) {
+function FormTier({ title, description, forms, family, teaching, sourceLabel }: FormTierProps) {
   const [limit, setLimit] = useState(PROGRESSIVE_BATCH_SIZE);
   const shown = visibleForms(forms, limit);
   return (
@@ -109,7 +110,7 @@ function FormTier({ title, description, forms, family, teaching }: FormTierProps
                     disabled={selected || !teaching.ready}
                     kind="secondary"
                     label={selected ? `${form.form} selected` : `Add ${form.form}`}
-                    onPress={() => teaching.add(family, form.form)}
+                    onPress={() => teaching.add(family, form.form, sourceLabel)}
                   />
                 </View>
               );
@@ -391,6 +392,7 @@ export function WordDetailScreen({
               forms={tier.forms}
               key={tier.key}
               teaching={teaching}
+              sourceLabel={sourceLabel}
               title={tier.title}
             />
           ))}

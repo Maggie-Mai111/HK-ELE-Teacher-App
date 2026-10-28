@@ -133,7 +133,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
     }
     onApplyText(recognizedText);
     setReplaceConfirmed(false);
-    setMessage("Text inserted. You can edit it above, then choose Check text.");
+    setMessage("Text inserted. Review it, then choose Check text.");
   };
   return (
     <View style={styles.box}>

@@ -426,7 +426,7 @@ export function CheckTextScreen({
             />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure title="More text details">
-            <ProgressiveDisclosure title="Text complexity">
+            <ProgressiveDisclosure title="Readability estimates">
               <ComplexityPanel text={checkedText!} results={results} />
             </ProgressiveDisclosure>
             <ProgressiveDisclosure title="All word results">

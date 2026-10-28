@@ -38,10 +38,10 @@ export function describeAiFilterConditions(filters: AiFilterConditions): string[
   if (filters.earliestObservedFrom || filters.earliestObservedTo) {
     descriptions.push(
       filters.earliestObservedFrom && filters.earliestObservedTo
-        ? `Grade: ${filters.earliestObservedFrom}–${filters.earliestObservedTo}`
+        ? `First seen in HK textbooks: ${filters.earliestObservedFrom}–${filters.earliestObservedTo}`
         : filters.earliestObservedFrom
-          ? `Grade: ${filters.earliestObservedFrom} or later`
-          : `Grade: ${filters.earliestObservedTo} or earlier`,
+          ? `First seen in HK textbooks: ${filters.earliestObservedFrom} or later`
+          : `First seen in HK textbooks: ${filters.earliestObservedTo} or earlier`,
     );
   }
   const range = (label: string, minimum?: number, maximum?: number) => {
@@ -67,10 +67,12 @@ export function describeAiFilterConditions(filters: AiFilterConditions): string[
   if (filters.awl !== undefined) descriptions.push(`AWL: ${filters.awl ? "yes" : "no"}`);
   if (filters.msvl !== undefined) descriptions.push(`MSVL: ${filters.msvl ? "yes" : "no"}`);
   if (filters.msvlSubjects) descriptions.push(`MSVL subject: ${filters.msvlSubjects.join(", ")}`);
-  if (filters.cpb100 !== undefined) descriptions.push(`CPB 100: ${filters.cpb100 ? "yes" : "no"}`);
+  if (filters.cpb100 !== undefined)
+    descriptions.push(`Common words: ${filters.cpb100 ? "yes" : "no"}`);
   if (filters.externalLevels)
-    descriptions.push(`External level: ${filters.externalLevels.join(", ")}`);
-  descriptions.push(`Sort: ${filters.sort}`, `Result limit: ${filters.limit}`);
+    descriptions.push(`US grade reference: ${filters.externalLevels.join(", ")}`);
+  const sortLabel = { overall: "Overall frequency", hk: "HK frequency", az: "A–Z" };
+  descriptions.push(`Sort: ${sortLabel[filters.sort]}`, `Result limit: ${filters.limit}`);
   return descriptions;
 }
 

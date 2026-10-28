@@ -15,3 +15,7 @@ Build and validation use the existing package scripts. Deployment remains a manu
 Keep existing browser site data and saved lessons during updates. Read OFFLINE_AND_DATA_UPDATES_ZH.md before replacing an offline release. Source and licence notices remain in THIRD_PARTY_NOTICES.md and existing source materials.
 
 Consistency closeout: selected-word records use the exact form for AWL/MSVL, textbook observations and word parts. Family frequency records and the approved layouts remain unchanged.
+
+## Readability estimates
+
+The optional panel under Check a text > More text details uses the existing Flesch formulas with improved local counting. See [method and limitations](READABILITY_METHOD.md). No network service or additional dictionary download is required.

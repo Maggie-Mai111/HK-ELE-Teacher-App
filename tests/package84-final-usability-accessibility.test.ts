@@ -90,7 +90,7 @@ test("AI fixture is strict, local-only, includes all conditions and never needs 
 test("AI matched/shown counts and three distinct result actions remain explicit", () => {
   const browse = source("src/screens/BrowseScreen.tsx");
   assert.match(browse, /matchedBeforeLimit[\s\S]*matches · showing first/);
-  for (const label of ["Clear results", "Edit AI request", "Adjust manual filters"])
+  for (const label of ["Clear results", "Edit AI request", "Browse and sort words"])
     assert.equal((browse.match(new RegExp(`label="${label}"`, "g")) ?? []).length, 1, label);
   assert.match(browse, /setEditRequestNonce\(\(value\) => value \+ 1\)/);
   assert.match(browse, /onPress=\{showManualFilters\}/);
@@ -157,9 +157,9 @@ test("193 forms and 500 occurrences are exposed progressively rather than render
 test("photo OCR and advanced text evidence stay behind collapsed disclosures", () => {
   const check = source("src/screens/CheckTextScreen.tsx");
   assert.match(check, /title="Scan text from a photo"[\s\S]*<OcrInputPanel/);
-  assert.ok(check.indexOf('title="Text complexity"') > check.indexOf("<PreteachPanel"));
+  assert.ok(check.indexOf('title="Readability estimates"') > check.indexOf("<PreteachPanel"));
   assert.ok(check.indexOf("Check word knowledge") > check.indexOf("<PreteachPanel"));
-  for (const title of ["Text complexity", "All word results", "Words in context"])
+  for (const title of ["Readability estimates", "All word results", "Words in context"])
     assert.match(check, new RegExp(`title="${title}"`));
   const disclosure = source("src/components/ProgressiveDisclosure.tsx");
   assert.match(disclosure, /defaultOpen = false/);

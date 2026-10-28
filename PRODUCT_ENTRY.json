@@ -1,7 +1,7 @@
 {
-  "status": "LOCAL_COMPOUND_UPDATE_READY_MANUAL_PUBLICATION_PENDING",
+  "status": "LOCAL_TEACHER_FLOW_RELEASE_READY_PUBLIC_UPDATE_PENDING",
   "dataVersion": "2026-10-20-a-main-v1",
-  "uiBaseline": "Approved App/PWA v22 layout retained; original Home design from v15",
+  "uiBaseline": "Approved App/PWA v24 retained; only scoped teacher-flow corrections",
   "uiRedesigned": false,
   "dataCounts": {
     "candidate": 2871,
@@ -19,10 +19,10 @@
   "authenticationConnected": false,
   "deployedByThisTask": false,
   "provenance": "DATA_PROVENANCE.md",
-  "iteration": "teacher-app-closed-compounds-20261022-v23",
+  "iteration": "teacher-app-flow-polish-20261028-v25",
   "searchFlow": "Search -> accepted forms by family -> chosen form detail",
   "wordFrequencyVersion": "a-main-word-frequency-20261022-v1",
-  "offlineReleaseId": "26fe89ee9012d04212e0fe56826be6aa5e59f4238f45adfc226620fac906b165",
+  "offlineReleaseId": "38e589816a56defd1864a4fc013017a14ef959fb11f5674372102c6218cd576d",
   "offlineFiles": 1368,
   "teacherLabels": {
     "firstSeen": "First seen in HK textbooks",
@@ -68,6 +68,7 @@
     "scope": "Exact registered closed whole words; no inferred family, grade, rank or Core membership",
     "newResearchComputation": false
   },
-  "offlineBytes": 112963674,
-  "selectedFormRecordParity": "Exact selected form for educational records and word parts; family frequency remains family-level"
+  "offlineBytes": 112965570,
+  "selectedFormRecordParity": "Exact selected form for educational records and word parts; family frequency remains family-level",
+  "readabilityMethod": "READABILITY_METHOD.md"
 }

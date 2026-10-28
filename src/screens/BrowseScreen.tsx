@@ -455,7 +455,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
               />
               <ActionButton
                 kind="secondary"
-                label="Adjust manual filters"
+                label="Browse and sort words"
                 onPress={showManualFilters}
               />
               <ActionButton

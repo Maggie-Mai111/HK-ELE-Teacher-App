@@ -255,7 +255,7 @@ export function AiFilterAssistant({
               </Text>
               <ActionButton
                 kind="secondary"
-                label="Choose filters yourself"
+                label="Browse and sort words"
                 onPress={onUseManualFilters}
               />
             </View>

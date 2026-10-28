@@ -119,7 +119,7 @@ test("zero result reports confirmed conditions and remains clearable in the Brow
   assert.match(browse, /matches · showing first/);
   assert.match(browse, /label="Clear results"/);
   assert.match(browse, /label="Edit AI request"/);
-  assert.match(browse, /label="Adjust manual filters"/);
+  assert.match(browse, /label="Browse and sort words"/);
   assert.match(browse, /No words match all your filters/);
 });
 

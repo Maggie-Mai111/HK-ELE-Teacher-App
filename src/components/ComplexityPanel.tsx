@@ -17,9 +17,6 @@ export function ComplexityPanel({
   );
   return (
     <View style={styles.box}>
-      <Text accessibilityRole="header" aria-level={3} style={styles.title}>
-        Estimated text complexity
-      </Text>
       <Text style={styles.meta}>
         {value.words} English words · {value.sentences} sentences
       </Text>
@@ -35,11 +32,12 @@ export function ComplexityPanel({
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{value.fleschKincaidGrade?.toFixed(1)}</Text>
-            <Text style={styles.metricLabel}>Flesch–Kincaid (U.S. grade)</Text>
+            <Text style={styles.metricLabel}>Flesch–Kincaid (U.S. grade estimate)</Text>
           </View>
         </View>
       )}
       <Text style={styles.note}>Higher Reading Ease scores indicate easier text.</Text>
+      <Text style={styles.note}>Use alongside your knowledge of the class.</Text>
     </View>
   );
 }
