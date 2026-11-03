@@ -1,7 +1,7 @@
 /** Presentation only: Package67 membership values stay unchanged in storage. */
 export function teacherWordListLabel(value: string | null | undefined): string {
   if (!value?.trim()) return "Not recorded";
-  return value === "Candidate" || value === "Core list" ? "Core list" : "Full database";
+  return value === "Candidate" || value === "Core list" || value === "HK-ELE Word List" ? "HK-ELE Word List" : "Full database";
 }
 
 export function inTeacherWordScope(

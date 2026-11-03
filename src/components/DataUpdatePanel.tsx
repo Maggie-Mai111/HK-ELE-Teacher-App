@@ -108,15 +108,13 @@ export function DataUpdatePanel() {
         <ActionButton
           disabled={!dataUpdateManager.supported || busy || !status.hasRollback}
           kind="secondary"
-          label="Restore previous version"
+          label="Restore previous wordlist"
           onPress={() => void rollback()}
         />
       </View>
       {preview ? (
         <View style={styles.preview}>
           <Text style={styles.previewTitle}>New wordlist</Text>
-          <Text style={styles.value}>Version: {preview.manifest.dataVersion}</Text>
-          <Text style={styles.value}>Released: {preview.manifest.releaseDate}</Text>
           <Text style={styles.value}>Download: {formatBytes(preview.manifest.byteCount)}</Text>
         </View>
       ) : null}
@@ -136,11 +134,11 @@ export function DataUpdatePanel() {
       <View style={styles.status}>
         <Text style={styles.label}>Installed update</Text>
         <Text selectable style={styles.value}>
-          {status.activeVersion ?? "Bundled release"}
+          {status.activeVersion ? "Wordlist update installed" : "Included wordlist"}
         </Text>
-        <Text style={styles.label}>Rollback version</Text>
+        <Text style={styles.label}>Previous wordlist</Text>
         <Text selectable style={styles.value}>
-          {status.previousVersion ?? "None"}
+          {status.previousVersion ? "Available to restore" : "None"}
         </Text>
       </View>
     </AppCard>
@@ -149,15 +147,15 @@ export function DataUpdatePanel() {
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  label: { color: colors.muted, fontSize: 14, fontWeight: "700" },
-  message: { color: colors.ink, fontSize: 14, lineHeight: 21 },
-  note: { color: colors.muted, fontSize: 15, lineHeight: 23 },
+  label: { color: colors.muted, fontSize: 16, fontWeight: "700" },
+  message: { color: colors.ink, fontSize: 16, lineHeight: 24 },
+  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
   notice: {
     backgroundColor: colors.warningSoft,
     borderRadius: 9,
     color: colors.ink,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 16,
+    lineHeight: 24,
     padding: spacing.sm,
   },
   preview: {
@@ -166,8 +164,8 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.sm,
   },
-  previewTitle: { color: colors.ink, fontSize: 15, fontWeight: "800" },
-  privacy: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  previewTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
+  privacy: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   status: { gap: spacing.xs },
-  value: { color: colors.ink, fontSize: 14, lineHeight: 21 },
+  value: { color: colors.ink, fontSize: 16, lineHeight: 24 },
 });

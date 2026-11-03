@@ -1,0 +1,35 @@
+{
+  "contextBlocked": [
+    "US",
+    "does"
+  ],
+  "contractionBlocked": [
+    "I'll",
+    "won't",
+    "hadn't"
+  ],
+  "dataVersion": "2026-09-14-package67-v1",
+  "normalization": "NFKC, trim, locale lowercase; registered apostrophes normalized separately",
+  "prohibitedInference": [
+    "stemming",
+    "fuzzy matching",
+    "string guessing",
+    "LLM family assignment"
+  ],
+  "routeOrder": [
+    "empty -> unmatched",
+    "exact uppercase US -> blocked context route",
+    "registered contractions I'll/won't/hadn't -> blocked grammar relation",
+    "does -> blocked context route",
+    "I/us -> registered pronoun identities",
+    "minimum-priority current search_index owners; retain ties; filter display_blocked only for status"
+  ],
+  "schemaVersion": "1.0.0",
+  "sourceStaticApiSha256": "D26B80BD99EAD8F11CACB36C07AE808FDD5C546A2F34724F4386C6D2AF130606",
+  "sourceTokenizerSha256": "95694102870F11685EBB5873B576EB7FDEC59B57431425CAD432B4EEE791C56A",
+  "specialSurfaces": {
+    "i": "trial:pronoun:i",
+    "us": "trial:pronoun:us"
+  },
+  "tokenizerId": "P69-TEXT-CHECK-PAIRED-QUOTES-1.3.0"
+}

@@ -20,6 +20,46 @@
       "referenceOnly": 0,
       "totalFamilies": 163906,
       "unranked": 535
+    },
+    "2026-10-29-repaired-main-core2827-v1": {
+      "candidate": 2827,
+      "forms": 319888,
+      "inclusiveReference": 2827,
+      "ranked": 157623,
+      "referenceOnly": 0,
+      "totalFamilies": 167694,
+      "unranked": 10065,
+      "teachingScopeExcluded": 6
+    },
+    "2026-11-02-full-bawf-hkele-word-list2809-v1": {
+      "candidate": 2809,
+      "inclusiveReference": 2809,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 328518,
+      "ranked": 142582,
+      "unranked": 25022,
+      "teachingScopeExcluded": 176
+    },
+    "2026-11-02-final-normalized-a2713-v1": {
+      "candidate": 2713,
+      "inclusiveReference": 2713,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 328518,
+      "ranked": 142582,
+      "unranked": 25022,
+      "teachingScopeExcluded": 176
+    },
+    "2026-11-03-a2658-finite-family-closure-v1": {
+      "candidate": 2658,
+      "inclusiveReference": 2658,
+      "referenceOnly": 0,
+      "totalFamilies": 167630,
+      "forms": 328253,
+      "ranked": 142432,
+      "unranked": 25022,
+      "teachingScopeExcluded": 176
     }
   }
 }

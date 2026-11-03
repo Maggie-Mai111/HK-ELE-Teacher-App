@@ -53,6 +53,16 @@ export function sortWordForms(
       return normalize(a.form.form).localeCompare(normalize(b.form.form), "en");
     });
 }
+
+export function familySearchFormSummary(groups: FamilySearchGroup[], query: string): string {
+  const total = groups.reduce((sum, group) => sum + group.forms.length, 0);
+  const hasSearch = groups.some((group) =>
+    sortWordForms(group.forms, query, group.frequencies).some((row) => row.isSearch),
+  );
+  return hasSearch
+    ? `${total.toLocaleString("en")} word forms · Your search first; other forms follow Sort.`
+    : `${total.toLocaleString("en")} related word forms`;
+}
 export async function loadFamilySearchGroups(
   repository: HkeleRepository,
   families: FamilyRecord[],

@@ -95,7 +95,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
           },
           "error-callback": () => {
             onTokenChange(null);
-            setMessage("Please try the verification again, or choose word filters below.");
+            setMessage("Please try the verification again, or search for a word instead.");
           },
           "expired-callback": () => {
             onTokenChange(null);
@@ -103,7 +103,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
           },
           "timeout-callback": () => {
             onTokenChange(null);
-            setMessage("Please try the verification again, or choose word filters below.");
+            setMessage("Please try the verification again, or search for a word instead.");
           },
           theme: "auto",
         });
@@ -111,7 +111,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
       .catch(() => {
         if (!active) return;
         onTokenChange(null);
-        setMessage("Search couldn't get ready. Please try again or choose word filters below.");
+        setMessage("Search couldn't get ready. Please try again or search for a word instead.");
       });
     return () => {
       active = false;
@@ -134,7 +134,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
 
   return (
     <View style={{ gap: spacing.xs }}>
-      <div aria-label="Cloudflare Turnstile" ref={host} />
+      <div aria-label="Search verification" ref={host} />
       <Text accessibilityLiveRegion="polite" style={{ color: colors.muted, fontSize: 15 }}>
         {message}
       </Text>

@@ -5,8 +5,8 @@ import { describeAiFilterConditions, executeAiFilter } from "../src/services/aiF
 
 test("teacher-facing AI descriptions preserve numeric filters while labelling the actual evidence", () => {
   for (const [sort, label] of [
-    ["overall", "Overall frequency"],
-    ["hk", "HK frequency"],
+    ["overall", "Overall family rank"],
+    ["hk", "HK family rank"],
     ["az", "A–Z"],
   ] as const) {
     const filters = {

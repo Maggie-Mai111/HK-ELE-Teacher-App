@@ -20,6 +20,7 @@ import { hasSelectedForm } from "../services/lessonSelectionPresentation";
 import type { TeachingListStore } from "../services/teachingListService";
 import {
   loadFamilySearchGroups,
+  familySearchFormSummary,
   sortWordForms,
   type FamilySearchGroup,
   type WordFormSort,
@@ -42,12 +43,12 @@ const shown = (value: unknown) =>
   value === null || value === undefined || value === "" ? "—" : String(value);
 const columns = [
   ["Word", 160],
-  ["HK word frequency", 120],
+  ["Times in HK texts", 120],
   ["First seen in HK textbooks", 150],
   ["US grade reference", 160],
   ["Academic Word List (AWL)", 160],
   ["Middle School Vocabulary List (MSVL)", 200],
-  ["Root", 120],
+  ["Greek/Latin root", 120],
   ["Root meaning", 180],
   ["Prefix", 100],
   ["Suffix", 100],
@@ -111,18 +112,16 @@ export function FamilySearchResults({
         <ActionButton label="Try again" onPress={() => setRetry((value) => value + 1)} />
       </View>
     );
-  const total = groups.reduce((sum, group) => sum + group.forms.length, 0);
   return (
     <View style={styles.stack}>
-      <Text style={styles.note}>
-        {total.toLocaleString("en")} word forms · Your search stays first.
-      </Text>
+      <Text style={styles.note}>{familySearchFormSummary(groups, query)}</Text>
+      <Text style={styles.note}>Counts are for each word form. Ranks compare whole word families; 1 is the highest.</Text>
       <ProgressiveDisclosure title="Sort words">
         <View style={styles.chips}>
           {(
             [
-              ["frequency-desc", "HK word frequency · high to low"],
-              ["frequency-asc", "HK word frequency · low to high"],
+              ["frequency-desc", "Most occurrences in HK texts"],
+              ["frequency-asc", "Fewest occurrences in HK texts"],
               ["az", "A–Z"],
               ["za", "Z–A"],
             ] as const
@@ -139,7 +138,7 @@ export function FamilySearchResults({
       {groups.some((group) => group.frequencyUnavailable) ? (
         <View style={styles.stack}>
           <Text style={styles.note}>
-            Word frequencies need updating. You can still view and choose words. For offline use,
+            Counts could not be loaded. You can still view and choose words. For offline use,
             update the downloaded word data.
           </Text>
           <ActionButton
@@ -161,7 +160,7 @@ export function FamilySearchResults({
               {familySetLabel(group.family)} · {group.forms.length} word forms
             </Text>
             <Text style={styles.note}>
-              Overall rank: {shown(group.family.overall_frequency_order)} · HK family rank:{" "}
+              Overall family rank: {shown(group.family.overall_frequency_order)} · HK family rank:{" "}
               {shown(group.family.current_hk_frequency_rank)}
             </Text>
             {wide ? (
@@ -249,7 +248,7 @@ export function FamilySearchResults({
                       {isSearch ? <Text style={styles.marker}>Your search</Text> : null}
                     </View>
                     <Text style={styles.frequency}>
-                      HK word frequency: {frequency?.toLocaleString("en") ?? "—"}
+                      Times in HK texts: {frequency?.toLocaleString("en") ?? "—"}
                     </Text>
                     <View style={styles.evidenceRow}>
                       <Text style={styles.textbook}>First seen in HK textbooks: {values[0]}</Text>
@@ -281,7 +280,7 @@ export function FamilySearchResults({
                       />
                       <ActionButton
                         kind="secondary"
-                        label={added ? "Added" : "Add to teaching list"}
+                        label={added ? "Added" : "Add to selected words"}
                         disabled={added || !teaching.ready}
                         onPress={() => add(form)}
                       />
@@ -293,9 +292,6 @@ export function FamilySearchResults({
           </View>
         );
       })}
-      <Text style={styles.note}>
-        HK word frequency counts occurrences of each spelling in ICE-HK and GloWbE-HK.
-      </Text>
     </View>
   );
 }
@@ -311,7 +307,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   heading: { fontSize: 21, fontWeight: "800", color: colors.ink },
-  note: { fontSize: 15, lineHeight: 22, color: colors.muted },
+  note: { fontSize: 17, lineHeight: 25, color: colors.muted },
   wordCard: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -329,29 +325,29 @@ const styles = StyleSheet.create({
   wordButton: { flexGrow: 1 },
   word: { color: colors.primary, fontSize: 20, fontWeight: "800", textDecorationLine: "underline" },
   marker: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "800",
     color: colors.primary,
     backgroundColor: colors.surface,
     padding: 5,
     borderRadius: 5,
   },
-  frequency: { fontSize: 15, color: colors.ink, fontWeight: "600" },
+  frequency: { fontSize: 17, color: colors.ink, fontWeight: "600" },
   bold: { fontWeight: "700" },
   evidenceRow: { gap: spacing.xs },
-  textbook: { fontSize: 15, lineHeight: 22, color: colors.hkTop },
-  grade: { fontSize: 15, lineHeight: 22, color: colors.cpb },
+  textbook: { fontSize: 17, lineHeight: 25, color: colors.hkTop },
+  grade: { fontSize: 17, lineHeight: 25, color: colors.cpb },
   tableRow: { flexDirection: "row" },
   tableHead: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.surface,
     fontWeight: "800",
     backgroundColor: colors.primary,
     padding: spacing.sm,
   },
   cell: {
-    fontSize: 16,
-    lineHeight: 23,
+    fontSize: 18,
+    lineHeight: 26,
     padding: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,

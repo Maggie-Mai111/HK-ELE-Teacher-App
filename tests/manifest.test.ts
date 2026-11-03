@@ -11,10 +11,10 @@ const manifestPath = join(process.cwd(), "data", "current-manifest.json");
 test("current manifest accepts the compatible App and frozen controls", async () => {
   const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as DataManifest;
   assert.doesNotThrow(() => assertCompatibleManifest(manifest, "0.5.0"));
-  assert.equal(manifest.counts.candidate, 2871);
-  assert.equal(manifest.counts.inclusiveReference, 2871);
-  assert.equal(manifest.counts.totalFamilies, 163906);
-  assert.equal(manifest.counts.forms, 319961);
+  assert.equal(manifest.counts.candidate, 2658);
+  assert.equal(manifest.counts.inclusiveReference, 2658);
+  assert.equal(manifest.counts.totalFamilies, 167630);
+  assert.equal(manifest.counts.forms, 328253);
 });
 
 test("incompatible schema major fails closed", async () => {

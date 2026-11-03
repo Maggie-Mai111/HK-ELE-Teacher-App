@@ -48,7 +48,7 @@ export function OfflineScreen({
         .getStatus()
         .then(setStatus)
         .catch(() =>
-          setMessage("Offline storage could not be checked. Please reopen HK-ELE and try again."),
+          setMessage("We couldn't check your offline download. Reopen HK-ELE and try again."),
         );
   }, [active]);
   useEffect(() => () => controller.current?.abort(), []);
@@ -68,8 +68,8 @@ export function OfflineScreen({
             ? "An offline download is ready to install."
             : "Ready to download. Keep HK-ELE open until it finishes.",
       );
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Connect to the internet and try again.");
+    } catch {
+      setMessage("Connect to the internet, reopen HK-ELE and try again.");
     } finally {
       setBusy(false);
     }
@@ -86,12 +86,12 @@ export function OfflineScreen({
       setMessage(
         "Download complete. Save any lesson edits, then reopen HK-ELE to use the offline wordlist.",
       );
-    } catch (error) {
+    } catch {
       setProgress(null);
       setMessage(
         request.signal.aborted
           ? "Download cancelled. Your saved wordlist and lessons have been kept."
-          : `${error instanceof Error ? error.message : "Download unsuccessful."} Your saved wordlist and lessons have been kept.`,
+          : "Download unsuccessful. Check your connection and free space, then try again. Your saved wordlist and lessons have been kept.",
       );
       setStatus(await offlineManager.getStatus().catch(() => null));
     } finally {
@@ -107,10 +107,8 @@ export function OfflineScreen({
       setStatus(await offlineManager.getStatus());
       setReopen(true);
       setMessage("Previous download restored. Save any lesson edits, then reopen HK-ELE.");
-    } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : "The previous download could not be restored.",
-      );
+    } catch {
+      setMessage("The previous download could not be restored. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -144,7 +142,7 @@ export function OfflineScreen({
             </Text>
             {status?.activeVersion ? (
               <Text style={styles.value}>
-                Saved wordlist: {status.activeVersion} · {mb(status.bytes)}
+                Wordlist saved · {mb(status.bytes)}
               </Text>
             ) : null}
             {preview ? (
@@ -214,7 +212,7 @@ export function OfflineScreen({
             ) : null}
             {reopen && !canReopen ? (
               <Text style={styles.note}>
-                Your lesson changes still need to be saved. Check your teaching list before
+                Your lesson changes still need to be saved. Check your selected words before
                 reopening.
               </Text>
             ) : null}
@@ -238,7 +236,7 @@ export function OfflineScreen({
           <ProgressiveDisclosure title="What works without internet?">
             <Text style={styles.note}>
               Find words in the full database, check a passage, tap its words, review teaching
-              suggestions, scan printed English, and save or export teaching lists.
+              suggestions, scan printed English, and keep and copy selected words.
             </Text>
             <Text style={styles.note}>
               AI search, Google Forms and new wordlist downloads need an internet connection.
@@ -249,8 +247,7 @@ export function OfflineScreen({
           {status?.previousVersion ? (
             <ProgressiveDisclosure title="Restore a previous download">
               <Text style={styles.note}>
-                Previous wordlist: {status.previousVersion}. Your teaching lists and notes stay as
-                they are.
+                Restore the previous download. Your selected words and notes stay as they are.
               </Text>
               <ActionButton
                 disabled={busy}
@@ -287,7 +284,7 @@ export function OfflineScreen({
             <ActionButton
               kind="danger"
               disabled={!canReopen || busy}
-              label="Reopen and clear session"
+              label="Reopen HK-ELE"
               onPress={() => {
                 if (reopenAction(sessionWork, canReopen, busy) !== "blocked")
                   offlineManager.reopen();
@@ -318,9 +315,9 @@ const styles = StyleSheet.create({
   dialogTitle: { fontSize: 23, lineHeight: 29, fontWeight: "800", color: colors.ink },
   content: { padding: spacing.lg, gap: spacing.md },
   heading: { fontSize: 32, fontWeight: "800", color: colors.ink },
-  intro: { fontSize: 18, lineHeight: 27, color: colors.muted },
-  note: { fontSize: 16, lineHeight: 24, color: colors.ink },
-  small: { fontSize: 14, lineHeight: 21, color: colors.muted },
-  value: { fontSize: 15, lineHeight: 23, fontWeight: "700", color: colors.primary },
+  intro: { fontSize: 20, lineHeight: 27, color: colors.muted },
+  note: { fontSize: 18, lineHeight: 27, color: colors.ink },
+  small: { fontSize: 16, lineHeight: 24, color: colors.muted },
+  value: { fontSize: 17, lineHeight: 26, fontWeight: "700", color: colors.primary },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
 });

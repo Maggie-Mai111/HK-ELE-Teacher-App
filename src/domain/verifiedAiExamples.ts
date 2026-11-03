@@ -12,22 +12,22 @@ export const VERIFIED_AI_QUICK_EXAMPLES: readonly VerifiedAiQuickExample[] = Obj
     id: "grade",
     label: "Grade: by P2",
     query: "Find 10 words first observed by P2 or earlier, sorted by overall rank",
-    verifiedMatchCount: 1697,
-    verifiedCoreMatchCount: 1118,
+    verifiedMatchCount: 1027,
+    verifiedCoreMatchCount: 576,
   },
   {
     id: "hk_band",
     label: "HK band: Top 1k",
     query: "Find 10 words in HK Top 1k, sorted by HK rank",
     verifiedMatchCount: 1000,
-    verifiedCoreMatchCount: 997,
+    verifiedCoreMatchCount: 996,
   },
   {
     id: "root",
     label: "Root: act",
-    query: "Find words with the registered root act",
-    verifiedMatchCount: 69,
-    verifiedCoreMatchCount: 7,
+    query: "Find words with the root act",
+    verifiedMatchCount: 66,
+    verifiedCoreMatchCount: 8,
   },
 ]);
 

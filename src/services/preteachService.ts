@@ -1,6 +1,6 @@
 import type { FamilyRecord, ResolvedOccurrence } from "../domain/hkele";
 import { hasFlag } from "../domain/hkele";
-import { matchCpb100 } from "./cpbService";
+import { normalizeCpbSurface } from "./cpbService";
 
 export type ClassLevel = "P1" | "P2" | "P3" | "P4" | "P5" | "P6" | "S1" | "S2" | "S3";
 
@@ -11,6 +11,10 @@ export interface PreteachSuggestion {
   occurrences: number;
   reasons: string[];
   family: FamilyRecord;
+  selectionKey: string;
+  firstOrder: number;
+  laterThanClass: boolean;
+  marked?: boolean;
 }
 
 const levelOrder: Record<ClassLevel, number> = {
@@ -35,73 +39,81 @@ export function generatePreteachSuggestions(
   _text: string,
   results: ResolvedOccurrence[],
   classLevel: ClassLevel | null = null,
-  limit = 8,
+  limit = Number.POSITIVE_INFINITY,
+  options: {
+    knownForms?: ReadonlySet<string>;
+    notKnownForms?: ReadonlySet<string>;
+  } = {},
 ): PreteachSuggestion[] {
-  const grouped = new Map<
-    string,
-    { family: FamilyRecord; forms: string[]; results: ResolvedOccurrence[] }
-  >();
+  const grouped = new Map<string, { family: FamilyRecord; results: ResolvedOccurrence[] }>();
   for (const result of results) {
-    if (result.status !== "RESOLVED" || result.owners.length !== 1 || matchCpb100(result.surface)) {
-      continue;
-    }
+    if (result.status !== "RESOLVED" || result.owners.length !== 1) continue;
     const owner = result.owners[0];
     if (!owner || owner.blocked || hasFlag(owner.display_blocked)) continue;
-    // The registered family data has no authoritative proper-name flag. Exclude all
-    // capitalized name-like surfaces from automated suggestions instead of guessing.
-    if (/^[A-Z]/.test(result.surface)) continue;
-    const existing = grouped.get(owner.baseword_key) ?? { family: owner, forms: [], results: [] };
-    existing.forms.push(result.surface);
+    const word = normalizeCpbSurface(result.surface);
+    if (options.knownForms?.has(word)) continue;
+    const key = `${owner.baseword_key}\u0000${word}`;
+    const existing = grouped.get(key) ?? { family: owner, results: [] };
     existing.results.push(result);
-    grouped.set(owner.baseword_key, existing);
+    grouped.set(key, existing);
   }
 
   const suggestions: PreteachSuggestion[] = [];
-  for (const [basewordKey, item] of grouped) {
+  for (const [selectionKey, item] of grouped) {
     const rank = item.family.current_hk_frequency_rank;
+    const occurrence = item.results[0]!;
+    const evidence = occurrence.owners[0]?.matched_form_evidence;
+    const word = normalizeCpbSurface(occurrence.surface);
+    const marked = options.notKnownForms?.has(word) ?? false;
+    const firstSeen = recordedLevel(evidence?.first_seen_hk_textbooks ?? null);
+    const laterThanClass = !!classLevel && firstSeen !== null && firstSeen > levelOrder[classLevel];
+    const subject =
+      evidence?.msvl !== null &&
+      evidence?.msvl !== undefined &&
+      evidence.msvl !== "" &&
+      evidence.msvl !== 0;
+    // These explicit evidence routes determine eligibility; their count is never a score.
+    if (
+      !marked &&
+      !laterThanClass &&
+      !hasFlag(evidence?.awl) &&
+      !subject &&
+      !(rank !== null && rank > 1000)
+    )
+      continue;
     const reasons: string[] = [];
-    if (rank !== null && rank > 2000) reasons.push("Outside HK Top 2k");
-    else if (rank !== null && rank > 1000) reasons.push("Outside HK Top 1k");
-    if (hasFlag(item.family.awl)) reasons.push("AWL evidence");
-    if (item.family.msvl !== null && item.family.msvl !== "" && item.family.msvl !== 0) {
-      reasons.push("MSVL / subject evidence");
-    }
-    if (item.results.length >= 2) reasons.push(`Family appears ${item.results.length} times`);
-    const evidence = item.results
-      .map((result) => result.owners[0]?.matched_form_evidence)
-      .find(Boolean);
-    if (evidence && (evidence.root || evidence.prefix || evidence.suffix)) {
-      reasons.push("Registered morphology available");
-    }
-    const formEvidence = item.results[0]?.owners[0]?.matched_form_evidence;
-    const firstSeenLabel = formEvidence
-      ? formEvidence.first_seen_hk_textbooks
-      : item.family.textbook_first_seen_level;
-    const firstSeen = recordedLevel(firstSeenLabel);
-    if (classLevel && firstSeen !== null && firstSeen > levelOrder[classLevel]) {
-      reasons.push(`${formEvidence ? "Word" : "Family"} first seen at ${firstSeenLabel}`);
-    }
-    if (!hasFlag(item.family.candidate_member)) {
-      reasons.push("Outside Core list");
-    }
-    if (!reasons.length) continue;
+    if (marked) reasons.push("You marked this word Not known");
+    if (laterThanClass)
+      reasons.push(`Textbooks: ${evidence?.first_seen_hk_textbooks} · after ${classLevel}`);
+    reasons.push(`Appears ${item.results.length} ${item.results.length === 1 ? "time" : "times"}`);
+    if (hasFlag(evidence?.awl)) reasons.push("Listed in AWL");
+    if (subject) reasons.push(`MSVL: ${evidence!.msvl}`);
+    if (rank !== null) reasons.push(`HK family rank: ${rank.toLocaleString("en")}`);
+    if (evidence?.first_seen_hk_textbooks && !laterThanClass)
+      reasons.push(`Textbooks: ${evidence.first_seen_hk_textbooks}`);
+    if (evidence && (evidence.root || evidence.prefix || evidence.suffix))
+      reasons.push("Word parts available");
     suggestions.push({
-      basewordKey,
+      basewordKey: item.family.baseword_key,
       displayFamily: item.family.display_family,
-      actualForm: item.forms[0] ?? item.family.display_family,
+      actualForm: occurrence.surface,
       occurrences: item.results.length,
       reasons,
       family: item.family,
+      selectionKey,
+      firstOrder: occurrence.occurrenceOrder,
+      laterThanClass,
+      marked,
     });
   }
   return suggestions
     .sort(
       (left, right) =>
-        right.reasons.length - left.reasons.length ||
+        Number(right.marked) - Number(left.marked) ||
+        Number(right.laterThanClass) - Number(left.laterThanClass) ||
         right.occurrences - left.occurrences ||
-        (right.family.current_hk_frequency_rank ?? 0) -
-          (left.family.current_hk_frequency_rank ?? 0) ||
+        left.firstOrder - right.firstOrder ||
         left.displayFamily.localeCompare(right.displayFamily),
     )
-    .slice(0, Math.max(0, Math.min(8, limit)));
+    .slice(0, Math.max(0, limit));
 }

@@ -205,7 +205,7 @@ export default function App() {
                               home: "Home",
                               browse: "Find words",
                               check: "Check a text",
-                              list: "Teaching list",
+                              list: "Selected words",
                               data: "About",
                               offline: "Offline use",
                             }[route],
@@ -225,7 +225,7 @@ export default function App() {
                       detail.previousRoute === "check"
                         ? "← Back to text"
                         : detail.previousRoute === "list"
-                          ? "← Back to teaching list"
+                          ? "← Back to selected words"
                           : "← Back to results"
                     }
                     {...(detail.selectedForm ? { selectedForm: detail.selectedForm } : {})}
@@ -239,7 +239,7 @@ export default function App() {
                       detail.previousRoute === "check"
                         ? "Check a text"
                         : detail.previousRoute === "list"
-                          ? "Teaching list"
+                          ? "Selected words"
                           : "Find words"
                     }
                     {...(detail.textEvidence ? { textEvidence: detail.textEvidence } : {})}
@@ -267,6 +267,7 @@ export default function App() {
                 </View>
                 <View {...screenVisibility("list")}>
                   <TeachingListScreen
+                    repository={appRepository}
                     onCheckText={() => navigate("check")}
                     onFindWords={() => navigate("browse")}
                     onOpenFamily={(key, form) => openFamily(key, undefined, form)}

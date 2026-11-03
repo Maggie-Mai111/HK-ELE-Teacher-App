@@ -7,7 +7,7 @@ export const subjectTokens = [
   ["Social Studies and History", "social"],
 ] as const;
 export function evidenceKind(label: string): EvidenceTokenKind | null {
-  return label === "Root"
+  return label === "Greek/Latin root"
     ? "root"
     : label === "Root meaning"
       ? "meaning"

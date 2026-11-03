@@ -98,6 +98,7 @@ export interface SurfaceSearchResult {
 }
 
 export interface ResolvedOccurrence extends TokenOccurrence {
+  normalizedAnalysis?: {applied:boolean;ambiguous:boolean;tokens:Array<{form:string;familyKey:string|null;wordListMember:boolean}>};
   expression?: SupplementaryExpression | null;
   expressionLayerStatus?: "READY" | "UNAVAILABLE";
   status: ResolutionStatus;
@@ -125,5 +126,5 @@ export interface HkeleRepository {
 export const hasFlag = (value: unknown): boolean => value === true || value === 1;
 
 export function familySetLabel(family: FamilyRecord): string {
-  return hasFlag(family.candidate_member) ? "Core list" : "Full database";
+  return hasFlag(family.candidate_member) ? "HK-ELE Word List" : "Full database";
 }

@@ -1,3 +1,5 @@
+import { CopySelectedWords } from "../components/CopySelectedWords";
+import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -6,6 +8,7 @@ import { ChoiceChip } from "../components/ChoiceChip";
 import { ScreenHeader } from "../components/ScreenHeader";
 import { LessonLibraryControls } from "../components/LessonLibraryControls";
 import type { TeachingListItem } from "../domain/teachingList";
+import type { HkeleRepository } from "../domain/hkele";
 import { LESSON_FOCUS_OPTIONS, lessonFocusLabel } from "../services/lessonPlanning";
 import { exportTeachingList } from "../services/shareExport";
 import type { TeachingListStore } from "../services/teachingListService";
@@ -13,6 +16,7 @@ import { colors, spacing } from "../theme/tokens";
 import { CompoundCard } from "../components/CompoundCard";
 
 interface Props {
+  repository: HkeleRepository;
   teaching: TeachingListStore;
   onOpenFamily: (basewordKey: string, selectedForm?: string) => void;
   onFindWords: () => void;
@@ -36,28 +40,41 @@ function ListItem({
   const [chooseWord, setChooseWord] = useState(false);
   const [relatedOpen, setRelatedOpen] = useState(Boolean(item.connections));
   const [compoundOpen, setCompoundOpen] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
   return (
     <View style={styles.card}>
       <View style={styles.titleRow}>
         <View style={styles.titleText}>
           <Text style={styles.order}>{index + 1}</Text>
-          <Text style={styles.title}>{item.selectedForms.join(", ") || item.displayFamily}</Text>
+          <View style={styles.wordLinks}>
+            {(item.selectedForms.length ? item.selectedForms : [item.displayFamily]).map((form) => (
+              <Pressable
+                key={form}
+                accessibilityRole="button"
+                accessibilityLabel={`View ${form}`}
+                disabled={Boolean(item.dataReviewStatus) && item.recordType !== "compound"}
+                onPress={() => item.recordType === "compound"
+                  ? setCompoundOpen(!compoundOpen)
+                  : onOpenFamily(item.basewordKey, form)}
+                style={styles.wordLink}
+              >
+                <Text style={styles.title}>{form}</Text>
+              </Pressable>
+            ))}
+          </View>
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`${open ? "Close editing" : "Edit"} ${item.displayFamily}`}
+          accessibilityLabel={`${open ? "Close notes for" : item.notes ? "Edit note for" : "Add note for"} ${item.displayFamily}`}
           accessibilityState={{ expanded: open }}
           aria-expanded={open}
           onPress={() => setOpen(!open)}
           style={styles.editButton}
         >
-          <Text style={styles.editText}>{open ? "Done" : "Edit"}</Text>
+          <Text style={styles.editText}>{open ? "Done" : item.notes ? "Edit note" : "Add note"}</Text>
         </Pressable>
       </View>
       <View style={styles.metaRow}>
-        <Text style={[styles.plan, item.teachingFocus === "focus" && styles.focusPlan]}>
-          {lessonFocusLabel(item.teachingFocus)}
-        </Text>
         <Text style={styles.meta}>
           {item.recordType === "compound" ? "Compound" : `Family: ${item.displayFamily}`}
         </Text>
@@ -73,19 +90,11 @@ function ListItem({
           Related: {item.connections}
         </Text>
       ) : null}
+      {compoundOpen && item.expression ? (
+        <CompoundCard expression={item.expression} teaching={teaching} onOpenFamily={onOpenFamily} source="Selected words" />
+      ) : null}
       {open ? (
         <View style={styles.editor}>
-          <Text style={styles.label}>Your teaching plan</Text>
-          <View style={styles.chips}>
-            {LESSON_FOCUS_OPTIONS.map(({ value, label }) => (
-              <ChoiceChip
-                key={label}
-                label={label}
-                selected={(item.teachingFocus ?? "") === value}
-                onPress={() => teaching.update(item.basewordKey, { teachingFocus: value })}
-              />
-            ))}
-          </View>
           <Text style={styles.label}>Teaching note (optional)</Text>
           <TextInput
             accessibilityLabel={`Teaching notes for ${item.displayFamily}`}
@@ -95,6 +104,24 @@ function ListItem({
             style={styles.input}
             value={item.notes}
           />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Teaching options for ${item.displayFamily}`}
+            accessibilityState={{ expanded: planOpen }}
+            aria-expanded={planOpen}
+            onPress={() => setPlanOpen(!planOpen)}
+            style={styles.editButton}
+          >
+            <Text style={styles.editText}>Teaching options{item.teachingFocus ? ` · ${lessonFocusLabel(item.teachingFocus)}` : ""} {planOpen ? "−" : "+"}</Text>
+          </Pressable>
+          {planOpen ? (
+            <View style={styles.chips}>
+              {LESSON_FOCUS_OPTIONS.map(({ value, label }) => (
+                <ChoiceChip key={label} label={label} selected={(item.teachingFocus ?? "") === value}
+                  onPress={() => teaching.update(item.basewordKey, { teachingFocus: value })} />
+              ))}
+            </View>
+          ) : null}
           {relatedOpen ? (
             <>
               <Text style={styles.label}>Related words or example (optional)</Text>
@@ -165,14 +192,6 @@ function ListItem({
               onPress={() => teaching.remove(item.basewordKey)}
             />
           </View>
-          {compoundOpen && item.expression ? (
-            <CompoundCard
-              expression={item.expression}
-              teaching={teaching}
-              onOpenFamily={onOpenFamily}
-              source="Teaching list"
-            />
-          ) : null}
           {chooseWord ? (
             <View style={styles.actions}>
               {item.selectedForms.map((form) => (
@@ -191,166 +210,48 @@ function ListItem({
   );
 }
 
-export function TeachingListScreen({ teaching, onOpenFamily, onFindWords, onCheckText }: Props) {
-  const [message, setMessage] = useState("");
-  const [exporting, setExporting] = useState(false);
-  const [moreFormats, setMoreFormats] = useState(false);
-  const activeLessonRef = useRef(teaching.activeLessonId);
-  activeLessonRef.current = teaching.activeLessonId;
-  useEffect(() => {
-    setMessage("");
-    setMoreFormats(false);
-  }, [teaching.activeLessonId]);
-  const runExport = async (format: "csv" | "md" | "xlsx") => {
-    const exportedLesson = teaching.activeLessonId;
-    setExporting(true);
-    setMessage("");
-    try {
-      await exportTeachingList(teaching.items, format, teaching.lessonTitle);
-      if (activeLessonRef.current === exportedLesson) setMessage("Your file is ready.");
-    } catch {
-      if (activeLessonRef.current === exportedLesson)
-        setMessage("We couldn't export your list. Please try again.");
-    } finally {
-      setExporting(false);
-    }
+export function TeachingListScreen({ teaching, repository, onOpenFamily, onFindWords, onCheckText }: Props) {
+  const [message,setMessage]=useState("");
+  const [exporting,setExporting]=useState(false);
+  const activeLessonRef=useRef(teaching.activeLessonId);activeLessonRef.current=teaching.activeLessonId;
+  useEffect(()=>setMessage(""),[teaching.activeLessonId]);
+  const runExport=async()=>{
+    const id=teaching.activeLessonId;setExporting(true);setMessage("");
+    try{await exportTeachingList(teaching.items,"xlsx",teaching.lessonTitle,repository);if(activeLessonRef.current===id)setMessage("Your file is ready.");}
+    catch{if(activeLessonRef.current===id)setMessage("We couldn't download your words. Please try again.");}
+    finally{setExporting(false);}
   };
-  const focusCount = teaching.items.filter((item) => item.teachingFocus === "focus").length;
-  const mentionCount = teaching.items.filter((item) => item.teachingFocus === "mention").length;
-  const selectedWordCount = teaching.items.reduce(
-    (sum, item) => sum + item.selectedForms.length,
-    0,
-  );
-  return (
-    <View style={styles.content}>
-      <ScreenHeader title="Teaching list" intro="Your words for this lesson." />
-      {teaching.saveError ? (
-        <View>
-          <Text accessibilityRole="alert" style={styles.error}>
-            {teaching.saveError}
-          </Text>
-          {teaching.ready ? (
-            <ActionButton kind="secondary" label="Try saving again" onPress={teaching.retrySave} />
-          ) : null}
-        </View>
-      ) : null}
-      {!teaching.ready ? (
-        <ActivityIndicator
-          accessibilityLabel="Loading teaching list"
-          color={colors.primary}
-          size="large"
-        />
-      ) : (
-        <>
-          <LessonLibraryControls teaching={teaching} />
-          <View style={styles.lessonBox}>
-            <Text style={styles.label}>Lesson name (optional)</Text>
-            <TextInput
-              accessibilityLabel="Lesson name"
-              placeholder="For example: P5 · A greener school"
-              value={teaching.lessonTitle}
-              onChangeText={teaching.updateLessonTitle}
-              style={styles.titleInput}
-            />
-            <Text accessibilityLiveRegion="polite" style={styles.meta}>
-              {teaching.saving ? "Saving…" : teaching.saveError ? "" : "Saved on this device."}
-            </Text>
-          </View>
-          {teaching.items.length === 0 ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Which words will you teach?</Text>
-              <Text style={styles.emptyText}>
-                Check a passage and choose a few words, or add words as you search.
-              </Text>
-              <ActionButton label="Choose words from a text" onPress={onCheckText} />
-              <ActionButton kind="secondary" label="Find a word" onPress={onFindWords} />
-            </View>
-          ) : (
-            <>
-              <View style={styles.exportBox}>
-                <Text style={styles.exportTitle}>
-                  {selectedWordCount} selected {selectedWordCount === 1 ? "word" : "words"} ·{" "}
-                  {teaching.items.filter((item) => item.recordType !== "compound").length}{" "}
-                  {teaching.items.filter((item) => item.recordType !== "compound").length === 1
-                    ? "family"
-                    : "families"}
-                  {teaching.items.some((item) => item.recordType === "compound")
-                    ? ` · ${teaching.items.filter((item) => item.recordType === "compound").length} ${teaching.items.filter((item) => item.recordType === "compound").length === 1 ? "compound" : "compounds"}`
-                    : ""}
-                </Text>
-                <Text style={styles.meta}>
-                  In depth {focusCount} · Brief {mentionCount} · Undecided{" "}
-                  {teaching.items.length - focusCount - mentionCount}
-                </Text>
-                <View style={styles.actions}>
-                  <ActionButton
-                    disabled={exporting}
-                    label="Export to Excel"
-                    onPress={() => void runExport("xlsx")}
-                  />
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="More formats"
-                    accessibilityState={{ expanded: moreFormats }}
-                    aria-expanded={moreFormats}
-                    style={styles.editButton}
-                    onPress={() => setMoreFormats(!moreFormats)}
-                  >
-                    <Text style={styles.editText}>
-                      {moreFormats ? "Fewer formats" : "More formats"}
-                    </Text>
-                  </Pressable>
-                </View>
-                {moreFormats ? (
-                  <View style={styles.actions}>
-                    <ActionButton
-                      disabled={exporting}
-                      kind="secondary"
-                      label="CSV"
-                      onPress={() => void runExport("csv")}
-                    />
-                    <ActionButton
-                      disabled={exporting}
-                      kind="secondary"
-                      label="Markdown"
-                      onPress={() => void runExport("md")}
-                    />
-                  </View>
-                ) : null}
-                {message ? (
-                  <Text accessibilityRole="alert" style={styles.meta}>
-                    {message}
-                  </Text>
-                ) : null}
-              </View>
-            </>
-          )}
-          {teaching.undoState ? (
-            <View accessibilityLiveRegion="polite" style={styles.undoBox}>
-              <Text style={styles.meta}>{teaching.undoState.label}</Text>
-              <ActionButton kind="secondary" label="Undo last change" onPress={teaching.undo} />
-            </View>
-          ) : null}
-          {teaching.items.map((item, index) => (
-            <ListItem
-              key={`${teaching.activeLessonId}:${item.basewordKey}`}
-              item={item}
-              index={index}
-              total={teaching.items.length}
-              teaching={teaching}
-              onOpenFamily={onOpenFamily}
-            />
-          ))}
-          {teaching.items.length ? (
-            <View style={styles.actions}>
-              <ActionButton kind="secondary" label="Add from a text" onPress={onCheckText} />
-              <ActionButton kind="secondary" label="Find more words" onPress={onFindWords} />
-            </View>
-          ) : null}
-        </>
-      )}
-    </View>
-  );
+  const count=teaching.items.reduce((n,item)=>n+item.selectedForms.length,0);
+  return <View style={styles.content}>
+    <ScreenHeader title="Selected words" intro="Collect words and copy them into your lesson materials." />
+    {teaching.saveError ? <View><Text accessibilityRole="alert" style={styles.error}>{teaching.saveError}</Text>{teaching.ready ? <ActionButton kind="secondary" label="Try saving again" onPress={teaching.retrySave} /> : null}</View> : null}
+    {!teaching.ready ? <ActivityIndicator accessibilityLabel="Loading selected words" color={colors.primary} size="large" /> : <>
+      {teaching.items.length ? <View style={styles.exportBox}>
+        <Text style={styles.exportTitle}>{count} selected {count===1 ? "word" : "words"}</Text>
+        <CopySelectedWords key={teaching.activeLessonId} items={teaching.items} />
+        <ActionButton disabled={exporting} kind="secondary" label="Download Excel" onPress={()=>void runExport()} />
+        {message ? <Text accessibilityRole="alert" style={styles.meta}>{message}</Text> : null}
+      </View> : null}
+      <ProgressiveDisclosure title="Saved lists" summary={teaching.lessonTitle || "Your words"}>
+        <Text style={styles.label}>Lesson name (optional)</Text>
+        <TextInput accessibilityLabel="Lesson name" placeholder="For example: P5 · A greener school" value={teaching.lessonTitle} onChangeText={teaching.updateLessonTitle} style={styles.titleInput} />
+        <LessonLibraryControls teaching={teaching} />
+      </ProgressiveDisclosure>
+      <Text accessibilityLiveRegion="polite" style={styles.meta}>{teaching.saving ? "Saving…" : teaching.saveError ? "" : "Saved on this device."}</Text>
+      {!teaching.items.length ? <View style={styles.empty}>
+        <Text style={styles.emptyTitle}>Which words would you like to keep?</Text>
+        <Text style={styles.meta}>Choose words from a text or add them as you search.</Text>
+        <ActionButton label="Choose words from a text" onPress={onCheckText} />
+        <ActionButton kind="secondary" label="Find a word" onPress={onFindWords} />
+      </View> : null}
+      {teaching.undoState ? <View accessibilityLiveRegion="polite" style={styles.undoBox}>
+        <Text style={styles.meta}>{teaching.undoState.label === "Bulk addition to Teaching list" ? "Added selected words" : teaching.undoState.label}</Text>
+        <ActionButton kind="secondary" label="Undo last change" onPress={teaching.undo} />
+      </View> : null}
+      {teaching.items.map((item,index)=><ListItem key={`${teaching.activeLessonId}:${item.basewordKey}`} item={item} index={index} total={teaching.items.length} teaching={teaching} onOpenFamily={onOpenFamily} />)}
+      {teaching.items.length ? <View style={styles.actions}><ActionButton kind="secondary" label="Add from a text" onPress={onCheckText} /><ActionButton kind="secondary" label="Find more words" onPress={onFindWords} /></View> : null}
+    </>}
+  </View>;
 }
 
 const styles = StyleSheet.create({
@@ -370,37 +271,41 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   titleText: { flex: 1, flexDirection: "row", alignItems: "baseline", gap: spacing.sm },
-  title: { color: colors.ink, fontSize: 21, fontWeight: "800", flex: 1 },
-  order: { color: colors.muted, fontSize: 14, fontWeight: "700" },
+  title: { color: colors.primary, fontSize: 21, fontWeight: "800" },
+  wordLinks: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  wordLink: { minHeight: 44, justifyContent: "center" },
+  lessonHeading: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
+  lessonTitle: { color: colors.ink, fontSize: 20, fontWeight: "800", flexShrink: 1 },
+  order: { color: colors.muted, fontSize: 16, fontWeight: "700" },
   editButton: { minHeight: 44, justifyContent: "center", paddingHorizontal: spacing.sm },
-  editText: { color: colors.primary, fontSize: 16, fontWeight: "800" },
+  editText: { color: colors.primary, fontSize: 18, fontWeight: "800" },
   metaRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm },
-  meta: { color: colors.muted, fontSize: 14, lineHeight: 21 },
+  meta: { color: colors.muted, fontSize: 16, lineHeight: 24 },
   plan: {
     backgroundColor: colors.subdued,
     color: colors.muted,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
   },
   focusPlan: { backgroundColor: colors.primarySoft, color: colors.primary },
-  notePreview: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  notePreview: { color: colors.ink, fontSize: 17, lineHeight: 25 },
   editor: {
     borderTopWidth: 1,
     borderTopColor: colors.border,
     paddingTop: spacing.md,
     gap: spacing.sm,
   },
-  label: { color: colors.ink, fontSize: 15, fontWeight: "700" },
+  label: { color: colors.ink, fontSize: 17, fontWeight: "700" },
   input: {
     backgroundColor: colors.canvas,
     borderColor: colors.border,
     borderRadius: 10,
     borderWidth: 1,
     color: colors.ink,
-    fontSize: 16,
+    fontSize: 18,
     minHeight: 70,
     padding: spacing.sm,
     textAlignVertical: "top",
@@ -411,7 +316,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     color: colors.ink,
-    fontSize: 16,
+    fontSize: 18,
     minHeight: 48,
     padding: spacing.sm,
   },
@@ -425,7 +330,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingLeft: spacing.sm,
   },
-  formChipText: { color: colors.ink, fontSize: 15, fontWeight: "700" },
+  formChipText: { color: colors.ink, fontSize: 17, fontWeight: "700" },
   empty: {
     backgroundColor: colors.subdued,
     borderRadius: 15,
@@ -433,19 +338,19 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   emptyTitle: { color: colors.ink, fontSize: 19, fontWeight: "800" },
-  emptyText: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  emptyText: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   exportBox: {
     backgroundColor: colors.primarySoft,
     borderRadius: 15,
     gap: spacing.sm,
     padding: spacing.md,
   },
-  exportTitle: { color: colors.primary, fontSize: 18, fontWeight: "800" },
+  exportTitle: { color: colors.primary, fontSize: 20, fontWeight: "800" },
   undoBox: {
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
     paddingLeft: spacing.sm,
     gap: spacing.xs,
   },
-  error: { color: colors.danger, fontSize: 15, lineHeight: 22 },
+  error: { color: colors.danger, fontSize: 17, lineHeight: 25 },
 });

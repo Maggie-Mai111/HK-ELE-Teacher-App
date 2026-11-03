@@ -22,9 +22,9 @@ export function PendingFullCheckPanel({ items }: { items: PendingFullCheckSummar
 }
 
 const styles = StyleSheet.create({
-  count: { color: colors.muted, fontSize: 14, fontWeight: "700" },
-  form: { color: colors.ink, fontSize: 17, fontWeight: "800" },
-  note: { color: colors.ink, fontSize: 15, lineHeight: 23 },
+  count: { color: colors.muted, fontSize: 16, fontWeight: "700" },
+  form: { color: colors.ink, fontSize: 19, fontWeight: "800" },
+  note: { color: colors.ink, fontSize: 17, lineHeight: 26 },
   row: {
     alignItems: "center",
     backgroundColor: colors.warningSoft,

@@ -71,7 +71,7 @@ export function PrivacyPanel({
                 identifying information out of your feedback.
               </Text>
               <Text style={styles.note}>
-                Text checking and photo recognition happen on your device. Your teaching list and
+                Text checking and photo recognition happen on your device. Your selected words and
                 notes are saved here; export a copy to keep a backup. When you use AI word search,
                 only your search request is sent to the AI service.
               </Text>
@@ -141,17 +141,17 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
-  brand: { color: colors.primary, fontSize: 15, fontWeight: "700" },
+  brand: { color: colors.primary, fontSize: 17, fontWeight: "700" },
   heading: { color: colors.ink, fontSize: 30, fontWeight: "800", lineHeight: 38 },
-  body: { color: colors.ink, fontSize: 17, lineHeight: 26 },
+  body: { color: colors.ink, fontSize: 19, lineHeight: 29 },
   card: {
     backgroundColor: colors.primarySoft,
     borderRadius: 14,
     gap: spacing.sm,
     padding: spacing.md,
   },
-  item: { color: colors.ink, fontSize: 17, lineHeight: 25 },
-  note: { color: colors.muted, fontSize: 15, lineHeight: 23 },
+  item: { color: colors.ink, fontSize: 19, lineHeight: 28 },
+  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
   details: {
     gap: spacing.sm,
     padding: spacing.md,
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   detailsButton: { minHeight: 44, justifyContent: "center" },
-  link: { color: colors.primary, fontSize: 16, fontWeight: "600" },
+  link: { color: colors.primary, fontSize: 18, fontWeight: "600" },
   choice: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -178,8 +178,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   checkboxChecked: { backgroundColor: colors.primary },
-  checkmark: { color: "#fff", fontSize: 19, lineHeight: 21, fontWeight: "700" },
-  choiceText: { flex: 1, color: colors.ink, fontSize: 16, lineHeight: 24 },
-  accepted: { color: colors.primary, fontSize: 16, lineHeight: 24 },
-  error: { color: colors.danger, fontSize: 16, lineHeight: 24 },
+  checkmark: { color: "#fff", fontSize: 19, lineHeight: 24, fontWeight: "700" },
+  choiceText: { flex: 1, color: colors.ink, fontSize: 18, lineHeight: 27 },
+  accepted: { color: colors.primary, fontSize: 18, lineHeight: 27 },
+  error: { color: colors.danger, fontSize: 18, lineHeight: 27 },
 });

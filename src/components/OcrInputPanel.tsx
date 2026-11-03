@@ -128,7 +128,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
   const replace = () => {
     if (currentText.trim() && !replaceConfirmed) {
       setReplaceConfirmed(true);
-      setMessage("Replace your existing text? Choose Confirm replacement, or Append to keep both.");
+      setMessage("Replace your existing text? Choose Confirm replacement, or Add to existing text to keep both.");
       return;
     }
     onApplyText(recognizedText);
@@ -205,7 +205,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
         <View style={styles.review}>
           <Text style={styles.title}>Review recognized text</Text>
           <TextInput
-            accessibilityLabel="Editable OCR result"
+            accessibilityLabel="Text from your photo"
             multiline
             onChangeText={(value) => {
               setRecognizedText(value);
@@ -218,13 +218,13 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
           <View style={styles.actions}>
             <ActionButton
               disabled={!recognizedText.trim() || busy}
-              label={replaceConfirmed ? "Confirm replacement" : "Use OCR text"}
+              label={replaceConfirmed ? "Confirm replacement" : "Use this text"}
               onPress={replace}
             />
             <ActionButton
               disabled={!currentText.trim() || !recognizedText.trim() || busy}
               kind="secondary"
-              label="Append OCR text"
+              label="Add to existing text"
               onPress={() => {
                 onApplyText(`${currentText.trimEnd()}\n${recognizedText}`);
                 setReplaceConfirmed(false);
@@ -252,8 +252,8 @@ const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, alignItems: "center" },
   box: { gap: spacing.md },
   image: { width: "100%", height: 180, backgroundColor: colors.canvas, borderRadius: 10 },
-  message: { color: colors.ink, fontSize: 16, lineHeight: 24 },
-  note: { color: colors.muted, fontSize: 15, lineHeight: 23 },
+  message: { color: colors.ink, fontSize: 18, lineHeight: 27 },
+  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
   review: { gap: spacing.md },
   title: { color: colors.ink, fontSize: 19, fontWeight: "700" },
   textarea: {
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     color: colors.ink,
-    fontSize: 18,
+    fontSize: 20,
     lineHeight: 27,
     minHeight: 160,
     padding: spacing.sm,

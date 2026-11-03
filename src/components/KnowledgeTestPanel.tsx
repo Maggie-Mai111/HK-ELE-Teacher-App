@@ -12,6 +12,7 @@ import {
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
+import { ProgressiveDisclosure } from "./ProgressiveDisclosure";
 
 type Mode = "n10" | "n20" | "full" | null;
 
@@ -25,12 +26,14 @@ export function KnowledgeTestPanel({
   teaching,
   onNotKnownChange,
   onHasResponsesChange,
+  onKnownChange,
 }: {
   text: string;
   results: ResolvedOccurrence[];
   teaching: TeachingListStore;
   onNotKnownChange?: (families: KnowledgeFamily[]) => void;
   onHasResponsesChange?: (hasResponses: boolean) => void;
+  onKnownChange?: (forms: string[]) => void;
 }) {
   const eligible = useMemo(() => collectEligibleFamilies(results), [results]);
   const [mode, setMode] = useState<Mode>(null);
@@ -57,6 +60,12 @@ export function KnowledgeTestPanel({
     [active, responses],
   );
   useEffect(() => onNotKnownChange?.(notKnown), [notKnown, onNotKnownChange]);
+  const knownForms = useMemo(
+    () =>
+      active.filter((item) => responses[item.basewordKey] === true).map((item) => item.actualForm),
+    [active, responses],
+  );
+  useEffect(() => onKnownChange?.(knownForms), [knownForms, onKnownChange]);
   const start = (next: Exclude<Mode, null>) => {
     setMode(next);
     setResponses({});
@@ -65,8 +74,25 @@ export function KnowledgeTestPanel({
   return (
     <View style={styles.box}>
       <Text style={styles.intro}>
-        Mark whether your students know each word in context. Answers stay in this session.
+        Mark whether your students know each word in context. Answers clear when you reopen HK-ELE
+        or check another text.
       </Text>
+      <ProgressiveDisclosure title="How this check works">
+        <Text style={styles.note}>
+          Quick checks choose 10 or 20 word families from your text. The same text gives the same
+          selection each time. To include every family found, choose All matched families.
+        </Text>
+        <Text style={styles.note}>
+          You answer one word in context for each family. Percentages cover only the displayed words
+          and appearances of those spellings in the text. Words without a match, words needing a
+          context check and separate compound entries are not included.
+        </Text>
+        <Text style={styles.note}>
+          Not known puts the displayed word first in pre-teaching. Known hides that displayed word
+          from automatic suggestions for this check. Other forms and meanings are not marked as
+          known.
+        </Text>
+      </ProgressiveDisclosure>
       <View style={styles.actions}>
         <ActionButton
           disabled={!eligible.length}
@@ -98,8 +124,8 @@ export function KnowledgeTestPanel({
                 </Text>
                 <Text style={styles.form}>{item.actualForm}</Text>
                 <Text style={styles.family}>
-                  Family: {item.displayFamily} · {item.tokenCount} occurrence
-                  {item.tokenCount === 1 ? "" : "s"}
+                  Family: {item.displayFamily} · {item.actualFormTokenCount ?? item.tokenCount} occurrence
+                  {(item.actualFormTokenCount ?? item.tokenCount) === 1 ? "" : "s"} of this word
                 </Text>
                 <Text style={styles.context}>{item.context}</Text>
                 <Text style={styles.prompt}>
@@ -107,7 +133,7 @@ export function KnowledgeTestPanel({
                 </Text>
                 <View style={styles.actions}>
                   <ActionButton
-                    accessibilityLabel={`Known: ${item.displayFamily}`}
+                    accessibilityLabel={`Known: ${item.actualForm}`}
                     kind={answer === true ? "primary" : "secondary"}
                     label="Known"
                     onPress={() =>
@@ -115,7 +141,7 @@ export function KnowledgeTestPanel({
                     }
                   />
                   <ActionButton
-                    accessibilityLabel={`Not known: ${item.displayFamily}`}
+                    accessibilityLabel={`Not known: ${item.actualForm}`}
                     kind={answer === false ? "primary" : "secondary"}
                     label="Not known"
                     onPress={() =>
@@ -140,7 +166,7 @@ export function KnowledgeTestPanel({
                             entry.selectedForms.includes(item.actualForm),
                         )
                           ? "Added"
-                          : "Add to teaching list"
+                          : "Add to selected words"
                       }
                       onPress={() =>
                         teaching.add(
@@ -157,21 +183,21 @@ export function KnowledgeTestPanel({
           })}
           <View accessibilityLabel="Knowledge check results" style={styles.results}>
             <Text style={styles.resultsTitle}>
-              {coverage.answeredFamilies}/{coverage.totalFamilies} families answered
+              {coverage.answeredFamilies}/{coverage.totalFamilies} words answered
             </Text>
             {coverage.complete ? (
               <>
                 <Text style={styles.resultLabel}>
                   {mode === "full"
-                    ? `Checked word families (${active.length})`
-                    : `Sample of ${active.length} matched word families`}
+                    ? `Checked words (${active.length})`
+                    : `Sample of ${active.length} words from ${active.length} matched families`}
                 </Text>
                 <Text style={styles.resultLine}>
-                  Known families: {coverage.knownFamilies}/{coverage.totalFamilies} (
+                  Words marked Known: {coverage.knownFamilies}/{coverage.totalFamilies} (
                   {percent(coverage.familyKnownPercent)})
                 </Text>
                 <Text style={styles.resultLine}>
-                  Unfamiliar families: {coverage.unfamiliarFamilies}/{coverage.totalFamilies} (
+                  Words marked Not known: {coverage.unfamiliarFamilies}/{coverage.totalFamilies} (
                   {percent(coverage.familyUnfamiliarPercent)})
                 </Text>
                 <Text style={styles.resultLine}>
@@ -207,33 +233,33 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
     borderRadius: 9,
     color: colors.ink,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 23,
     padding: spacing.sm,
   },
-  context: { color: colors.muted, fontSize: 15, fontStyle: "italic", lineHeight: 22 },
-  family: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  context: { color: colors.muted, fontSize: 17, fontStyle: "italic", lineHeight: 25 },
+  family: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   form: { color: colors.ink, fontSize: 23, fontWeight: "800" },
-  guidance: { color: colors.ink, fontSize: 14, fontWeight: "700", lineHeight: 21 },
-  intro: { color: colors.muted, fontSize: 14, lineHeight: 21 },
-  note: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  guidance: { color: colors.ink, fontSize: 16, fontWeight: "700", lineHeight: 24 },
+  intro: { color: colors.muted, fontSize: 16, lineHeight: 24 },
+  note: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   notKnownAction: { alignItems: "flex-start", gap: spacing.sm, paddingTop: spacing.xs },
-  prompt: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
+  prompt: { color: colors.ink, fontSize: 17, fontWeight: "700", lineHeight: 25 },
   question: {
     backgroundColor: colors.canvas,
     borderRadius: 12,
     gap: spacing.xs,
     padding: spacing.md,
   },
-  questionNumber: { color: colors.primary, fontSize: 14, fontWeight: "800" },
-  resultLine: { color: colors.ink, fontSize: 15, lineHeight: 22 },
-  resultLabel: { color: colors.primary, fontSize: 16, fontWeight: "800", lineHeight: 23 },
+  questionNumber: { color: colors.primary, fontSize: 16, fontWeight: "800" },
+  resultLine: { color: colors.ink, fontSize: 17, lineHeight: 25 },
+  resultLabel: { color: colors.primary, fontSize: 18, fontWeight: "800", lineHeight: 26 },
   results: {
     backgroundColor: colors.primarySoft,
     borderRadius: 12,
     gap: spacing.xs,
     padding: spacing.md,
   },
-  resultsTitle: { color: colors.primary, fontSize: 18, fontWeight: "800" },
+  resultsTitle: { color: colors.primary, fontSize: 20, fontWeight: "800" },
   title: { color: colors.ink, fontSize: 20, fontWeight: "800" },
 });

@@ -6,6 +6,7 @@ export interface KnowledgeFamily {
   actualForm: string;
   context: string;
   tokenCount: number;
+  actualFormTokenCount?: number;
   family: FamilyRecord;
 }
 
@@ -34,6 +35,9 @@ export function collectEligibleFamilies(results: ResolvedOccurrence[]): Knowledg
     const existing = grouped.get(owner.baseword_key);
     if (existing) {
       existing.tokenCount += 1;
+      if (result.surface.normalize("NFKC").toLowerCase() === existing.actualForm.normalize("NFKC").toLowerCase()) {
+        existing.actualFormTokenCount = (existing.actualFormTokenCount ?? 1) + 1;
+      }
     } else {
       grouped.set(owner.baseword_key, {
         basewordKey: owner.baseword_key,
@@ -41,6 +45,7 @@ export function collectEligibleFamilies(results: ResolvedOccurrence[]): Knowledg
         actualForm: result.surface,
         context: result.context,
         tokenCount: 1,
+        actualFormTokenCount: 1,
         family: owner,
       });
     }
@@ -110,8 +115,8 @@ export function calculateCoverage(
   const answered = families.filter((family) => responses[family.basewordKey] !== undefined);
   const known = answered.filter((family) => responses[family.basewordKey] === true);
   const complete = families.length > 0 && answered.length === families.length;
-  const totalTokens = families.reduce((sum, family) => sum + family.tokenCount, 0);
-  const knownTokens = known.reduce((sum, family) => sum + family.tokenCount, 0);
+  const totalTokens = families.reduce((sum, family) => sum + (family.actualFormTokenCount ?? family.tokenCount), 0);
+  const knownTokens = known.reduce((sum, family) => sum + (family.actualFormTokenCount ?? family.tokenCount), 0);
   const unfamiliarFamilies = complete ? families.length - known.length : 0;
   const unfamiliarTokens = complete ? totalTokens - knownTokens : 0;
   const [familyKnownPercent, familyUnfamiliarPercent] = complete

@@ -20,6 +20,7 @@ export interface AiFilterExecution {
   filters: AiFilterConditions;
   matchedBeforeLimit: number;
   families: FamilyRecord[];
+  resultUnit?: "word";
 }
 
 const contextCache = new WeakMap<
@@ -30,10 +31,10 @@ const contextCache = new WeakMap<
 export function describeAiFilterConditions(filters: AiFilterConditions): string[] {
   const descriptions = [
     filters.scope === "full"
-      ? "Scope: Full database"
+      ? "Search in: Full database"
       : filters.scope === "candidate"
-        ? "Scope: Core list"
-        : "Scope: saved word data (partial)",
+        ? "Search in: HK-ELE Word List"
+        : "Search in: saved words",
   ];
   if (filters.earliestObservedFrom || filters.earliestObservedTo) {
     descriptions.push(
@@ -50,12 +51,12 @@ export function describeAiFilterConditions(filters: AiFilterConditions): string[
       minimum !== undefined && maximum !== undefined
         ? `${label}: ${minimum.toLocaleString("en")}–${maximum.toLocaleString("en")}`
         : minimum !== undefined
-          ? `${label}: ${minimum.toLocaleString("en")} or lower priority`
+          ? `${label}: ${minimum.toLocaleString("en")} or greater`
           : `${label}: up to ${maximum?.toLocaleString("en")}`,
     );
   };
-  range("Overall rank", filters.overallRankMin, filters.overallRankMax);
-  range("HK rank", filters.hkRankMin, filters.hkRankMax);
+  range("Overall family rank", filters.overallRankMin, filters.overallRankMax);
+  range("HK family rank", filters.hkRankMin, filters.hkRankMax);
   if (filters.hkBands) descriptions.push(`HK band: ${filters.hkBands.join(", ")}`);
   for (const [label, value] of [
     ["Prefix", filters.prefix],
@@ -71,8 +72,8 @@ export function describeAiFilterConditions(filters: AiFilterConditions): string[
     descriptions.push(`Common words: ${filters.cpb100 ? "yes" : "no"}`);
   if (filters.externalLevels)
     descriptions.push(`US grade reference: ${filters.externalLevels.join(", ")}`);
-  const sortLabel = { overall: "Overall frequency", hk: "HK frequency", az: "A–Z" };
-  descriptions.push(`Sort: ${sortLabel[filters.sort]}`, `Result limit: ${filters.limit}`);
+  const sortLabel = { overall: "Overall family rank", hk: "HK family rank", az: "A–Z" };
+  descriptions.push(`Sort: ${sortLabel[filters.sort]}`, `Show up to: ${filters.limit}`);
   return descriptions;
 }
 

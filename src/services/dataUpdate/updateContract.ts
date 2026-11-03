@@ -14,6 +14,7 @@ export interface UpdateCounts {
   forms: number;
   ranked: number;
   unranked: number;
+  teachingScopeExcluded?: number;
 }
 
 export interface UpdateArchive {
@@ -160,8 +161,8 @@ export function validateUpdateManifest(value: unknown, appVersion: string): Data
     }
     bytes += file.byteSize;
   }
-  if (bytes !== manifest.byteCount || manifest.byteCount > 100_000_000) {
-    throw new Error("Update byte total is invalid or exceeds the 100 MB safety bound.");
+  if (bytes !== manifest.byteCount || manifest.byteCount > 150_000_000) {
+    throw new Error("Update byte total is invalid or exceeds the 150 MB safety bound.");
   }
   if (!paths.has("manifest.json.gz")) {
     throw new Error("The static data manifest is missing from the update inventory.");
@@ -185,7 +186,7 @@ export function validateUpdateManifest(value: unknown, appVersion: string): Data
     throw new Error("Update population counts are invalid.");
   }
   if (
-    counts.ranked + counts.unranked !== counts.totalFamilies ||
+    counts.ranked + counts.unranked + (counts.teachingScopeExcluded ?? 0) !== counts.totalFamilies ||
     counts.candidate > counts.inclusiveReference ||
     counts.inclusiveReference > counts.totalFamilies ||
     counts.referenceOnly !== counts.inclusiveReference - counts.candidate

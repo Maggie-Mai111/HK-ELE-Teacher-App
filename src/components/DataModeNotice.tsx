@@ -24,6 +24,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingVertical: spacing.xs,
   },
-  note: { color: colors.ink, fontSize: 14, lineHeight: 21 },
-  title: { color: colors.primary, fontSize: 14, fontWeight: "500" },
+  note: { color: colors.ink, fontSize: 16, lineHeight: 24 },
+  title: { color: colors.primary, fontSize: 16, fontWeight: "500" },
 });

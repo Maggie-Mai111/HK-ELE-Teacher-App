@@ -94,16 +94,23 @@ if (!largest || largest.bytes >= 100_000_000) throw new Error("A Pages file is 1
 const sqlite = entries.filter((entry) => /\.(sqlite|sqlite3|db)$/i.test(entry.path));
 if (sqlite.length) throw new Error(`Raw SQLite entered dist: ${sqlite[0].path}`);
 
-const archivePath = resolve(dist, "hkele-data", sourceUpdate.archive.path);
-const archiveBytes = await readFile(archivePath);
-const archiveSha256 = createHash("sha256").update(archiveBytes).digest("hex").toUpperCase();
-if (archiveSha256 !== sourceUpdate.archive.sha256.toUpperCase()) {
-  throw new Error(`Update archive hash changed: ${archiveSha256}`);
+let archiveReport = null;
+if (sourceUpdate.archive) {
+  const archiveBytes = await readFile(resolve(dist, "hkele-data", sourceUpdate.archive.path));
+  const archiveSha256 = createHash("sha256").update(archiveBytes).digest("hex").toUpperCase();
+  if (archiveSha256 !== sourceUpdate.archive.sha256.toUpperCase()) throw new Error("Update archive hash changed.");
+  archiveReport = {bytes:archiveBytes.length,sha256:archiveSha256};
+} else {
+  for (const file of sourceUpdate.files) {
+    const bytes = await readFile(resolve(dist,"hkele-data",file.path));
+    if (bytes.length !== file.byteSize || createHash("sha256").update(bytes).digest("hex") !== file.sha256)
+      throw new Error(`Data shard changed: ${file.path}`);
+  }
 }
 
 const report = {
   schemaVersion: "HK_ELE_OFFLINE_V14_PWA_VALIDATION_1.0.0",
-  checkedOn: "2026-10-21",
+  checkedOn: "2026-11-02",
   status: "PASS",
   basePath: "/HK-ELE-Teacher-App/",
   checks,
@@ -133,7 +140,7 @@ const report = {
     rawSqliteFiles: 0,
     databaseDownloadButtons: 1,
   },
-  updateArchive: { bytes: archiveBytes.length, sha256: archiveSha256 },
+  updateArchive: archiveReport,
 };
 await mkdir(resolve(root, "reports"), { recursive: true });
 await writeFile(

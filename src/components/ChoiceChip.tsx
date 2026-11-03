@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  label: { color: colors.muted, fontSize: 14, fontWeight: "700" },
+  label: { color: colors.muted, fontSize: 16, fontWeight: "700" },
   pressed: { opacity: 0.72 },
   selected: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
   selectedLabel: { color: colors.primary },

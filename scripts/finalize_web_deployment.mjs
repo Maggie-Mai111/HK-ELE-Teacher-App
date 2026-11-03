@@ -71,7 +71,7 @@ const compactAssets = allFiles
     relative(root, path)
       .split(sep)
       .join("/")
-      .match(/^assets\/data\/releases\/2026-10-20-a-main-v1\/reference\/.+\.gz$/),
+      .match(/^assets\/data\/releases\/2026-11-03-a2658-finite-family-closure-v1\/reference\/.+\.gz$/),
   )
   .map(toUrl)
   .sort();
@@ -88,7 +88,8 @@ const visualAssets = allFiles
   .filter(
     (path) =>
       relative(root, path).split(sep).join("/").startsWith("assets/") &&
-      !compactAssets.includes(toUrl(path)),
+      !compactAssets.includes(toUrl(path)) &&
+      !relative(root, path).split(sep).join("/").startsWith("assets/downloads/"),
   )
   .map(toUrl)
   .sort();

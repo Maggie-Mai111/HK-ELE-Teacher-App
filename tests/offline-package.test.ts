@@ -201,8 +201,8 @@ test("actual built package includes full data, OCR and cold-start assets with ex
     await hash(new TextEncoder().encode(JSON.stringify(data))),
     approvals[m.dataVersion].dataInventorySha256,
   );
-  assert.equal(m.counts.totalFamilies, 163906);
-  assert.equal(m.counts.candidate, 2871);
+  assert.equal(m.counts.totalFamilies, 167630);
+  assert.equal(m.counts.candidate, 2658);
   for (const file of m.files) {
     const actual = readFileSync("dist/" + file.path);
     assert.equal(actual.length, file.byteSize, file.path);
@@ -212,7 +212,7 @@ test("actual built package includes full data, OCR and cold-start assets with ex
   assert.ok(m.files.some((f) => f.path.startsWith("_expo/static/js/web/index-")));
 });
 
-function storageFixture() {
+function storageFixture(expectedVersion = "fixture-v1", expectedInventory = digest) {
   const buckets = new Map<string, Map<string, Response>>();
   const path = (value: string | Request) =>
     new URL(typeof value === "string" ? value : value.url, "https://fixture.test").href;
@@ -234,7 +234,11 @@ function storageFixture() {
   const exports: Record<string, (...args: unknown[]) => Promise<unknown>> = {};
   runInNewContext(readFileSync(".test-dist/src/services/offline/offlineStorage.web.js", "utf8"), {
     exports,
-    require: () => ({ validateOfflineManifest }),
+    require: (name: string) => name.endsWith("current-manifest.json")
+      ? { dataVersion: expectedVersion }
+      : name.endsWith("offlineDataReleases.json")
+        ? { [expectedVersion]: { dataInventorySha256: expectedInventory, sourceManifestSha256: digest } }
+        : { validateOfflineManifest },
     window: {
       location: {
         href: "https://fixture.test/HK-ELE-Teacher-App/",
@@ -302,7 +306,7 @@ test("an older installed package cannot silently fetch a new compound asset from
   );
 });
 test("a running tab reads one pinned data generation across an update", async () => {
-  const fixture = storageFixture();
+  const fixture = storageFixture("old");
   const old = { cacheName: "hkele-offline-package-old", manifest: manifest("old") };
   const next = { cacheName: "hkele-offline-package-new", manifest: manifest("new") };
   await (
@@ -340,6 +344,58 @@ test("a running tab reads one pinned data generation across an update", async ()
     ).text(),
     "old bytes",
   );
+});
+test("a newer App leaves an older full download intact and uses its matching online data", async () => {
+  const fixture = storageFixture("new");
+  const old = { cacheName: "hkele-offline-package-old", manifest: manifest("old") };
+  for (const file of old.manifest.files)
+    await (await fixture.cache(old.cacheName)).put(
+      "/HK-ELE-Teacher-App/" + file.path, new Response(bytes),
+    );
+  await fixture.api.writeOfflineState!({ active: old, previous: null });
+  assert.equal(await fixture.api.readInstalledData!(
+    "/HK-ELE-Teacher-App/hkele-data/manifest.json.gz",
+  ), null);
+  assert.equal(await fixture.api.readInstalledData!(
+    "/HK-ELE-Teacher-App/assets/compounds/new/c.json.gz",
+  ), null);
+  assert.equal(fixture.api.offlineSessionIsInstalled!(), false);
+  assert.equal(await fixture.api.selectionComplete!(old), true);
+  const state = await fixture.api.readOfflineState!() as { active: { manifest: OfflineManifest } };
+  assert.equal(state.active.manifest.dataVersion, "old");
+  assert.ok(fixture.buckets.has(old.cacheName));
+});
+test("a same-name offline generation with a different approved inventory is never mixed into this App", async () => {
+  const fixture = storageFixture("fixture-v1", "b".repeat(64));
+  const saved = { cacheName: "hkele-offline-package-prior", manifest: manifest() };
+  await fixture.api.writeOfflineState!({ active: saved, previous: null });
+  assert.equal(await fixture.api.readInstalledData!(
+    "/HK-ELE-Teacher-App/hkele-data/manifest.json.gz",
+  ), null);
+  assert.equal(fixture.api.offlineSessionIsInstalled!(), false);
+  const state = await fixture.api.readOfflineState!() as { active: { manifest: OfflineManifest } };
+  assert.equal(state.active.manifest.dataInventorySha256, digest);
+});
+test("restoring a legacy App preserves a newer recovery package without breaking its old count contract", async () => {
+  const fixture = storageFixture();
+  const old = { cacheName: "hkele-offline-package-old", manifest: manifest("old") };
+  const next = { cacheName: "hkele-offline-package-new", manifest: manifest() };
+  next.manifest.counts = { ...next.manifest.counts, ranked: 1, teachingScopeExcluded: 1 };
+  const original = JSON.stringify(next.manifest);
+  await fixture.api.writeOfflineState!({ active: old, previous: next });
+  const stored = await (await (await fixture.cache("hkele-offline-state-v1"))
+    .match("/HK-ELE-Teacher-App/__offline_state__"))!.json();
+  assert.equal(stored.previous, null);
+  validateOfflineManifest(stored.active.manifest, "0.4.0");
+  assert.equal(stored.active.manifest.counts.ranked + stored.active.manifest.counts.unranked,
+    stored.active.manifest.counts.totalFamilies);
+  assert.equal(JSON.stringify(stored.forward.manifest), original);
+  const restored = await fixture.api.readOfflineState!() as { active: unknown; previous: { manifest: OfflineManifest } };
+  assert.equal(JSON.stringify(restored.previous.manifest), original);
+  await fixture.api.writeOfflineState!({ active: restored.previous, previous: old });
+  const current = await fixture.api.readOfflineState!() as { active: { manifest: OfflineManifest }; previous: { manifest: OfflineManifest } };
+  assert.equal(current.active.manifest.counts.teachingScopeExcluded, 1);
+  assert.equal(current.previous.manifest.dataVersion, "old");
 });
 test("evicted offline files fail clearly instead of mixing online data into the old version", async () => {
   const fixture = storageFixture();

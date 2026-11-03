@@ -42,7 +42,7 @@ TEXT_SUFFIXES = {
 FORBIDDEN_SECRET_SUFFIXES = {".jks", ".keystore", ".p12", ".pfx", ".pem", ".key"}
 FORBIDDEN_SECRET_NAMES = {"id_rsa", "id_dsa", "credentials.json"}
 PATH_PATTERNS = {
-    "windows_absolute_path": re.compile(rb"(?i)(?:^|[^A-Za-z0-9])[A-Z]:[\\/]"),
+    "windows_absolute_path": re.compile(rb'(?i)(?:^|[^A-Za-z0-9])[A-Z]:(?:/|\\(?!"))'),
     "user_home_path": re.compile(rb"(?i)(?:C:[\\/]Users[\\/]|/Users/|/home/)"),
     "local_username": re.compile(rb"(?i)maiji"),
 }

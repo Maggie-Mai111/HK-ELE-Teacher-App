@@ -21,5 +21,5 @@ export function ScreenHeader({ title, intro }: Props) {
 const styles = StyleSheet.create({
   box: { gap: spacing.xs },
   heading: { color: colors.ink, fontSize: 31, fontWeight: "800", lineHeight: 38 },
-  intro: { color: colors.muted, fontSize: 16, lineHeight: 24 },
+  intro: { color: colors.muted, fontSize: 18, lineHeight: 27 },
 });

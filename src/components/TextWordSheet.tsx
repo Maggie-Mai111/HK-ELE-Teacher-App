@@ -84,7 +84,7 @@ export function TextWordSheet({
               {item.status === "BLOCKED"
                 ? "Check the spelling or use in this sentence."
                 : item.status === "UNSUPPORTED"
-                  ? "Try the English spelling of this word."
+                  ? "No word entry for this part. You can still explore the other words in your text."
                   : "No entry found in the wordlist."}
             </Text>
           )}
@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   word: { fontSize: 24, fontWeight: "800", color: colors.ink },
-  label: { fontSize: 15, fontWeight: "700", color: colors.muted },
-  note: { fontSize: 17, lineHeight: 25, color: colors.ink },
+  label: { fontSize: 17, fontWeight: "700", color: colors.muted },
+  note: { fontSize: 19, lineHeight: 28, color: colors.ink },
 });

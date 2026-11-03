@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import manifestJson from "../../data/current-manifest.json";
 import { APP_VERSION } from "../config/release";
+import { FullDatabaseDownload } from "../components/FullDatabaseDownload";
 import { AppCard } from "../components/AppCard";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { DataUpdatePanel } from "../components/DataUpdatePanel";
@@ -19,9 +20,7 @@ assertCompatibleManifest(manifest, APP_VERSION);
 function versionRows(version: string): ReadonlyArray<[string, string]> {
   const counts = (approved.releases as Record<string, typeof manifest.counts>)[version];
   return [
-    ["Data version", version],
-    ["Released", version === manifest.dataVersion ? manifest.releaseDate : version.slice(0, 10)],
-    ["Core list families", counts?.candidate.toLocaleString("en") ?? "—"],
+    ["HK-ELE Word List families", counts?.candidate.toLocaleString("en") ?? "—"],
     ["Full database families", counts?.totalFamilies.toLocaleString("en") ?? "—"],
     ["Word forms", counts?.forms.toLocaleString("en") ?? "—"],
   ];
@@ -29,6 +28,7 @@ function versionRows(version: string): ReadonlyArray<[string, string]> {
 
 export function DataVersionScreen({ repository }: { repository: HkeleRepository }) {
   const [version, setVersion] = useState(manifest.dataVersion);
+  const coreCount = (approved.releases as Record<string, typeof manifest.counts>)[version]?.candidate;
   useEffect(() => {
     let active = true;
     void repository
@@ -51,10 +51,7 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
         and Hong Kong teaching materials.
       </Text>
       <DataModeNotice detailed mode={repository.getDataMode()} />
-      <ProgressiveDisclosure
-        title="Wordlist information"
-        summary={`Updated ${version.slice(0, 10)}`}
-      >
+      <ProgressiveDisclosure title="Wordlist information">
         {versionRows(version).map(([label, value]) => (
           <View key={label} style={styles.row}>
             <Text style={styles.label}>{label}</Text>
@@ -64,21 +61,31 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
           </View>
         ))}
       </ProgressiveDisclosure>
+      <FullDatabaseDownload dataVersion={version} />
       <DataUpdatePanel />
+      <ProgressiveDisclosure title="How to read the word information">
+        <Text style={styles.note}>
+          HK-ELE Word List contains {coreCount?.toLocaleString("en") ?? "—"} word families selected to reach at least 90% in each of four research corpora.
+          Choose words that fit your class and text. Full database includes more word families.
+        </Text>
+        <Text style={styles.note}>
+          Textbook stages and US grade references describe the selected spelling. HK ranks compare
+          whole word families. A textbook appearance does not establish when students know a word.
+        </Text>
+        <Text style={styles.note}>
+          Check the words in your passage and explore compound words too. Your original text stays
+          unchanged, including words without a match.
+        </Text>
+      </ProgressiveDisclosure>
       <AppCard title="Privacy at a glance">
         <Text style={styles.note}>
-          Text analysis and teaching lists remain on the device. Photo recognition runs on this
+          Text analysis and selected words remain on the device. Photo recognition runs on this
           device; review and edit the text before using it. Photos are not uploaded or saved by the
           App. Linked forms receive only what you submit; AI search sends your request when used.
           Review your agreement from Menu → Your data choices.
         </Text>
       </AppCard>
-      <ProgressiveDisclosure title="Sources and licences">
-        <Text style={styles.note}>
-          The wordlist brings together word-family records, corpus frequency information and
-          textbook observations. Source attributions and licence notices are included with HK-ELE.
-        </Text>
-      </ProgressiveDisclosure>
+
     </View>
   );
 }
@@ -86,9 +93,9 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
 const styles = StyleSheet.create({
   content: { gap: spacing.md, padding: spacing.lg },
   heading: { color: colors.ink, fontSize: 32, fontWeight: "800", lineHeight: 39 },
-  intro: { color: colors.muted, fontSize: 18, lineHeight: 27 },
-  label: { color: colors.muted, flex: 1, fontSize: 16, lineHeight: 23 },
-  note: { color: colors.muted, fontSize: 16, lineHeight: 24 },
+  intro: { color: colors.muted, fontSize: 20, lineHeight: 27 },
+  label: { color: colors.muted, flex: 1, fontSize: 18, lineHeight: 26 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 27 },
   row: {
     borderBottomColor: colors.border,
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -97,5 +104,5 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: spacing.sm,
   },
-  value: { color: colors.ink, flexShrink: 1, fontSize: 16, fontWeight: "700", lineHeight: 23 },
+  value: { color: colors.ink, flexShrink: 1, fontSize: 18, fontWeight: "700", lineHeight: 26 },
 });

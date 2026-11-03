@@ -4,6 +4,7 @@ import type { SupplementaryExpression } from "../domain/supplementaryExpressions
 import type { TeachingListStore } from "../services/teachingListService";
 import { expressionItemKey } from "../services/compoundTeaching";
 import { COMPOUND_RELEASE } from "../services/compoundData";
+import { compoundDisplayParts } from "../services/compoundPresentation";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
 import { FeedbackPanel, type FeedbackRequest } from "./FeedbackPanel";
@@ -20,6 +21,7 @@ export function CompoundCard({
 }) {
   const [feedback, setFeedback] = useState<FeedbackRequest | null>(null);
   const added = teaching.items.some((item) => item.basewordKey === expressionItemKey(expression));
+  const parts = compoundDisplayParts(expression);
   const context = {
     product: "App/PWA" as const,
     page: source,
@@ -33,10 +35,10 @@ export function CompoundCard({
     <View style={styles.card}>
       <Text style={styles.badge}>Compound</Text>
       <Text style={styles.word}>{expression.displayExpression}</Text>
-      {expression.parts?.length ? (
+      {parts.length ? (
         <View style={styles.parts}>
-          <Text style={styles.label}>Recorded word parts</Text>
-          {expression.parts.map((part, index) =>
+          <Text style={styles.label}>Word parts</Text>
+          {parts.map((part, index) =>
             part.familyKey ? (
               <ActionButton
                 key={index}
@@ -55,7 +57,7 @@ export function CompoundCard({
       <View style={styles.actions}>
         <ActionButton
           disabled={added}
-          label={added ? "Added ✓" : "Add to Teaching list"}
+          label={added ? "Added ✓" : "Add to selected words"}
           onPress={() => teaching.addExpression(expression, source)}
         />
         <ActionButton
@@ -91,8 +93,8 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     fontWeight: "700",
   },
-  label: { width: "100%", fontSize: 15, color: colors.muted },
+  label: { width: "100%", fontSize: 17, color: colors.muted },
   parts: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, alignItems: "center" },
-  part: { fontSize: 16, color: colors.ink },
+  part: { fontSize: 18, color: colors.ink },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
 });

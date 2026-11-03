@@ -9,18 +9,24 @@ import { makeFamily, makeOccurrence } from "./support/phase3-fixtures.js";
 const source = (path: string) => readFileSync(path, "utf8");
 
 test("a missing HK rank never claims that a word is beyond a frequency boundary", () => {
-  const family = makeFamily("technical", null, { awl: 1 });
+  const family = makeFamily("technical", null, {
+    awl: 1,
+    matched_form_evidence: { awl: 1 } as FormRecord,
+  });
   const items = [makeOccurrence("technical", family, 0)];
   const suggestion = generatePreteachSuggestions("technical", items, null)[0]!;
-  assert.ok(suggestion.reasons.includes("AWL evidence"));
+  assert.ok(suggestion.reasons.includes("Listed in AWL"));
   assert.ok(suggestion.reasons.every((reason) => !reason.includes("Outside HK")));
-  const ranked = makeFamily("ranked", 500, { awl: 1 });
+  const ranked = makeFamily("ranked", 500, {
+    awl: 1,
+    matched_form_evidence: { awl: 1 } as FormRecord,
+  });
   assert.deepEqual(
     generatePreteachSuggestions("technical ranked", [
       ...items,
       makeOccurrence("ranked", ranked, 10),
     ]).map((item) => item.basewordKey),
-    ["ranked", "technical"],
+    ["technical", "ranked"],
   );
   const noOtherEvidence = makeFamily("unranked", null);
   assert.equal(
@@ -31,11 +37,16 @@ test("a missing HK rank never claims that a word is beyond a frequency boundary"
 });
 
 test("class-level comparison starts only when the teacher chooses a level", () => {
-  const family = makeFamily("example", 500, { textbook_first_seen_level: "P5" });
+  const family = makeFamily("example", 500, {
+    textbook_first_seen_level: "P1",
+    matched_form_evidence: { first_seen_hk_textbooks: "P5" } as FormRecord,
+  });
   const items = [makeOccurrence("example", family, 0)];
   assert.equal(generatePreteachSuggestions("example", items).length, 0);
   assert.deepEqual(generatePreteachSuggestions("example", items, "P4")[0]?.reasons, [
-    "Family first seen at P5",
+    "Textbooks: P5 · after P4",
+    "Appears 1 time",
+    "HK family rank: 500",
   ]);
   assert.equal(generatePreteachSuggestions("example", items, "P6").length, 0);
   const panel = source("src/components/PreteachPanel.tsx");
@@ -56,7 +67,9 @@ test("pre-teaching grade reasons use the chosen form's evidence before family ev
   };
   const items = [makeOccurrence("reusable", family, 0)];
   assert.deepEqual(generatePreteachSuggestions("reusable", items, "P4")[0]?.reasons, [
-    "Word first seen at P5",
+    "Textbooks: P5 · after P4",
+    "Appears 1 time",
+    "HK family rank: 100",
   ]);
   const missing = { ...family, matched_form_evidence: { ...form, first_seen_hk_textbooks: null } };
   assert.equal(
@@ -82,7 +95,7 @@ test("clicked context accompanies exact word detail without changing feedback fi
   assert.match(detail, /In your text/);
   const app = source("App.tsx");
   assert.match(app, /← Back to text/);
-  assert.match(app, /← Back to teaching list/);
+  assert.match(app, /← Back to selected words/);
   assert.doesNotMatch(source("src/services/feedbackService.ts"), /textEvidence|checkedText/);
 });
 

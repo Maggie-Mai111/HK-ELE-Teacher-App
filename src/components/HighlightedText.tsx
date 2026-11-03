@@ -81,12 +81,14 @@ export function HighlightedText({
       </Text>
       {cpbEnabled || hkEnabled || customRange ? (
         <View accessibilityLabel="Highlight legend" style={styles.legend}>
-          {cpbEnabled ? <Text style={[styles.legendItem, styles.cpb]}>★ CPB 100</Text> : null}
+          {cpbEnabled ? (
+            <Text style={[styles.legendItem, styles.cpb]}>★ CPB100 sight words</Text>
+          ) : null}
           {hkEnabled ? (
             <>
-              <Text style={[styles.legendItem, styles.hkTop]}>● HK Top 1k</Text>
-              <Text style={[styles.legendItem, styles.hkNext]}>◆ HK Next 1k</Text>
-              <Text style={[styles.legendItem, styles.hkLater]}>▨ HK rank 2,001+</Text>
+              <Text style={[styles.legendItem, styles.hkTop]}>● HK family ranks 1–1,000</Text>
+              <Text style={[styles.legendItem, styles.hkNext]}>◆ HK family ranks 1,001–2,000</Text>
+              <Text style={[styles.legendItem, styles.hkLater]}>▨ HK family ranks 2,001+</Text>
             </>
           ) : null}
           {customRange ? (
@@ -96,13 +98,24 @@ export function HighlightedText({
           ) : null}
         </View>
       ) : null}
+      {cpbEnabled ? (
+        <Text style={styles.legendItem}>
+          CPB100 is a reference list of 100 common sight words. HK frequency is a separate measure.
+        </Text>
+      ) : null}
+      {hkEnabled ? (
+        <Text style={styles.legendItem}>
+          HK colours show how often word families appear in Hong Kong English. Use your knowledge of
+          the class to decide which words need attention.
+        </Text>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   box: { gap: spacing.sm },
-  text: { color: colors.ink, fontSize: 18, lineHeight: 32 },
+  text: { color: colors.ink, fontSize: 20, lineHeight: 32 },
   token: { borderRadius: 3, overflow: "hidden" },
   cpb: { backgroundColor: colors.cpbSoft, color: colors.cpb, textDecorationLine: "underline" },
   hkTop: { backgroundColor: colors.hkTopSoft, color: colors.hkTop },
@@ -116,7 +129,7 @@ const styles = StyleSheet.create({
   legend: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, paddingTop: spacing.sm },
   legendItem: {
     borderRadius: 7,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,

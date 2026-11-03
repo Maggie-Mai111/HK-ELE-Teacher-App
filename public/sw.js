@@ -84,7 +84,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.startsWith(`${BASE_PATH}ocr/`)) {
+  if (url.pathname.startsWith(`${BASE_PATH}ocr/`) || url.pathname.startsWith(`${BASE_PATH}assets/ai-form-evidence/`) || url.pathname.startsWith(`${BASE_PATH}assets/downloads/`)) {
     event.respondWith(
       installedResponse(url.origin + url.pathname).then((saved) => saved || fetch(request)),
     );

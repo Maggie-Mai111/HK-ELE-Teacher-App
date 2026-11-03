@@ -1,4 +1,5 @@
 import { refreshSavedSelection } from "./lessonDataRefresh";
+import { savedIdentityStillApplies, SAVED_IDENTITY_REVIEW } from "./identityMigration";
 import {
   createCompoundTeachingItem,
   expressionItemKey,
@@ -100,7 +101,7 @@ async function readLibrary(): Promise<LessonLibrary> {
       : await AsyncStorage.getItem(LESSON_LIBRARY_STORAGE_KEY);
   if (raw !== null) {
     parseLessonLibrary(raw);
-    const backupKey = LESSON_LIBRARY_STORAGE_KEY + ":before-a-main-v1";
+    const backupKey = LESSON_LIBRARY_STORAGE_KEY + ":before-repaired-main-core2827-v1";
     if (Platform.OS === "web" && typeof localStorage !== "undefined") {
       if (localStorage.getItem(backupKey) === null) localStorage.setItem(backupKey, raw);
     } else if ((await AsyncStorage.getItem(backupKey)) === null)
@@ -156,12 +157,14 @@ export async function refreshTeachingItems(
             item,
             await lookupCompound(
               item.expression?.normalizedExpression || item.displayFamily,
-              item.dataVersion,
             ),
           );
         } catch {
           return refreshCompoundTeachingItem(item, null);
         }
+      }
+      if (!savedIdentityStillApplies(item.basewordKey, item.selectedForms, item.dataVersion, manifestJson.dataVersion)) {
+        return { ...item, dataReviewStatus: SAVED_IDENTITY_REVIEW };
       }
       try {
         return refreshSavedSelection(item, await repository.getFamily(item.basewordKey));

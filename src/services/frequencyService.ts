@@ -8,9 +8,9 @@ export interface HkFrequencyDisplay {
 
 export function hkFrequencyDisplay(rank: number | null): HkFrequencyDisplay {
   if (rank === null) return { band: "unranked", label: "No current HK rank", symbol: "○" };
-  if (rank <= 1000) return { band: "top-1k", label: "HK Top 1k", symbol: "●" };
-  if (rank <= 2000) return { band: "next-1k", label: "HK Next 1k", symbol: "◆" };
-  return { band: "later", label: "HK rank 2,001+", symbol: "▨" };
+  if (rank <= 1000) return { band: "top-1k", label: "HK family ranks 1–1,000", symbol: "●" };
+  if (rank <= 2000) return { band: "next-1k", label: "HK family ranks 1,001–2,000", symbol: "◆" };
+  return { band: "later", label: "HK family ranks 2,001+", symbol: "▨" };
 }
 
 export function validHkRange(start: number, end: number): boolean {

@@ -177,7 +177,7 @@ export class StaticShardRepository implements HkeleRepository {
 
   async getFamily(basewordKey: string): Promise<FamilyDetail> {
     const manifest = await this.manifest();
-    const normalized = normalize(basewordKey);
+    const normalized = basewordKey;
     const bucket = String(this.fnvBucket(normalized, manifest.detail_buckets)).padStart(3, "0");
     const values = await this.load<Record<string, [unknown[], unknown[][]]>>(
       `detail/${bucket}.json.gz`,
@@ -193,8 +193,8 @@ export class StaticShardRepository implements HkeleRepository {
   }
 
   async getWordFormFrequencies(basewordKey: string): Promise<WordFormFrequencies> {
-    const version = "a-main-word-frequency-20261022-v1";
-    const normalized = normalize(basewordKey);
+    const version = "spelling-frequency-20261103-v1";
+    const normalized = basewordKey;
     const bucket = String(this.fnvBucket(normalized, 128)).padStart(3, "0");
     const [manifest, data] = await Promise.all([
       this.manifest(),
@@ -285,7 +285,7 @@ export class StaticShardRepository implements HkeleRepository {
         "COUNTRY_ABBREVIATION_OR_OTHER_CONTEXT_REQUIRED",
       );
     }
-    if (normalizedQuery === "does") {
+    if (!manifest.metadata.complete_lexical_relations && normalizedQuery === "does") {
       return this.blocked(
         submittedQuery,
         normalizedQuery,
@@ -321,8 +321,32 @@ export class StaticShardRepository implements HkeleRepository {
           : null,
       };
     }
-    const owners = this.expandOwners(manifest, record[1]);
-    const alternatives = this.expandOwners(manifest, record[2]);
+    const alignOwners = async (rows: SearchFamilyOwner[]) =>
+      Promise.all(
+        rows.map(async (owner) => {
+          if (owner.matched_form_evidence) return owner;
+          const detail = await this.getFamily(owner.baseword_key);
+          const accepted = detail.forms.filter((form) =>
+            owner.matched_forms.some((matched) => normalize(matched) === normalize(form.form)),
+          );
+          return accepted.length
+            ? {
+                ...owner,
+                matched_forms: accepted.map((form) => form.form),
+                matched_form_evidence: accepted[0]!,
+              }
+            : {
+                ...owner,
+                match_classes: ["FAMILY_LABEL_ONLY"],
+                matched_forms: [],
+                matched_form_evidence: null,
+              };
+        }),
+      );
+    const [owners, alternatives] = await Promise.all([
+      alignOwners(this.expandOwners(manifest, record[1])),
+      alignOwners(this.expandOwners(manifest, record[2])),
+    ]);
     const allowed = owners.filter((owner) => !owner.blocked);
     return {
       status: allowed.length === 0 ? "BLOCKED" : allowed.length > 1 ? "AMBIGUOUS" : "RESOLVED",
@@ -364,12 +388,23 @@ export class StaticShardRepository implements HkeleRepository {
         }
         const result = await unique.get(occurrence.surface);
         if (!result) throw new Error("Occurrence search result is missing");
+        const wordOwners = result.owners.filter(
+          (owner) => !owner.match_classes.includes("FAMILY_LABEL_ONLY") && !owner.match_classes.includes("CONDITIONAL_LOOKUP_ONLY"),
+        );
+        const hasLabelOnly = wordOwners.length !== result.owners.length;
+        const allowed = wordOwners.filter((owner) => !owner.blocked);
         return {
           ...occurrence,
-          status: result.status,
-          bestOwnerCount: result.bestOwnerCount,
-          owners: result.owners,
-          alternatives: result.alternatives,
+          status: hasLabelOnly
+            ? allowed.length > 1
+              ? "AMBIGUOUS"
+              : allowed.length
+                ? "RESOLVED"
+                : "UNMATCHED"
+            : result.status,
+          bestOwnerCount: hasLabelOnly ? allowed.length : result.bestOwnerCount,
+          owners: wordOwners,
+          alternatives: hasLabelOnly ? [...result.owners.filter(owner => !wordOwners.includes(owner)), ...result.alternatives] : result.alternatives,
           identityException: result.identityException,
           grammaticalRelation: result.grammaticalRelation ?? null,
           context: contextFor(text, occurrence),

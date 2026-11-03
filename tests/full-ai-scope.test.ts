@@ -21,9 +21,9 @@ const families = projection.rows.map(
     ) as unknown as FamilyRecord,
 );
 
-test("full AI index covers all 163906 A-main families with the A-main 2871 Core members", () => {
-  assert.equal(families.length, 163906);
-  assert.equal(families.filter((f) => Boolean(f.candidate_member)).length, 2871);
+test("full AI index covers all 167630 A-main families with the A-main 2658 Core members", () => {
+  assert.equal(families.length, 167630);
+  assert.equal(families.filter((f) => Boolean(f.candidate_member)).length, 2658);
   const context = { families, cpbFamilyKeys: new Set(projection.cpb100FamilyKeys) };
   const filters = [
     { scope: "full", earliestObservedTo: "P2", limit: 10, sort: "overall" },
@@ -38,7 +38,7 @@ test("full AI index covers all 163906 A-main families with the A-main 2871 Core 
   assert.ok(fullRoot.families.some((f) => !f.candidate_member && !f.reference_member));
   assert.equal(
     executeAiFilter(context, { ...filters[2], scope: "candidate" }).matchedBeforeLimit,
-    7,
+    8,
   );
   const fabric = families.find((f) => f.baseword_key === "fabric")!;
   assert.equal(fabric.candidate_member, 0);
@@ -70,7 +70,7 @@ test("static full AI loading rejects an incompatible index and permits retry", a
   try {
     const repository = new StaticShardRepository("/fixture");
     await assert.rejects(repository.aiFilterFamilies("full"), /does not match/);
-    assert.equal((await repository.aiFilterFamilies("full")).length, 163906);
+    assert.equal((await repository.aiFilterFamilies("full")).length, 167630);
     assert.equal(attempts, 2);
     assert.ok((await repository.aiFilterCpbFamilyKeys()).size > 0);
   } finally {
@@ -108,7 +108,7 @@ test("full AI cannot silently fall back to the smaller saved wordlist", async ()
   const hybrid = new HybridRepository(full, saved);
   await assert.rejects(hybrid.aiFilterFamilies("full"), /offline/);
   assert.equal(fallbackCalls, 0);
-  assert.equal((await hybrid.aiFilterFamilies("core")).length, 2871);
+  assert.equal((await hybrid.aiFilterFamilies("core")).length, 2658);
   assert.equal(fallbackCalls, 1);
 });
 

@@ -18,11 +18,11 @@ const columns = [
   "Added from",
   "Family key",
   "Word list",
-  "Overall rank",
-  "HK rank",
-  "HK band",
-  "Earliest observed",
-  "External level",
+  "Overall family rank",
+  "HK family rank",
+  "HK family frequency band",
+  "First seen in HK textbooks",
+  "US grade reference",
   "Data version",
   "Earlier teaching depth",
   "Saved selection status",
@@ -53,8 +53,8 @@ function row(
     item.derived.overall_frequency_order ?? "",
     item.derived.current_hk_frequency_rank ?? "",
     item.derived.current_hk_frequency_band ?? "",
-    item.derived.textbook_first_seen_level ?? "",
-    teacherLevelLabel(item.derived.external_level_reference_display) ?? "",
+    item.derived.textbook_first_seen_level ?? (item.recordType === "compound" ? "" : "—"),
+    teacherLevelLabel(item.derived.external_level_reference_display) ?? (item.recordType === "compound" ? "" : "—"),
     item.dataVersion,
     item.status,
     item.dataReviewStatus ?? "",
@@ -156,7 +156,7 @@ function columnName(index: number): string {
   return result;
 }
 
-function sheetXml(items: TeachingListItem[], lessonTitle = ""): string {
+function sheetXml(items: TeachingListItem[], lessonTitle = "", teacherFacing = false): string {
   const values: Array<ReadonlyArray<string | number>> = [
     exportColumns(items),
     ...items.map((item, index) =>
@@ -168,6 +168,11 @@ function sheetXml(items: TeachingListItem[], lessonTitle = ""): string {
       ),
     ),
   ];
+  if (teacherFacing) {
+    const keep = values[0]!.map((_, index) => index < 15 && index !== 8 || index === 17 ? index : -1).filter(index => index >= 0);
+    for (let index = 0; index < values.length; index += 1) values[index] = keep.map(column => values[index]![column]!);
+    values[0] = values[0]!.map(label => label === "Saved selection status" ? "Selection note" : label);
+  }
   const rows = values
     .map((valuesRow, rowIndex) => {
       const cells = valuesRow
@@ -187,11 +192,11 @@ function sheetXml(items: TeachingListItem[], lessonTitle = ""): string {
   <sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
   <cols><col min="1" max="1" width="28" customWidth="1"/><col min="2" max="2" width="8" customWidth="1"/><col min="3" max="4" width="24" customWidth="1"/><col min="5" max="6" width="38" customWidth="1"/><col min="7" max="17" width="22" customWidth="1"/></cols>
   <sheetData>${rows}</sheetData>
-  <autoFilter ref="A1:Q${endRow}"/>
+  <autoFilter ref="A1:${columnName(values[0]!.length - 1)}${endRow}"/>
 </worksheet>`;
 }
 
-export function teachingListToXlsx(items: TeachingListItem[], lessonTitle = ""): Uint8Array {
+export function teachingListToXlsx(items: TeachingListItem[], lessonTitle = "", teacherFacing = false): Uint8Array {
   const now = new Date().toISOString();
   const files: Record<string, Uint8Array> = {
     "[Content_Types].xml": strToU8(
@@ -215,7 +220,7 @@ export function teachingListToXlsx(items: TeachingListItem[], lessonTitle = ""):
     "xl/styles.xml": strToU8(
       `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="10"/><name val="Arial"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF176B45"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf></cellXfs></styleSheet>`,
     ),
-    "xl/worksheets/sheet1.xml": strToU8(sheetXml(items, lessonTitle)),
+    "xl/worksheets/sheet1.xml": strToU8(sheetXml(items, lessonTitle, teacherFacing)),
   };
   return zipSync(files, { level: 6 });
 }
@@ -224,6 +229,7 @@ export function buildTeachingListExport(
   items: TeachingListItem[],
   format: ExportFormat,
   lessonTitle = "",
+  teacherFacing = false,
 ) {
   const date = new Date().toISOString().slice(0, 10);
   const lessonName = lessonTitle
@@ -250,6 +256,6 @@ export function buildTeachingListExport(
   return {
     filename: `${filename}.xlsx`,
     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    data: teachingListToXlsx(items, lessonTitle),
+    data: teachingListToXlsx(items, lessonTitle, teacherFacing),
   };
 }

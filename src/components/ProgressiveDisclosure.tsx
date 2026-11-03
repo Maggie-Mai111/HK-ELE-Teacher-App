@@ -62,10 +62,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: "hidden",
   },
-  chevron: { color: colors.primary, fontSize: 15, fontWeight: "800" },
+  chevron: { color: colors.primary, fontSize: 17, fontWeight: "800" },
   pressed: { backgroundColor: colors.primarySoft },
-  summary: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  title: { color: colors.ink, fontSize: 19, fontWeight: "800", lineHeight: 26 },
+  summary: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  title: { color: colors.ink, fontSize: 19, fontWeight: "800", lineHeight: 29 },
   titleGroup: { flex: 1, gap: spacing.xs },
   trigger: {
     alignItems: "center",

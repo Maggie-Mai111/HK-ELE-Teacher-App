@@ -15,6 +15,7 @@ export interface DataCounts {
   forms: number;
   ranked: number;
   unranked: number;
+  teachingScopeExcluded?: number;
   candidate: number;
   inclusiveReference: number;
   referenceOnly: number;

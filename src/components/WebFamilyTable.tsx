@@ -12,13 +12,13 @@ const STORAGE_KEY = "hkele-phase1v-columns-v1";
 const columns = [
   ["family", "Word family", 170],
   ["status", "Word list", 150],
-  ["overall", "Overall frequency rank", 125],
-  ["hk", "HK frequency rank / band", 155],
+  ["overall", "Overall family rank", 125],
+  ["hk", "HK family rank / band", 155],
   ["first_seen", "First seen in HK textbooks", 155],
   ["external", "US grade reference", 185],
   ["academic", "Academic Word List (AWL)", 125],
   ["subjects", "Middle School Vocabulary List (MSVL)", 210],
-  ["root", "Root", 135],
+  ["root", "Greek/Latin root", 135],
   ["root_meaning", "Root meaning", 175],
   ["prefix", "Prefix", 120],
   ["suffix", "Suffix", 120],
@@ -134,7 +134,7 @@ export function WebFamilyTable({ families, isAdded, onAdd, onOpen, canAdd = true
           </View>
           {families.map((family, index) => (
             <View
-              key={family.baseword_key}
+              key={String(family.ai_match_key ?? family.baseword_key)}
               style={[styles.row, index % 2 === 1 && styles.alternateRow]}
             >
               {shown.map(([key, _label, width]) => {
@@ -197,13 +197,13 @@ const styles = StyleSheet.create({
     minHeight: 54,
     padding: spacing.sm,
   },
-  actionText: { color: colors.primary, fontSize: 14, fontWeight: "800" },
+  actionText: { color: colors.primary, fontSize: 16, fontWeight: "800" },
   cell: {
     borderBottomColor: colors.border,
     borderBottomWidth: StyleSheet.hairlineWidth,
     color: colors.ink,
-    fontSize: 16,
-    lineHeight: 23,
+    fontSize: 18,
+    lineHeight: 26,
     minHeight: 54,
     padding: spacing.sm,
   },
@@ -213,15 +213,15 @@ const styles = StyleSheet.create({
   textbookCell: { color: colors.hkTop, backgroundColor: "#EFF8F7", fontWeight: "700" },
   externalCell: { color: colors.cpb, backgroundColor: "#F6F2FC", fontWeight: "700" },
   disabled: { opacity: 0.45 },
-  headerCell: { color: colors.surface, fontSize: 14, fontWeight: "800", padding: spacing.sm },
+  headerCell: { color: colors.surface, fontSize: 16, fontWeight: "800", padding: spacing.sm },
   headerRow: { backgroundColor: colors.primary },
   row: { flexDirection: "row" },
   scroll: { borderColor: colors.border, borderRadius: 12, borderWidth: 1, maxWidth: "100%" },
   settings: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
-  settingsTitle: { color: colors.ink, fontSize: 14, fontWeight: "800" },
+  settingsTitle: { color: colors.ink, fontSize: 16, fontWeight: "800" },
   table: { backgroundColor: colors.surface },
   wrapper: { gap: spacing.sm, maxWidth: "100%" },
-  viewNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  viewNote: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   viewRow: {
     alignItems: "center",
     flexDirection: "row",

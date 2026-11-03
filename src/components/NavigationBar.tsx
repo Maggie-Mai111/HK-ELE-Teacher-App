@@ -14,7 +14,7 @@ const items: ReadonlyArray<{ route: AppRoute; label: string }> = [
   { route: "home", label: "Home" },
   { route: "check", label: "Check a text" },
   { route: "browse", label: "Find words" },
-  { route: "list", label: "Teaching list" },
+  { route: "list", label: "Selected words" },
 ];
 
 export function NavigationBar({
@@ -75,8 +75,8 @@ const styles = StyleSheet.create({
   label: {
     textAlign: "center",
     color: colors.muted,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 23,
     fontWeight: "600",
   },
   pressed: { opacity: 0.72 },

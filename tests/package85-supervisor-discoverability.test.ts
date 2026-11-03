@@ -31,8 +31,8 @@ test("known and unfamiliar family percentages are exact complements", () => {
 test("known token coverage and unfamiliar token rate are complementary and token weighted", () => {
   const repeated = collectEligibleFamilies([
     makeOccurrence("repeat", makeFamily("repeat", 1), 0),
-    makeOccurrence("repeats", makeFamily("repeat", 1), 7),
-    makeOccurrence("repeated", makeFamily("repeat", 1), 15),
+    makeOccurrence("Repeat", makeFamily("repeat", 1), 7),
+    makeOccurrence("repeat", makeFamily("repeat", 1), 15),
   ])[0]!;
   const once = collectEligibleFamilies([makeOccurrence("once", makeFamily("once", 2), 24)])[0]!;
   const result = calculateCoverage([repeated, once], { repeat: true, once: false });
@@ -131,10 +131,10 @@ test("knowledge UI distinguishes sample estimates, exact checked results and pro
     "More words (20)",
     "All matched families",
     "Sample of",
-    "Checked word families",
+    "Checked words",
     "Known",
     "Not known",
-    "Unfamiliar families",
+    "Words marked Not known",
     "Unfamiliar occurrences in this check",
   ])
     assert.match(panel, new RegExp(label.replace(/[()]/g, "\\$&")));
@@ -156,7 +156,7 @@ test("Not known words have one-click Teaching List action with a session-only so
   const panel = source("src/components/KnowledgeTestPanel.tsx");
   const service = source("src/services/teachingListService.ts");
   const list = source("src/screens/TeachingListScreen.tsx");
-  assert.match(panel, /Add to teaching list/);
+  assert.match(panel, /Add to selected words/);
   assert.match(panel, /Learner\/teacher marked as Not known/);
   assert.match(service, /sessionSources/);
   assert.doesNotMatch(service, /writeDocument\([^)]*sessionSources/);

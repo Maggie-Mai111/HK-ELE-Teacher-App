@@ -1,3 +1,4 @@
+import { normalizedCounts } from "../services/textNormalization";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -25,10 +26,13 @@ import {
   nextBatchSize,
   OCCURRENCE_BATCH_SIZE,
 } from "../services/progressiveResults";
-import { textResultsAreCurrent, textResultKind } from "../services/textResultPresentation";
+import {
+  textResultsAreCurrent,
+  textResultFilterCategory,
+} from "../services/textResultPresentation";
 import { textWordAction, type CheckedTextEvidence } from "../services/textReaderService";
 import type { TeachingListStore } from "../services/teachingListService";
-import { scan, TokenizerError } from "../services/tokenizer";
+import { scanTeacherText } from "../services/tokenizer";
 import { colors, spacing } from "../theme/tokens";
 import type { SessionWork } from "../services/reopenSession";
 
@@ -57,13 +61,7 @@ interface Props {
   ) => void;
 }
 function category(item: ResolvedOccurrence): Category {
-  const kind = textResultKind(item);
-  if (kind === "compound-expression") return "compound";
-  if (kind === "grammatical-relation") return "grammar";
-  if (kind === "full-check-unavailable") return "unavailable";
-  if (kind === "unmatched") return "unmatched";
-  if (item.status !== "RESOLVED" || item.owners.length !== 1) return "review";
-  return item.owners[0]?.candidate_member ? "candidate" : "other";
+  return textResultFilterCategory(item);
 }
 
 export function CheckTextScreen({
@@ -94,6 +92,7 @@ export function CheckTextScreen({
   const [groupLimit, setGroupLimit] = useState(OCCURRENCE_BATCH_SIZE);
   const [occurrenceLimit, setOccurrenceLimit] = useState(OCCURRENCE_BATCH_SIZE);
   const [knowledgeNotKnown, setKnowledgeNotKnown] = useState<KnowledgeFamily[]>([]);
+  const [knowledgeKnownForms, setKnowledgeKnownForms] = useState<string[]>([]);
   const [ocrWork, setOcrWork] = useState(false);
   const [knowledgeWork, setKnowledgeWork] = useState(false);
   const hasText = Boolean(text.trim() || checkedText?.trim());
@@ -114,11 +113,11 @@ export function CheckTextScreen({
     setError("");
     setWordSheet(null);
     try {
-      const tokens = scan(source);
+      const tokens = scanTeacherText(source);
       const next = await repository.resolveOccurrences(source, tokens.occurrences);
       if (sourceRef.current !== source) return;
       if (!next.length) {
-        setError("Add some English text to check.");
+        setError("No words found. Paste or type some English text to check.");
         setEditing(true);
         return;
       }
@@ -130,13 +129,12 @@ export function CheckTextScreen({
       setGroupLimit(OCCURRENCE_BATCH_SIZE);
       setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
       setKnowledgeNotKnown([]);
+      setKnowledgeKnownForms([]);
       setDataMode(repository.getDataMode());
       setTimeout(() => onRevealSection(readerRef.current), 0);
     } catch (reason) {
       setEditing(true);
-      if (reason instanceof TokenizerError) {
-        setError("Check the spelling and symbols in the text, then try again.");
-      } else if (reason instanceof Error && reason.message.startsWith("The technical limit is")) {
+      if (reason instanceof Error && reason.message.startsWith("The technical limit is")) {
         setError("Check up to 500 words at a time. Split a longer passage into sections.");
       } else setError("We couldn't check the text. Check your connection and try again.");
     } finally {
@@ -175,7 +173,7 @@ export function CheckTextScreen({
       );
     return values;
   }, [filter, results, sort]);
-  const groups = useMemo(() => groupOccurrences(visible), [visible]);
+  const groups = useMemo(() => groupOccurrences(visible, sort), [visible, sort]);
   const uniqueFamilies = useMemo(
     () =>
       new Set(
@@ -311,12 +309,12 @@ export function CheckTextScreen({
               <View style={styles.highlightOptions}>
                 <View style={styles.actions}>
                   <ChoiceChip
-                    label="Common words"
+                    label="CPB100 sight words"
                     selected={cpbEnabled}
                     onPress={() => setCpbEnabled(!cpbEnabled)}
                   />
                   <ChoiceChip
-                    label="HK frequency"
+                    label="HK family frequency"
                     selected={hkEnabled}
                     onPress={() => setHkEnabled(!hkEnabled)}
                   />
@@ -381,6 +379,7 @@ export function CheckTextScreen({
               results={results}
               teaching={teaching}
               notKnownFamilies={knowledgeNotKnown}
+              knownForms={knowledgeKnownForms}
               onOpenFamily={(key, surface) =>
                 onOpenFamily(key, familyEvidence(key, surface), surface)
               }
@@ -413,6 +412,7 @@ export function CheckTextScreen({
               results={results}
               teaching={teaching}
               onNotKnownChange={setKnowledgeNotKnown}
+              onKnownChange={setKnowledgeKnownForms}
               onHasResponsesChange={setKnowledgeWork}
             />
           </ProgressiveDisclosure>
@@ -426,6 +426,7 @@ export function CheckTextScreen({
             />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure title="More text details">
+            {results.some(item=>item.normalizedAnalysis?.applied) ? <Text style={styles.meta}>Original text: {results.length} words. After expanding short forms and recorded spellings: {normalizedCounts(results).tokens} words, {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the HK-ELE Word List. These counts keep your original text and selected words unchanged.</Text> : null}
             <ProgressiveDisclosure title="Readability estimates">
               <ComplexityPanel text={checkedText!} results={results} />
             </ProgressiveDisclosure>
@@ -434,14 +435,14 @@ export function CheckTextScreen({
                 {(
                   [
                     ["all", `All (${results.length})`],
-                    ["candidate", `Core list (${counts.candidate})`],
+                    ["candidate", `HK-ELE Word List (${counts.candidate})`],
                     ["other", `Other words (${counts.other})`],
                     ["compound", `Compounds (${counts.compound})`],
                     ["grammar", `Short forms (${counts.grammar})`],
                     ["cpb", `Common words (${counts.cpb})`],
                     ["unavailable", `Check online (${counts.unavailable})`],
-                    ["unmatched", `No entry (${counts.unmatched})`],
-                    ["review", `Choose family (${counts.review})`],
+                    ["unmatched", `Not matched (${counts.unmatched})`],
+                    ["review", `Check in context (${counts.review})`],
                   ] as Array<[ResultFilter, string]>
                 )
                   .filter(([value]) => value === "all" || counts[value as keyof typeof counts] > 0)
@@ -550,8 +551,8 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
     color: colors.ink,
-    fontSize: 17,
-    lineHeight: 26,
+    fontSize: 19,
+    lineHeight: 29,
     minHeight: 180,
     borderRadius: 12,
     padding: spacing.md,
@@ -573,7 +574,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: { fontSize: 21, fontWeight: "800", color: colors.ink },
-  meta: { fontSize: 14, lineHeight: 21, color: colors.muted },
+  meta: { fontSize: 16, lineHeight: 24, color: colors.muted },
   highlightOptions: {
     backgroundColor: colors.canvas,
     padding: spacing.sm,
@@ -585,18 +586,18 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 8,
     padding: spacing.sm,
-    fontSize: 16,
+    fontSize: 18,
     color: colors.ink,
     width: 95,
     backgroundColor: colors.surface,
     minHeight: 44,
   },
-  error: { fontSize: 15, lineHeight: 22, color: colors.danger },
+  error: { fontSize: 17, lineHeight: 25, color: colors.danger },
   groupRow: {
     backgroundColor: colors.canvas,
     padding: spacing.sm,
     borderRadius: 9,
     gap: spacing.xs,
   },
-  groupTitle: { fontSize: 16, color: colors.ink, fontWeight: "700" },
+  groupTitle: { fontSize: 18, color: colors.ink, fontWeight: "700" },
 });

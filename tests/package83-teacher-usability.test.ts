@@ -6,33 +6,36 @@ test("primary navigation and teacher-facing AI labels match the approved wording
   const navigation = readFileSync("src/components/NavigationBar.tsx", "utf8");
   assert.match(navigation, /Find words/);
   assert.match(navigation, /Check a text/);
-  assert.match(navigation, /Teaching list/);
+  assert.match(navigation, /Selected words/);
   assert.doesNotMatch(navigation, /route: "data", label: "Data"/);
 
   const assistant = readFileSync("src/components/AiFilterAssistant.tsx", "utf8");
   for (const label of [
     "Find words with AI",
-    "Review suggested filters",
+    "Review search",
     "Show matching words",
     "Edit request",
   ])
     assert.match(assistant, new RegExp(label));
 });
 
-test("About remains accessible from the menu and retains version, source, licence and privacy information", () => {
+test("About retains wordlist, source, licence and privacy information without internal version labels", () => {
   const menu = readFileSync("src/components/AppMenu.tsx", "utf8");
   const data = readFileSync("src/screens/DataVersionScreen.tsx", "utf8");
   assert.match(menu, /About HK-ELE/);
-  assert.match(data, /Data version/);
-  assert.match(data, /Sources and licences/);
+  assert.match(data, /Wordlist information/);
+  assert.doesNotMatch(data, /\["Data version"|\["Released"|summary=\{`Updated/);
+  assert.doesNotMatch(data, /Sources and licences/);
+  assert.match(data, /<FullDatabaseDownload/);
   assert.match(data, /Privacy at a glance/);
   assert.ok(readFileSync("DATA_PROVENANCE.md", "utf8").length > 0);
+  assert.match(readFileSync("SOURCE_ACKNOWLEDGEMENTS.txt", "utf8"), /Wiktionary/);
 });
 
 test("Browse has one result surface, sort options, bulk add and responsive mobile cards", () => {
   const browse = readFileSync("src/screens/BrowseScreen.tsx", "utf8");
   assert.match(browse, /Hide sort options/);
-  assert.match(browse, /Add shown words to Teaching list/);
+  assert.match(browse, /Add shown words to selected words/);
   assert.match(browse, /teaching\.addMany/);
   assert.match(browse, /viewport\.width >= 760/);
   assert.equal((browse.match(/<WebFamilyTable/g) ?? []).length, 1);

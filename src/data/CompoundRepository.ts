@@ -1,3 +1,4 @@
+import { normalizedAnalysis, analysisSurface } from "../services/textNormalization";
 import type { TokenOccurrence } from "../domain/contracts";
 import type {
   HkeleRepository,
@@ -67,9 +68,11 @@ export class CompoundRepository implements HkeleRepository {
   async resolveOccurrences(text: string, tokens: TokenOccurrence[]): Promise<ResolvedOccurrence[]> {
     const results = await this.base.resolveOccurrences(text, tokens);
     return Promise.all(
-      results.map((item) =>
-        item.tokenStatus === "SUPPORTED_TOKEN" ? this.attach(item, item.surface) : item,
-      ),
+      results.map(async (item) => {
+        if(item.tokenStatus!=="SUPPORTED_TOKEN")return item;
+        const surface=analysisSurface(text,item.startOffset,item.endOffset);
+        return {...await this.attach(item,item.surface), normalizedAnalysis:surface===null ? {applied:true,ambiguous:false,tokens:[]} : await normalizedAnalysis(surface,word=>this.base.searchSurface(word))};
+      }),
     );
   }
 }

@@ -26,14 +26,14 @@ export function dataModePresentation(mode: DataMode): DataModePresentation {
     return {
       title: "Online full database",
       shortLabel: "online full database",
-      explanation: `The app is checking all ${FULL_DATABASE_COUNT.toLocaleString("en")} HK-ELE family records online. This requires the data service to remain available.`,
+      explanation: `Search all ${FULL_DATABASE_COUNT.toLocaleString("en")} word families while connected to the internet.`,
       fullDatabaseAvailable: true,
       worksOffline: false,
     };
   }
   return {
-    title: "Saved word data (partial)",
-    shortLabel: "saved word data",
+    title: "Some words saved",
+    shortLabel: "saved words",
     explanation: `${BUNDLED_REFERENCE_COUNT.toLocaleString("en")} saved families are available offline. Connect to search the full wordlist.`,
     fullDatabaseAvailable: false,
     worksOffline: true,

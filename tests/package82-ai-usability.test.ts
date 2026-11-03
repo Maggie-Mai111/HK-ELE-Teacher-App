@@ -14,7 +14,7 @@ const usabilityCases = [
     { scope: "candidate", earliestObservedTo: "P3", limit: 25, sort: "overall" },
   ],
   [
-    "Overall rank",
+    "Overall family rank",
     "Show overall ranks 100 to 500",
     {
       scope: "inclusive_reference",
@@ -116,7 +116,7 @@ test("zero result reports confirmed conditions and remains clearable in the Brow
   assert.equal(result.matchedBeforeLimit, 0);
   assert.match(describeAiFilterConditions(result.filters).join(" | "), /Root: not-registered/);
   const browse = readFileSync("src/screens/BrowseScreen.tsx", "utf8");
-  assert.match(browse, /matches · showing first/);
+  assert.match(browse, /matching words[\s\S]*showing\s+first/);
   assert.match(browse, /label="Clear results"/);
   assert.match(browse, /label="Edit AI request"/);
   assert.match(browse, /label="Browse and sort words"/);

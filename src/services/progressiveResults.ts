@@ -20,7 +20,7 @@ export function visibleForms(forms: FormRecord[], count: number): FormRecord[] {
   return forms.slice(0, count);
 }
 
-export function groupOccurrences(items: ResolvedOccurrence[]): OccurrenceGroup[] {
+export function groupOccurrences(items: ResolvedOccurrence[], sort: "occurrence" | "family" | "count" = "count"): OccurrenceGroup[] {
   const groups = new Map<string, OccurrenceGroup>();
   for (const item of items) {
     const family =
@@ -35,6 +35,8 @@ export function groupOccurrences(items: ResolvedOccurrence[]): OccurrenceGroup[]
     if (existing) existing.count += 1;
     else groups.set(key, { key, form: item.surface, family, status, count: 1 });
   }
+  if (sort === "occurrence") return [...groups.values()];
+  if (sort === "family") return [...groups.values()].sort((a,b) => a.family.localeCompare(b.family) || a.form.localeCompare(b.form));
   return [...groups.values()].sort(
     (left, right) => right.count - left.count || left.form.localeCompare(right.form),
   );

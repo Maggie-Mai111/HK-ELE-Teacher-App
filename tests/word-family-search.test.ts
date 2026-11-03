@@ -53,19 +53,19 @@ test("real A search lists all related forms with the exact query, genuine form c
     const match = await repository.searchSurface("reusable");
     const groups = await loadFamilySearchGroups(repository, match.owners);
     assert.equal(groups.length, 1);
-    assert.equal(groups[0]!.forms.length, 79);
+    assert.equal(groups[0]!.forms.length, 83);
     const rows = sortWordForms(groups[0]!.forms, "reusable", groups[0]!.frequencies);
     assert.equal(rows[0]!.form.form, "reusable");
     assert.equal(rows[1]!.form.form, "use");
     assert.equal(rows[1]!.frequency, 39997);
     assert.equal(rows[2]!.form.form, "used");
-    const be = await repository.getFamily("be");
+    const be = await repository.getFamily("stress");
     assert.equal(
-      be.forms.find((f) => f.form === "be")?.external_level_reference,
-      "Kindergarten–Grade 1",
+      be.forms.find((f) => f.form === "stress")?.external_level_reference,
+      "Grades 6–7",
     );
     assert.equal(
-      be.forms.find((f) => f.form === "beingness")?.external_level_reference,
+      be.forms.find((f) => f.form === "destress")?.external_level_reference,
       "Grades 10–11",
     );
   } finally {
@@ -77,20 +77,20 @@ test("ambiguous search retains both registered families and every accepted form"
   globalThis.fetch = async (input) => dataResponse(String(input));
   try {
     const repository = new StaticShardRepository("https://fixture.invalid/hkele-data");
-    const result = await repository.searchSurface("coinciding");
+    const result = await repository.searchSurface("da");
     const groups = await loadFamilySearchGroups(repository, result.owners);
     assert.deepEqual(
       groups.map((g) => g.family.baseword_key),
-      ["coincide", "incide"],
+      ["da", "the"],
     );
     assert.deepEqual(
       groups.map((g) => g.forms.length),
-      [8, 17],
+      [3, 9],
     );
     for (const group of groups)
       assert.equal(
-        sortWordForms(group.forms, "coinciding", group.frequencies)[0]?.form.form,
-        "coinciding",
+        sortWordForms(group.forms, "da", group.frequencies)[0]?.form.form,
+        "da",
       );
   } finally {
     globalThis.fetch = original;
@@ -130,7 +130,7 @@ test("old offline or missing frequency resources keep accepted forms available w
     const owners = (await repository.searchSurface("reusable")).owners;
     const groups = await loadFamilySearchGroups(repository, owners);
     assert.equal(groups[0]!.frequencyUnavailable, true);
-    assert.equal(groups[0]!.forms.length, 79);
+    assert.equal(groups[0]!.forms.length, 83);
     assert.ok(
       sortWordForms(groups[0]!.forms, "reusable", groups[0]!.frequencies).every(
         (row) => row.frequency === null,

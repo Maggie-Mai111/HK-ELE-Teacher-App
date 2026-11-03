@@ -54,7 +54,7 @@ export async function interpretAiFilter(
   if (!endpoint)
     throw new AiFilterClientError(
       "NOT_CONFIGURED",
-      "We couldn't start this search. Use the word filters below.",
+      "We couldn't start this search. Search for a word instead.",
     );
   const controller = new AbortController();
   const cancel = () => controller.abort();
@@ -74,12 +74,12 @@ export async function interpretAiFilter(
     if (response.status === 429)
       throw new AiFilterClientError(
         "RATE_LIMITED",
-        "Search is busy. Try again shortly or use the word filters below.",
+        "Search is busy. Try again shortly or search for a word instead.",
       );
     if (!response.ok)
       throw new AiFilterClientError(
         "SERVICE_UNAVAILABLE",
-        "We couldn't complete the search. Try again or use the word filters below.",
+        "We couldn't complete the search. Try again or search for a word instead.",
       );
     try {
       return validateAiFilterResult(await response.json());

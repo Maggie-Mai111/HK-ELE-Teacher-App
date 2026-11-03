@@ -22,12 +22,12 @@ export function ContextReviewPanel({ items }: { items: ContextReviewSummary[] })
   );
 }
 const styles = StyleSheet.create({
-  note: { color: colors.muted, fontSize: 15, lineHeight: 23 },
+  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
   row: {
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,
     gap: spacing.xs,
     padding: spacing.sm,
   },
-  form: { color: colors.ink, fontSize: 17, fontWeight: "600", lineHeight: 24 },
+  form: { color: colors.ink, fontSize: 19, fontWeight: "600", lineHeight: 27 },
 });

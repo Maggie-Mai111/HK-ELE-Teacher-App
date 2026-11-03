@@ -89,7 +89,7 @@ test("AI fixture is strict, local-only, includes all conditions and never needs 
 
 test("AI matched/shown counts and three distinct result actions remain explicit", () => {
   const browse = source("src/screens/BrowseScreen.tsx");
-  assert.match(browse, /matchedBeforeLimit[\s\S]*matches · showing first/);
+  assert.match(browse, /matchedBeforeLimit[\s\S]*matching words[\s\S]*showing\s+first/);
   for (const label of ["Clear results", "Edit AI request", "Browse and sort words"])
     assert.equal((browse.match(new RegExp(`label="${label}"`, "g")) ?? []).length, 1, label);
   assert.match(browse, /setEditRequestNonce\(\(value\) => value \+ 1\)/);
@@ -103,7 +103,7 @@ test("AI matched/shown counts and three distinct result actions remain explicit"
 test("bulk addition reports added/existing/total and all destructive list changes expose Undo", () => {
   const browse = source("src/screens/BrowseScreen.tsx");
   assert.match(browse, /result\.added.*result\.existing.*result\.total/s);
-  assert.match(browse, /Undo bulk addition/);
+  assert.match(browse, /Undo added words/);
   const service = source("src/services/teachingListService.ts");
   assert.match(service, /Updated lesson words/);
   assert.match(service, /Removed word family/);
@@ -111,8 +111,8 @@ test("bulk addition reports added/existing/total and all destructive list change
   assert.match(service, /const undo = useCallback/);
   const screen = source("src/screens/TeachingListScreen.tsx");
   assert.match(screen, /Undo last change/);
-  assert.match(screen, /Export to Excel/);
-  assert.match(screen, /Which words will you teach/);
+  assert.match(screen, /Download Excel/);
+  assert.match(screen, /Which words would you like to keep/);
   assert.match(screen, /Choose words from a text/);
 });
 
@@ -151,7 +151,7 @@ test("193 forms and 500 occurrences are exposed progressively rather than render
   assert.match(detail, /Show .* more forms/);
   const check = source("src/screens/CheckTextScreen.tsx");
   assert.match(check, /visible\.slice\(0, occurrenceLimit\)/);
-  assert.match(check, /groupOccurrences\(visible\)/);
+  assert.match(check, /groupOccurrences\(visible, sort\)/);
 });
 
 test("photo OCR and advanced text evidence stay behind collapsed disclosures", () => {

@@ -3,6 +3,8 @@ import {
   type OfflineSelection,
   type OfflineState,
 } from "./offlineContract";
+import currentManifest from "../../../data/current-manifest.json";
+import approvedReleases from "../../config/offlineDataReleases.json";
 
 export const OFFLINE_BASE = "/HK-ELE-Teacher-App/";
 export const STATE_CACHE = "hkele-offline-state-v1";
@@ -19,7 +21,11 @@ export async function readOfflineState(): Promise<OfflineState> {
   if (typeof window === "undefined" || !("caches" in window)) return EMPTY_STATE;
   const raw = await (await caches.open(STATE_CACHE)).match(STATE_PATH);
   if (!raw) return EMPTY_STATE;
-  const state = (await raw.json()) as OfflineState;
+  const stored = (await raw.json()) as OfflineState & { forward?: OfflineSelection | null };
+  const state: OfflineState = {
+    active: stored.active,
+    previous: stored.previous ?? stored.forward ?? null,
+  };
   for (const selection of [state.active, state.previous])
     if (selection) {
       if (!/^hkele-offline-package-[a-z0-9-]+$/.test(selection.cacheName))
@@ -31,11 +37,21 @@ export async function readOfflineState(): Promise<OfflineState> {
   return state;
 }
 export async function writeOfflineState(state: OfflineState): Promise<void> {
+  // Pre-scope-count Apps validate both active and previous descriptions. When
+  // restoring such an App, keep the newer recovery description outside those
+  // legacy fields. Its bytes and cache remain intact; a current App rehydrates
+  // it above. No manifest/count/hash is altered to satisfy an older validator.
+  const legacyReadable = (selection: OfflineSelection | null) => !selection ||
+    selection.manifest.counts.ranked + selection.manifest.counts.unranked ===
+      selection.manifest.counts.totalFamilies;
+  const stored = legacyReadable(state.active) && !legacyReadable(state.previous)
+    ? { active: state.active, previous: null, forward: state.previous }
+    : state;
   await (
     await caches.open(STATE_CACHE)
   ).put(
     STATE_PATH,
-    new Response(JSON.stringify(state), { headers: { "Content-Type": "application/json" } }),
+    new Response(JSON.stringify(stored), { headers: { "Content-Type": "application/json" } }),
   );
 }
 export async function selectionComplete(selection: OfflineSelection | null): Promise<boolean> {
@@ -55,6 +71,19 @@ function selectSession(): Promise<OfflineSelection | null> {
   sessionSelection ??= readOfflineState().then(async (state) => {
     if (!state.active) return null;
     const selection = state.active;
+    // An online App upgrade must not bind its new indexes and field semantics
+    // to an older download. Keep that download intact for its own cold-start
+    // shell and rollback, while this App reads its matching online generation.
+    const approved = (approvedReleases as Record<string, {
+      dataInventorySha256: string;
+      sourceManifestSha256: string;
+    }>)[currentManifest.dataVersion];
+    if (
+      selection.manifest.dataVersion !== currentManifest.dataVersion ||
+      !approved ||
+      selection.manifest.dataInventorySha256 !== approved.dataInventorySha256 ||
+      selection.manifest.sourceManifestSha256 !== approved.sourceManifestSha256
+    ) return null;
     if (navigator.locks)
       await new Promise<void>((resolve, reject) => {
         // The browser releases this shared lock when the tab closes. A downloader

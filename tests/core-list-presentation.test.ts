@@ -20,7 +20,7 @@ import {
 
 test("teacher membership unifies Reference-only and other records without mutating data", () => {
   for (const [membership, member, label] of [
-    ["Candidate", 1, "Core list"],
+    ["Candidate", 1, "HK-ELE Word List"],
     ["Reference only", 0, "Full database"],
     ["Other ranked database", 0, "Full database"],
     ["Unranked database", 0, "Full database"],
@@ -34,10 +34,10 @@ test("teacher membership unifies Reference-only and other records without mutati
   assert.equal(teacherWordListLabel(null), "Not recorded");
 });
 
-test("the A-main compact data contains 2871 Core families and four related-owner records", () => {
+test("the A-main compact data contains 2658 Core families and four related-owner records", () => {
   const packed = JSON.parse(
     gunzipSync(
-      readFileSync("data/releases/2026-10-20-a-main-v1/reference/families.json.gz"),
+      readFileSync("data/releases/2026-11-03-a2658-finite-family-closure-v1/reference/families.json.gz"),
     ).toString(),
   ) as { fields: string[]; rows: unknown[][] };
   const families = packed.rows.map(
@@ -46,9 +46,9 @@ test("the A-main compact data contains 2871 Core families and four related-owner
         packed.fields.map((field, index) => [field, row[index]]),
       ) as unknown as FamilyRecord,
   );
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 2871);
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 2875);
-  const fabric = families.find((family) => family.baseword_key === "coincide")!;
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 2658);
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 4692);
+  const fabric = families.find((family) => !family.candidate_member)!;
   assert.equal(familySetLabel(fabric), "Full database");
   assert.equal(inTeacherWordScope(fabric, "core"), false);
   assert.equal(inTeacherWordScope(fabric, "full"), true);
@@ -111,10 +111,10 @@ test("reviewed AI filters default to Full and accept Core without changing other
   assert.equal(raw.filters.scope, "inclusive_reference");
   assert.equal(teacherAiResult(raw, "core").filters?.scope, "candidate");
   assert.equal(teacherAiScope("Find the root act"), "full");
-  assert.equal(teacherAiScope("Find Core list words", "full"), "core");
+  assert.equal(teacherAiScope("Find HK-ELE Word List words", "full"), "core");
   assert.equal(teacherAiScope("Search the full database", "core"), "full");
   assert.equal(
-    teacherAiInterpreterQuery("Find 10 Core list words with root act"),
+    teacherAiInterpreterQuery("Find 10 HK-ELE Word List words with root act"),
     "Find 10 Candidate words with root act",
   );
   assert.equal(

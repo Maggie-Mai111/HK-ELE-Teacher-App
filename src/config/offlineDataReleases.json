@@ -24,5 +24,61 @@
       "totalFamilies": 163906,
       "unranked": 535
     }
+  },
+  "2026-10-29-repaired-main-core2827-v1": {
+    "dataInventorySha256": "8cbd0f6e578e09fca6ac2e2859a202a114bee5797e7cbc66c995038f003081b9",
+    "sourceManifestSha256": "648308dc4064299cac42d048a18c5161027acbb0fec1552074467e7dda1f9cee",
+    "counts": {
+      "candidate": 2827,
+      "forms": 319888,
+      "inclusiveReference": 2827,
+      "ranked": 157623,
+      "referenceOnly": 0,
+      "totalFamilies": 167694,
+      "unranked": 10065,
+      "teachingScopeExcluded": 6
+    }
+  },
+  "2026-11-02-full-bawf-hkele-word-list2809-v1": {
+    "dataInventorySha256": "88ebd4aa44dd9d691887252188abca4119ff766e9d15a8197a79eb0b6315dd6f",
+    "sourceManifestSha256": "0fa397fa890039d477c6206165f1887535ae8ed23187166c42f27e0546ef4ff9",
+    "counts": {
+      "candidate": 2809,
+      "inclusiveReference": 2809,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 328518,
+      "ranked": 142582,
+      "unranked": 25022,
+      "teachingScopeExcluded": 176
+    }
+  },
+  "2026-11-02-final-normalized-a2713-v1": {
+    "dataInventorySha256": "8c484580463269d228cd98d3bfad33dca5f0df559619954ed6b9abbd21cdb10a",
+    "sourceManifestSha256": "40e704b22cc382bf7e325908084b30796610ccaaef0372ca26c6a0590478ff80",
+    "counts": {
+      "candidate": 2713,
+      "inclusiveReference": 2713,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 328518,
+      "ranked": 142582,
+      "unranked": 25022,
+      "teachingScopeExcluded": 176
+    }
+  },
+  "2026-11-03-a2658-finite-family-closure-v1": {
+    "dataInventorySha256": "071ce83b1f60191be5d8401cf43a59ef0010f0078de737a8dbafecf82baf4bde",
+    "sourceManifestSha256": "4b39e7971dcf8f1e4bca57491fab2c0e9b6da0839e724725f655d93b80d4a030",
+    "counts": {
+      "candidate": 2658,
+      "inclusiveReference": 2658,
+      "referenceOnly": 0,
+      "totalFamilies": 167630,
+      "forms": 328253,
+      "ranked": 142432,
+      "unranked": 25022,
+      "teachingScopeExcluded": 176
+    }
   }
 }

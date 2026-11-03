@@ -1,3 +1,6 @@
+import { LexicalUsesPanel } from "../components/LexicalUsesPanel";
+import { FullDatabaseDownload } from "../components/FullDatabaseDownload";
+import dataManifest from "../../data/current-manifest.json";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -44,11 +47,11 @@ interface Props {
 
 const scopes: Array<[BrowseScope, string]> = [
   ["full", "Full database"],
-  ["core", "Core list"],
+  ["core", "HK-ELE Word List"],
 ];
 const sorts: Array<[BrowseSort, string]> = [
-  ["overall", "Overall"],
-  ["hk", "HK frequency"],
+  ["overall", "Overall family rank"],
+  ["hk", "HK family rank"],
   ["az", "A–Z"],
 ];
 
@@ -57,9 +60,9 @@ function searchStatus(result: SurfaceSearchResult): string {
   if (result.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "Connect to check more words";
   if (result.status === "UNMATCHED") return "No match in the current wordlist";
   if (result.status === "RESOLVED") return "Family found";
-  if (result.status === "AMBIGUOUS") return "More than one family — review";
+  if (result.status === "AMBIGUOUS") return "Choose a word family";
   if (result.status === "REGISTERED_GRAMMATICAL_RELATION") return "Grammar word";
-  return "Context review required";
+  return "Check the sentence";
 }
 
 function focusAndReveal(target: View | null) {
@@ -128,7 +131,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           retrySearch.current = false;
           setError(
             scope === "full"
-              ? "Connect to load the full database, or browse the saved Core list."
+              ? "Connect to load the full database, or browse the saved HK-ELE Word List."
               : "We couldn't load the words. Check your connection and try again.",
           );
         }
@@ -198,11 +201,17 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     focusAndReveal(resultSummaryRef.current);
   };
   const selectedFormFor = (family: FamilyRecord) =>
-    state.searchActive ? searchSelectedForm(family, search) : undefined;
+    state.aiActive && typeof family.ai_match_form === "string"
+      ? family.ai_match_form
+      : state.searchActive
+        ? searchSelectedForm(family, search)
+        : undefined;
+  const sourceFamily = (family: FamilyRecord) =>
+    (family.ai_source_family as FamilyRecord | undefined) ?? family;
   const isAdded = (family: FamilyRecord) =>
     hasSelectedForm(teaching.items, family, selectedFormFor(family));
   const addFamily = (family: FamilyRecord) =>
-    teaching.add(family, selectedFormFor(family), "Find words");
+    teaching.add(sourceFamily(family), selectedFormFor(family), "Find words");
   const openFamily = (family: FamilyRecord) =>
     onOpenFamily(family.baseword_key, selectedFormFor(family));
   const useTable = Platform.OS === "web" && viewport.width >= 760;
@@ -227,7 +236,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     families: FamilyRecord[];
   } | null>(null);
   useEffect(() => {
-    if (state.searchActive) return;
+    if (state.searchActive || state.aiActive) return;
     let active = true;
     void Promise.all(
       activeFamilies.map(async (family) => {
@@ -245,9 +254,10 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     return () => {
       active = false;
     };
-  }, [activeFamilies, repository, state.searchActive, search]);
-  const displayedFamilies =
-    wordEvidence?.source === activeFamilies
+  }, [activeFamilies, repository, state.searchActive, state.aiActive, search]);
+  const displayedFamilies = state.aiActive
+    ? activeFamilies
+    : wordEvidence?.source === activeFamilies
       ? wordEvidence.families
       : activeFamilies.map((family) => displayedWordEvidence(family, []));
 
@@ -270,6 +280,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   return (
     <View style={styles.content}>
       <ScreenHeader intro="Find words for your lesson." title="Find words" />
+      <FullDatabaseDownload dataVersion={dataManifest.dataVersion} repository={repository} />
       <View style={styles.searchBox}>
         <TextInput
           accessibilityLabel="Search a word or form"
@@ -306,6 +317,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           />
         ))}
       </View>
+      {state.searchActive && search ? <LexicalUsesPanel word={search.submittedQuery} repository={repository} /> : null}
       <DataModeNotice mode={dataMode} />
       <CurrentLesson teaching={teaching} />
       {state.searchActive && search?.expression ? (
@@ -366,7 +378,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             {scope === "full" && dataMode === "bundled-reference" ? (
               <ActionButton
                 kind="secondary"
-                label="Browse saved Core list"
+                label="Browse saved HK-ELE Word List"
                 onPress={() => selectScope("core")}
               />
             ) : null}
@@ -390,18 +402,12 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
               {search.submittedQuery}”
             </Text>
             <Text style={styles.resultStatus}>
-              {outsideCore ? "Outside the Core list" : searchStatus(search)}
+              {outsideCore ? "Outside the HK-ELE Word List" : searchStatus(search)}
             </Text>
-            {searchFamilies.length === 1 && selectedFormFor(searchFamilies[0]!) ? (
-              <Text style={styles.muted}>
-                Matched word: {selectedFormFor(searchFamilies[0]!)} · Family:{" "}
-                {searchFamilies[0]!.display_family}
-              </Text>
-            ) : null}
             {outsideCore ? (
               <>
                 <Text style={styles.muted}>
-                  This word is recorded in the full database. It is outside the Core list.
+                  This word is recorded in the full database. It is outside the HK-ELE Word List.
                 </Text>
                 <ActionButton
                   kind="secondary"
@@ -427,8 +433,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         ) : state.aiActive && aiSelection ? (
           <>
             <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
-              {aiSelection.matchedBeforeLimit.toLocaleString("en")} matches · showing first{" "}
-              {aiSelection.families.length.toLocaleString("en")}
+              {aiSelection.matchedBeforeLimit.toLocaleString("en")}{" "}
+              {aiSelection.resultUnit === "word" ? "matching words" : "matching families"} · showing
+              first {aiSelection.families.length.toLocaleString("en")}
             </Text>
             <Text style={styles.aiConditions}>
               {describeAiFilterConditions(aiSelection.filters).join(" · ")}
@@ -460,12 +467,23 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
               />
               <ActionButton
                 disabled={aiSelection.families.length === 0}
-                label="Add shown words to Teaching list"
+                label="Add shown words to selected words"
                 onPress={() => {
-                  const result = teaching.addMany(aiSelection.families);
-                  setBatchMessage(
-                    `${result.added} added · ${result.existing} already in list · ${result.total} total`,
-                  );
+                  if (aiSelection.resultUnit === "word") {
+                    const result = teaching.addSelections(
+                      aiSelection.families.map((family) => ({
+                        family: sourceFamily(family),
+                        selectedForms: [selectedFormFor(family)!],
+                        sourceLabel: "Find words",
+                      })),
+                    );
+                    setBatchMessage(`${result.formsAdded} words added.`);
+                  } else {
+                    const result = teaching.addMany(aiSelection.families);
+                    setBatchMessage(
+                      `${result.added} added · ${result.existing} already in list · ${result.total} total`,
+                    );
+                  }
                 }}
               />
             </View>
@@ -475,10 +493,10 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
                 {teaching.undoState?.label === "Bulk addition to Teaching list" ? (
                   <ActionButton
                     kind="secondary"
-                    label="Undo bulk addition"
+                    label="Undo added words"
                     onPress={() => {
                       teaching.undo();
-                      setBatchMessage("Bulk addition undone.");
+                      setBatchMessage("Addition undone.");
                     }}
                   />
                 ) : null}
@@ -523,7 +541,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             <FamilyCard
               added={isAdded(family)}
               family={family}
-              key={family.baseword_key}
+              key={String(family.ai_match_key ?? family.baseword_key)}
               {...(state.searchActive
                 ? {
                     matchNote: `Matched: ${
@@ -571,7 +589,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  aiConditions: { color: colors.ink, fontSize: 15, lineHeight: 22 },
+  aiConditions: { color: colors.ink, fontSize: 17, lineHeight: 25 },
   batchNotice: {
     alignItems: "flex-start",
     backgroundColor: colors.surface,
@@ -579,15 +597,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.sm,
   },
-  batchText: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
+  batchText: { color: colors.ink, fontSize: 17, fontWeight: "700", lineHeight: 25 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   content: { gap: spacing.md, padding: spacing.lg },
   error: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 10,
     color: colors.danger,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 25,
     padding: spacing.md,
   },
   filterBody: { gap: spacing.sm },
@@ -600,12 +618,12 @@ const styles = StyleSheet.create({
     flexBasis: 220,
     flexGrow: 1,
     flexShrink: 1,
-    fontSize: 16,
+    fontSize: 18,
     minHeight: 48,
     minWidth: 220,
     paddingHorizontal: spacing.md,
   },
-  label: { color: colors.ink, fontSize: 15, fontWeight: "800" },
+  label: { color: colors.ink, fontSize: 17, fontWeight: "800" },
   moreFilters: {
     alignItems: "flex-start",
     backgroundColor: colors.subdued,
@@ -613,9 +631,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md,
   },
-  muted: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  muted: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   pager: { flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
-  resultStatus: { color: colors.primary, fontSize: 15, fontWeight: "700", lineHeight: 22 },
+  resultStatus: { color: colors.primary, fontSize: 17, fontWeight: "700", lineHeight: 25 },
   resultSummary: {
     backgroundColor: colors.primarySoft,
     borderRadius: 15,
@@ -633,8 +651,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
     borderRadius: 8,
     color: colors.ink,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 25,
     padding: spacing.sm,
   },
 });

@@ -87,7 +87,7 @@ export function AppMenu({
             style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}
           >
             <Text style={styles.menuTitle}>About HK-ELE</Text>
-            <Text style={styles.menuNote}>Version, sources, licence and privacy</Text>
+            <Text style={styles.menuNote}>Wordlist information and privacy</Text>
           </Pressable>
         </View>
       ) : null}
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: spacing.md,
   },
-  buttonText: { color: colors.primary, fontSize: 14, fontWeight: "800" },
+  buttonText: { color: colors.primary, fontSize: 16, fontWeight: "800" },
   menu: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
     zIndex: 20,
   },
   menuItem: { borderRadius: 9, gap: 2, minHeight: 48, padding: spacing.sm },
-  menuNote: { color: colors.muted, fontSize: 15, lineHeight: 21 },
-  menuTitle: { color: colors.ink, fontSize: 15, fontWeight: "800" },
+  menuNote: { color: colors.muted, fontSize: 17, lineHeight: 24 },
+  menuTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
   pressed: { opacity: 0.7 },
   wrapper: {
     alignItems: "flex-end",

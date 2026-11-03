@@ -10,6 +10,8 @@ import {
 } from "react-native";
 
 import { aiRuntimeConfiguration } from "../config/runtime";
+import { aiEvidenceForms, loadAiFormEvidence } from "../services/aiFormEvidence";
+import { filterAiWordEvidence, hasAiWordConditions } from "../services/aiFormFilter";
 import type { AiFilterResult } from "../domain/aiFilterSchema";
 import { VERIFIED_AI_QUICK_EXAMPLES } from "../domain/verifiedAiExamples";
 import type { BrowseScope, HkeleRepository } from "../domain/hkele";
@@ -127,7 +129,7 @@ export function AiFilterAssistant({
       setError(
         reason instanceof AiFilterClientError
           ? reason.message
-          : "We couldn't complete the search. Try again or use the word filters below.",
+          : "We couldn't complete the search. Try again or search for a word above.",
       );
     } finally {
       setTurnstileToken(null);
@@ -146,13 +148,20 @@ export function AiFilterAssistant({
         repository,
         interpretation.filters.scope === "full" ? "full" : "core",
       );
-      onApply(executeAiFilter(context, interpretation.filters));
+      if (hasAiWordConditions(interpretation.filters)) {
+        const evidence = await loadAiFormEvidence(await repository.getDataVersion!());
+        onApply(
+          filterAiWordEvidence(context, interpretation.filters, (key) =>
+            aiEvidenceForms(evidence, key),
+          ),
+        );
+      } else onApply(executeAiFilter(context, interpretation.filters));
       setExpanded(false);
     } catch {
       setError(
         interpretation.filters.scope === "full"
-          ? "We couldn't load the full database for these filters. Reconnect and try again, or choose Core list."
-          : "We couldn't show these results. Try again or adjust the word filters below.",
+          ? "We couldn't load the full database for these filters. Reconnect and try again, or choose HK-ELE Word List."
+          : "We couldn't show these results. Try again or search for a word above.",
       );
     } finally {
       setBusy(false);
@@ -197,7 +206,11 @@ export function AiFilterAssistant({
             </Text>
           ) : null}
           <Text style={styles.description}>
-            Describe the words you need from the {scope === "core" ? "Core list" : "Full database"}.
+            Describe the words you need from the {scope === "core" ? "HK-ELE Word List" : "Full database"}.
+          </Text>
+          <Text style={styles.description}>
+            Filters apply to each spelling; frequency ranks describe its word family. Review your
+            search before showing the results.
           </Text>
           <TextInput
             accessibilityLabel="Describe the words to find"
@@ -232,7 +245,7 @@ export function AiFilterAssistant({
           <View style={styles.actions}>
             <ActionButton
               disabled={!online || busy || !query.trim() || !turnstileToken || !anonymousSessionId}
-              label={busy ? "Finding filters…" : "Review suggested filters"}
+              label={busy ? "Preparing your search…" : "Review search"}
               onPress={() => void interpret()}
             />
             {interpretation ? (
@@ -265,7 +278,13 @@ export function AiFilterAssistant({
               <Text accessibilityRole="header" aria-level={3} style={styles.summaryTitle}>
                 Review your search
               </Text>
-              <Text style={styles.summaryText}>{interpretation.summary}</Text>
+              <Text style={styles.summaryText}>
+                {interpretation.status === "ready"
+                  ? interpretation.summary
+                  : interpretation.status === "needs_clarification"
+                    ? "Which words would you like to find?"
+                    : "Try a different search."}
+              </Text>
               {interpretation.filters
                 ? describeAiFilterConditions(interpretation.filters).map((condition) => (
                     <Text key={condition} style={styles.condition}>
@@ -276,15 +295,16 @@ export function AiFilterAssistant({
               {interpretation.clarifyingQuestion ? (
                 <Text style={styles.question}>{interpretation.clarifyingQuestion}</Text>
               ) : null}
-              {interpretation.warnings.map((warning) => (
+              {interpretation.warnings
+                .filter((warning) => !/^No filters? (?:was|were) applied\.?$/i.test(warning))
+                .map((warning) => (
                 <Text key={warning} style={styles.warning}>
                   • {warning}
                 </Text>
               ))}
               {interpretation.status === "unsupported" ? (
                 <Text style={styles.error}>
-                  We can't search for that information yet. Try one of the examples or choose
-                  filters yourself.
+                  We can't search for that information yet. Try one of the examples or search for a word above.
                 </Text>
               ) : null}
               {interpretation.status === "ready" ? (
@@ -304,8 +324,8 @@ export function AiFilterAssistant({
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  chevron: { color: colors.primary, fontSize: 15, fontWeight: "800" },
-  compactDescription: { color: colors.muted, fontSize: 15, lineHeight: 21 },
+  chevron: { color: colors.primary, fontSize: 17, fontWeight: "800" },
+  compactDescription: { color: colors.muted, fontSize: 17, lineHeight: 24 },
   compactHeader: {
     alignItems: "center",
     flexDirection: "row",
@@ -315,9 +335,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   compactText: { flex: 1, gap: spacing.xs },
-  condition: { color: colors.ink, fontSize: 15, lineHeight: 22 },
-  description: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  error: { color: colors.danger, fontSize: 15, lineHeight: 22 },
+  condition: { color: colors.ink, fontSize: 17, lineHeight: 25 },
+  description: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  error: { color: colors.danger, fontSize: 17, lineHeight: 25 },
   errorBox: { gap: spacing.sm },
   expandedBody: { gap: spacing.sm, padding: spacing.md, paddingTop: 0 },
   input: {
@@ -326,7 +346,7 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     borderWidth: 1,
     color: colors.ink,
-    fontSize: 16,
+    fontSize: 18,
     minHeight: 88,
     padding: spacing.md,
     textAlignVertical: "top",
@@ -339,16 +359,16 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   pressed: { backgroundColor: colors.subdued },
-  question: { color: colors.ink, fontSize: 15, fontWeight: "700", lineHeight: 22 },
-  quickTitle: { color: colors.ink, fontSize: 15, fontWeight: "800" },
+  question: { color: colors.ink, fontSize: 17, fontWeight: "700", lineHeight: 25 },
+  quickTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
   summary: {
     backgroundColor: colors.surface,
     borderRadius: 11,
     gap: spacing.sm,
     padding: spacing.md,
   },
-  summaryText: { color: colors.ink, fontSize: 15, lineHeight: 22 },
-  summaryTitle: { color: colors.primary, fontSize: 16, fontWeight: "800" },
+  summaryText: { color: colors.ink, fontSize: 17, lineHeight: 25 },
+  summaryTitle: { color: colors.primary, fontSize: 18, fontWeight: "800" },
   title: { color: colors.ink, fontSize: 19, fontWeight: "800" },
   unavailableRow: {
     alignItems: "flex-start",
@@ -357,7 +377,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingTop: 0,
   },
-  unavailableText: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  verifiedNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  warning: { color: colors.accent, fontSize: 15, lineHeight: 22 },
+  unavailableText: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  verifiedNote: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  warning: { color: colors.accent, fontSize: 17, lineHeight: 25 },
 });

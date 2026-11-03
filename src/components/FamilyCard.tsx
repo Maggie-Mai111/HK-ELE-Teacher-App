@@ -45,8 +45,8 @@ export function FamilyCard({
           <Text style={styles.match}>{matchNote}</Text>
         ) : null}
         <Text style={styles.meta}>
-          {selectedForm ? "Family overall rank" : "Overall rank"}{" "}
-          {shown(family.overall_frequency_order)} · HK rank{" "}
+          {selectedForm ? "Overall family rank" : "Overall family rank"}{" "}
+          {shown(family.overall_frequency_order)} · HK family rank{" "}
           {shown(family.current_hk_frequency_rank)}
         </Text>
         <View style={styles.evidence}>
@@ -65,7 +65,7 @@ export function FamilyCard({
       <ActionButton
         disabled={added || !canAdd}
         kind="secondary"
-        label={added ? "In teaching list" : "Add to teaching list"}
+        label={added ? "Selected" : "Add to selected words"}
         onPress={() => onAdd(family)}
       />
     </View>
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.subdued,
     borderRadius: 999,
     color: colors.primary,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,
@@ -91,9 +91,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md,
   },
-  match: { color: colors.accent, fontSize: 14, fontWeight: "700" },
+  match: { color: colors.accent, fontSize: 16, fontWeight: "700" },
   evidence: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, marginTop: spacing.sm },
-  meta: { color: colors.muted, fontSize: 14, lineHeight: 21, marginTop: spacing.xs },
+  meta: { color: colors.muted, fontSize: 16, lineHeight: 24, marginTop: spacing.xs },
   pressed: { opacity: 0.72 },
   title: { color: colors.ink, flex: 1, fontSize: 22, fontWeight: "700" },
   titleRow: { alignItems: "center", flexDirection: "row", gap: spacing.sm },

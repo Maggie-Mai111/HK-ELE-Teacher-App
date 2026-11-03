@@ -16,8 +16,8 @@ const tasks = [
   },
   {
     route: "list",
-    title: "Build a teaching list",
-    description: "Keep your selected words and notes together, then export your plan.",
+    title: "Keep selected words",
+    description: "Collect words, then copy them into your lesson materials.",
   },
 ] as const;
 
@@ -87,15 +87,15 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     width: "100%",
   },
-  brand: { color: colors.primary, fontSize: 16, fontWeight: "600", lineHeight: 24 },
+  brand: { color: colors.primary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   hero: { gap: spacing.lg, alignItems: "stretch" },
   heroWide: { flexDirection: "row", alignItems: "center" },
   introduction: { gap: spacing.md, minWidth: 0 },
   half: { flex: 1 },
-  eyebrow: { color: colors.muted, fontSize: 14, fontWeight: "600", lineHeight: 21 },
+  eyebrow: { color: colors.muted, fontSize: 16, fontWeight: "600", lineHeight: 24 },
   heading: { color: colors.ink, fontSize: 34, fontWeight: "700", lineHeight: 41 },
   headingWide: { fontSize: 46, lineHeight: 54 },
-  description: { color: colors.ink, fontSize: 18, lineHeight: 28 },
+  description: { color: colors.ink, fontSize: 20, lineHeight: 28 },
   illustration: {
     overflow: "hidden",
     borderRadius: 20,
@@ -117,9 +117,9 @@ const styles = StyleSheet.create({
     minHeight: 160,
   },
   primaryTask: { backgroundColor: "#e7f2eb", borderColor: "#b4d2c0" },
-  number: { color: colors.primary, fontSize: 16, fontWeight: "600", lineHeight: 23 },
+  number: { color: colors.primary, fontSize: 18, fontWeight: "600", lineHeight: 26 },
   taskTitle: { color: colors.ink, fontSize: 21, fontWeight: "600", lineHeight: 28 },
-  taskDescription: { color: colors.muted, fontSize: 16, lineHeight: 24 },
-  note: { color: colors.muted, fontSize: 15, lineHeight: 23 },
+  taskDescription: { color: colors.muted, fontSize: 18, lineHeight: 27 },
+  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
   pressed: { opacity: 0.75 },
 });

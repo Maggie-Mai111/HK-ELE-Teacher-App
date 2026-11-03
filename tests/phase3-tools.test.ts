@@ -132,6 +132,7 @@ test("pre-teach suggestions exclude CPB and review items and show transparent re
   const technical = makeFamily("technical", 3500, {
     awl: 1,
     textbook_first_seen_level: "S1",
+    matched_form_evidence: { awl: 1, first_seen_hk_textbooks: "S1" } as FormRecord,
   });
   const results = [
     makeOccurrence("The", makeFamily("the", 1), 0),
@@ -151,10 +152,10 @@ test("pre-teach suggestions exclude CPB and review items and show transparent re
     results,
     "P4",
   );
-  assert.equal(suggestions.length, 1);
+  assert.equal(suggestions.length, 2);
   assert.equal(suggestions[0]?.basewordKey, "technical");
-  assert.ok(suggestions[0]?.reasons.includes("Outside HK Top 2k"));
-  assert.ok(suggestions[0]?.reasons.includes("AWL evidence"));
-  assert.ok(suggestions[0]?.reasons.includes("Family appears 2 times"));
-  assert.ok(suggestions[0]?.reasons.includes("Family first seen at S1"));
+  assert.ok(suggestions[0]?.reasons.includes("HK family rank: 3,500"));
+  assert.ok(suggestions[0]?.reasons.includes("Listed in AWL"));
+  assert.ok(suggestions[0]?.reasons.includes("Appears 2 times"));
+  assert.ok(suggestions[0]?.reasons.includes("Textbooks: S1 · after P4"));
 });

@@ -1,6 +1,8 @@
+import { LexicalUsesPanel } from "../components/LexicalUsesPanel";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
+import { WordOriginsPanel } from "../components/WordOriginsPanel";
 import { ActionButton } from "../components/ActionButton";
 import { AppCard } from "../components/AppCard";
 import { EvidenceBadge } from "../components/EvidenceBadge";
@@ -204,8 +206,8 @@ export function WordDetailScreen({
       },
       {
         key: "external",
-        title: "Supported by external level references",
-        description: "Forms with external level references.",
+        title: "Other forms with US grade references",
+        description: "Forms with a recorded US grade reference.",
         forms: external,
       },
       {
@@ -255,11 +257,11 @@ export function WordDetailScreen({
             <View style={styles.badges}>
               <Text style={styles.badge}>{familySetLabel(detail.family)}</Text>
               <Text style={styles.rankBadge}>
-                {selectedForm ? "Family overall rank" : "Overall rank"}{" "}
+                {selectedForm ? "Overall family rank" : "Overall family rank"}{" "}
                 {display(detail.family.overall_frequency_order)}
               </Text>
               <Text style={styles.rankBadge}>
-                {selectedForm ? "Family HK rank" : "HK rank"}{" "}
+                {selectedForm ? "HK family rank" : "HK family rank"}{" "}
                 {display(detail.family.current_hk_frequency_rank)}
               </Text>
             </View>
@@ -285,7 +287,7 @@ export function WordDetailScreen({
             </View>
             <ActionButton
               disabled={inList || !teaching.ready}
-              label={inList ? "In teaching list" : `Add ${chosenWord} to teaching list`}
+              label={inList ? "Selected" : `Add ${chosenWord} to selected words`}
               onPress={() => teaching.add(detail.family, chosenWord, sourceLabel)}
             />
             <CurrentLesson teaching={teaching} />
@@ -355,8 +357,8 @@ export function WordDetailScreen({
             title="Word information"
           >
             <DetailRow label="Word list" value={familySetLabel(detail.family)} />
-            <DetailRow label="Overall rank" value={detail.family.overall_frequency_order} />
-            <DetailRow label="HK frequency rank" value={detail.family.current_hk_frequency_rank} />
+            <DetailRow label="Overall family rank" value={detail.family.overall_frequency_order} />
+            <DetailRow label="HK family rank" value={detail.family.current_hk_frequency_rank} />
             <DetailRow label="HK frequency band" value={detail.family.current_hk_frequency_band} />
             <DetailRow label="First seen in HK textbooks" value={morphology.firstSeen} />
             <DetailRow
@@ -368,15 +370,17 @@ export function WordDetailScreen({
               label="Middle School Vocabulary List (MSVL)"
               value={vocabularyListLabel(morphology.msvl)}
             />
-            <DetailRow label="Academic subject evidence" value={morphology?.subjects} />
+            <DetailRow label="Subject links" value={morphology?.subjects} />
           </ProgressiveDisclosure>
           <ProgressiveDisclosure summary="Explore roots, prefixes and suffixes." title="Word parts">
-            <DetailRow label="Root" value={morphology?.root} />
+            <DetailRow label="Greek/Latin root" value={morphology?.root} />
             <DetailRow label="Root meaning" value={morphology?.meaning} />
             <DetailRow label="Prefix" value={morphology?.prefix} />
             <DetailRow label="Suffix" value={morphology?.suffix} />
             <MorphologyLegend />
           </ProgressiveDisclosure>
+          <LexicalUsesPanel word={activeForm?.normalized_form || chosenWord} familyKey={basewordKey} repository={repository} />
+          {activeForm ? <WordOriginsPanel familyKey={basewordKey} word={activeForm.form} normalizedForm={activeForm.normalized_form} repository={repository} /> : null}
           <View style={styles.formsIntro}>
             <Text accessibilityRole="header" aria-level={2} style={styles.formsTitle}>
               Word forms ({detail.forms.length.toLocaleString("en")})
@@ -385,7 +389,7 @@ export function WordDetailScreen({
               Open a group to explore its word forms and add the ones you want to teach.
             </Text>
           </View>
-          {formTiers.map((tier) => (
+          {formTiers.filter((tier) => tier.forms.length > 0).map((tier) => (
             <FormTier
               description={tier.description}
               family={detail.family}
@@ -403,7 +407,7 @@ export function WordDetailScreen({
 }
 
 const styles = StyleSheet.create({
-  context: { color: colors.ink, fontSize: 17, lineHeight: 26 },
+  context: { color: colors.ink, fontSize: 19, lineHeight: 29 },
   contextBox: {
     backgroundColor: colors.canvas,
     padding: spacing.sm,
@@ -416,24 +420,24 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarySoft,
     borderRadius: 999,
     color: colors.primary,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
   badges: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  caution: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  caution: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   content: { gap: spacing.md, padding: spacing.lg },
   error: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 10,
     color: colors.danger,
-    fontSize: 15,
+    fontSize: 17,
     padding: spacing.md,
   },
   formEvidence: { flex: 1, gap: spacing.xs, minWidth: 220 },
-  formNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
+  formNote: { color: colors.muted, fontSize: 17, lineHeight: 25 },
   formRow: {
     alignItems: "center",
     borderBottomColor: colors.border,
@@ -448,7 +452,7 @@ const styles = StyleSheet.create({
   formRows: { gap: spacing.xs },
   formsIntro: { gap: spacing.xs, paddingTop: spacing.sm },
   formsTitle: { color: colors.ink, fontSize: 22, fontWeight: "700", lineHeight: 29 },
-  gradeEvidence: { color: colors.ink, fontSize: 16, lineHeight: 24 },
+  gradeEvidence: { color: colors.ink, fontSize: 18, lineHeight: 27 },
   heading: { color: colors.ink, fontSize: 34, fontWeight: "700", lineHeight: 41 },
   hero: {
     backgroundColor: colors.surface,
@@ -464,13 +468,13 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.md,
   },
-  noticeText: { color: colors.ink, fontSize: 15, lineHeight: 23 },
-  noticeTitle: { color: colors.ink, fontSize: 17, fontWeight: "700" },
+  noticeText: { color: colors.ink, fontSize: 17, lineHeight: 26 },
+  noticeTitle: { color: colors.ink, fontSize: 19, fontWeight: "700" },
   rankBadge: {
     backgroundColor: colors.subdued,
     borderRadius: 999,
     color: colors.ink,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: spacing.md,
@@ -482,6 +486,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingVertical: spacing.sm,
   },
-  rowLabel: { color: colors.muted, fontSize: 15, fontWeight: "700" },
-  rowValue: { color: colors.ink, fontSize: 16, lineHeight: 23 },
+  rowLabel: { color: colors.muted, fontSize: 17, fontWeight: "700" },
+  rowValue: { color: colors.ink, fontSize: 18, lineHeight: 26 },
 });

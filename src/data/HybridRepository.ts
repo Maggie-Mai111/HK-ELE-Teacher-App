@@ -12,6 +12,7 @@ import type {
   WordFormFrequencies,
 } from "../domain/hkele";
 import { CPB_ITEMS } from "../services/cpbService";
+import { acceptedWordResolution } from "../services/acceptedWordResolution";
 
 export class HybridRepository implements HkeleRepository {
   private mode: DataMode;
@@ -64,7 +65,7 @@ export class HybridRepository implements HkeleRepository {
         .catch(() => {
           this.mode = "bundled-reference";
           throw new Error(
-            "The full database is currently unavailable. The saved Core list remains available.",
+            "The full database is currently unavailable. The saved HK-ELE Word List remains available.",
           );
         });
     }
@@ -142,7 +143,8 @@ export class HybridRepository implements HkeleRepository {
         const start = Math.max(0, occurrence.startOffset - 36);
         const end = Math.min(text.length, occurrence.endOffset + 36);
         const context = `${start > 0 ? "…" : ""}${text.slice(start, end)}${end < text.length ? "…" : ""}`;
-        const result = await searches.get(occurrence.surface);
+        const searched = await searches.get(occurrence.surface);
+        const result = searched ? acceptedWordResolution(searched) : undefined;
         return {
           ...occurrence,
           status: result?.status ?? "UNSUPPORTED",

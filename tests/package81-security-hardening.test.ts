@@ -29,7 +29,7 @@ function record(table: CompactTable, row: unknown[]): Record<string, unknown> {
 }
 
 async function table(name: string): Promise<CompactTable> {
-  const path = resolve(process.cwd(), "data/releases/2026-10-20-a-main-v1/reference", name);
+  const path = resolve(process.cwd(), "data/releases/2026-11-03-a2658-finite-family-closure-v1/reference", name);
   return JSON.parse(gunzipSync(await readFile(path)).toString("utf8")) as CompactTable;
 }
 

@@ -179,7 +179,7 @@ export class BundledReferenceRepository implements HkeleRepository {
   }
 
   async getFamily(basewordKey: string): Promise<FamilyDetail> {
-    const normalized = normalize(basewordKey);
+    const normalized = basewordKey;
     const family = (await this.families()).find((item) => item.baseword_key === normalized);
     if (!family) throw new Error("This family is not in the saved word data.");
     const forms = (await this.forms()).filter((item) => item.baseword_key === normalized);
@@ -234,7 +234,7 @@ export class BundledReferenceRepository implements HkeleRepository {
         "COUNTRY_ABBREVIATION_OR_OTHER_CONTEXT_REQUIRED",
       );
     }
-    if (normalizedQuery === "does") {
+    if (!currentManifest.dataVersion.startsWith("2026-11-02-") && normalizedQuery === "does") {
       return this.blocked(
         submittedQuery,
         normalizedQuery,
@@ -245,31 +245,6 @@ export class BundledReferenceRepository implements HkeleRepository {
     const familyByKey = new Map(
       (await this.families()).map((family) => [family.baseword_key, family]),
     );
-    const specialKey =
-      normalizedQuery === "i"
-        ? "trial:pronoun:i"
-        : normalizedQuery === "us"
-          ? "trial:pronoun:us"
-          : null;
-    if (specialKey) {
-      const family = familyByKey.get(specialKey);
-      if (family) {
-        return {
-          status: "RESOLVED",
-          ...empty,
-          bestPriority: 0,
-          bestOwnerCount: 1,
-          owners: [
-            {
-              ...family,
-              blocked: false,
-              match_classes: ["FINAL_CANDIDATE_SURFACE_ONLY"],
-              matched_forms: [submittedQuery],
-            },
-          ],
-        };
-      }
-    }
     const routes = await this.routes();
     const records = routes.rows
       .map((row) => inflateRecord<Record<string, unknown>>(routes.fields, row))
@@ -305,7 +280,8 @@ export class BundledReferenceRepository implements HkeleRepository {
     if (missingBestOwner) {
       return { status: "FULL_DATABASE_CHECK_UNAVAILABLE", ...empty };
     }
-    const owners = toOwners(bestRecords);
+    const formRecords = await this.forms();
+    const owners = toOwners(bestRecords).map(owner => ({...owner, matched_form_evidence: formRecords.find(form => form.baseword_key === owner.baseword_key && form.normalized_form === normalizedQuery) ?? null}));
     const alternatives = toOwners(
       records.filter((row) => Number(row.match_priority) !== bestPriority),
     );
@@ -350,12 +326,15 @@ export class BundledReferenceRepository implements HkeleRepository {
         }
         const result = await cache.get(occurrence.surface);
         if (!result) throw new Error("Occurrence search result is missing");
+        const owners = result.owners.filter(owner => !owner.match_classes.includes("CONDITIONAL_LOOKUP_ONLY") && !owner.match_classes.includes("FAMILY_LABEL_ONLY"));
+        const reviewOnly = owners.length !== result.owners.length;
+
         return {
           ...occurrence,
-          status: result.status,
-          bestOwnerCount: result.bestOwnerCount,
-          owners: result.owners,
-          alternatives: result.alternatives,
+          status: reviewOnly && !owners.length ? "UNMATCHED" : result.status,
+          bestOwnerCount: reviewOnly ? owners.length : result.bestOwnerCount,
+          owners,
+          alternatives: reviewOnly ? [...result.owners.filter(owner => !owners.includes(owner)), ...result.alternatives] : result.alternatives,
           identityException: result.identityException,
           grammaticalRelation: result.grammaticalRelation ?? null,
           context: contextFor(text, occurrence),

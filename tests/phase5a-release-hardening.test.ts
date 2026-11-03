@@ -41,7 +41,7 @@ test("genuinely unmatched words are grouped independently without an inferred ow
     items.map(({ displayForm, count }) => ({ displayForm, count })),
     [{ displayForm: "quarkish", count: 2 }],
   );
-  assert.equal(items[0]?.explanation, "No entry found in the wordlist.");
+  assert.equal(items[0]?.explanation, "No automatic match in this text.");
 });
 
 test("text form and HK-ELE family remain separately labelled", () => {

@@ -1,10 +1,10 @@
+import { CopySelectedWords } from "./CopySelectedWords";
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import type { ResolvedOccurrence } from "../domain/hkele";
 import { lessonChoicesFromResults } from "../services/lessonPlanning";
 import type { TeachingListStore } from "../services/teachingListService";
-import { selectedWordCount } from "../services/lessonSelectionPresentation";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
 import { CurrentLesson } from "./CurrentLesson";
@@ -39,7 +39,7 @@ export function LessonWordPicker({
           Choose words for this lesson
         </Text>
       ) : null}
-      <Text style={styles.note}>Select words to add to your teaching list.</Text>
+      <Text style={styles.note}>Choose the words you want to keep.</Text>
       <CurrentLesson teaching={teaching} />
       <TextInput
         accessibilityLabel="Find a word in this text"
@@ -121,11 +121,7 @@ export function LessonWordPicker({
             onPress={() => setSelected(new Set())}
           />
         ) : null}
-        <ActionButton
-          kind="secondary"
-          label={`View teaching list (${selectedWordCount(teaching.items)})`}
-          onPress={onOpenList}
-        />
+        <CopySelectedWords key={teaching.activeLessonId} items={teaching.items} onReview={onOpenList} />
       </View>
       {message ? (
         <Text accessibilityLiveRegion="polite" style={styles.success}>
@@ -146,14 +142,14 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   title: { color: colors.primary, fontSize: 19, fontWeight: "800" },
-  note: { color: colors.muted, fontSize: 14, lineHeight: 21 },
+  note: { color: colors.muted, fontSize: 16, lineHeight: 24 },
   search: {
     backgroundColor: colors.canvas,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 10,
     minHeight: 46,
-    fontSize: 16,
+    fontSize: 18,
     padding: spacing.sm,
     color: colors.ink,
   },
@@ -173,7 +169,7 @@ const styles = StyleSheet.create({
   selected: { backgroundColor: colors.primarySoft, borderColor: colors.primary },
   check: { color: colors.primary, fontSize: 23 },
   choiceText: { flex: 1 },
-  word: { color: colors.ink, fontSize: 16, fontWeight: "700" },
+  word: { color: colors.ink, fontSize: 18, fontWeight: "700" },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  success: { color: colors.primary, fontSize: 15, fontWeight: "700" },
+  success: { color: colors.primary, fontSize: 17, fontWeight: "700" },
 });

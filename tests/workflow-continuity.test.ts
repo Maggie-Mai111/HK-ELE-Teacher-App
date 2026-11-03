@@ -41,6 +41,7 @@ const toWeb = (item: ResolvedOccurrence): WebOccurrence => ({
   status: item.status,
   start_offset: item.startOffset,
   end_offset: item.endOffset,
+  occurrence_order: item.occurrenceOrder,
   owners: item.owners,
 });
 const create = (family: FamilyRecord, order: number): TeachingListItem => ({
@@ -159,7 +160,16 @@ test("Web pre-teaching follows App evidence choices, missing-rank handling and e
     makeOccurrence("plastic", makeFamily("plastic", 1500, { msvl: "Science" }), 10),
     makeOccurrence("rare", makeFamily("rare", 8000), 18),
     makeOccurrence("unknown", makeFamily("unknown", null), 23),
-    makeOccurrence("later", makeFamily("later", 200, { textbook_first_seen_level: "P5" }), 31),
+    makeOccurrence(
+      "later",
+      makeFamily("later", 200, {
+        textbook_first_seen_level: "P1",
+        matched_form_evidence: {
+          first_seen_hk_textbooks: "P5",
+        } as import("../src/domain/hkele").FormRecord,
+      }),
+      31,
+    ),
     makeOccurrence("Name", makeFamily("name", 9000), 37),
   ];
   for (const level of [null, "P4"] as const) {
@@ -169,9 +179,9 @@ test("Web pre-teaching follows App evidence choices, missing-rank handling and e
       JSON.stringify(entries.map((item) => item.key)),
       JSON.stringify(app.map((item) => item.basewordKey)),
     );
-    assert.ok(!entries.some((item) => item.key === "unknown" || item.key === "name"));
+    assert.ok(!entries.some((item) => item.key === "unknown"));
     assert.equal(
-      entries.some((item) => item.reasons.includes("Family first seen: P5")),
+      entries.some((item) => item.reasons.includes("Textbooks: P5 · after P4")),
       level === "P4",
     );
   }

@@ -39,7 +39,9 @@ export function groupContextReviews(results: ResolvedOccurrence[]): ContextRevie
         explanation:
           item.status === "AMBIGUOUS"
             ? "Choose the family that fits this sentence."
-            : "Check the spelling or use in this sentence.",
+            : item.status === "UNSUPPORTED"
+              ? "No word entry for this part. Other words in your text can still be checked."
+              : "Check the spelling or use in this sentence.",
       });
   }
   return [...grouped.values()];
@@ -64,6 +66,17 @@ export function textResultKind(item: ResolvedOccurrence): TextResultKind {
   return isCompoundMatch(item) ? "compound-family" : "ordinary-family";
 }
 
+/** Review filters describe available actions; unsupported text has no family to choose. */
+export function textResultFilterCategory(item: ResolvedOccurrence) {
+  const kind = textResultKind(item);
+  if (kind === "compound-expression") return "compound";
+  if (kind === "grammatical-relation") return "grammar";
+  if (kind === "full-check-unavailable") return "unavailable";
+  if (kind === "unmatched" || item.status === "UNSUPPORTED") return "unmatched";
+  if (item.status !== "RESOLVED" || item.owners.length !== 1) return "review";
+  return item.owners[0]?.candidate_member ? "candidate" : "other";
+}
+
 export function textResultStatusLabel(item: ResolvedOccurrence): string {
   const kind = textResultKind(item);
   if (kind === "compound-expression") return "Compound";
@@ -71,10 +84,10 @@ export function textResultStatusLabel(item: ResolvedOccurrence): string {
   if (kind === "compound-family") return "Compound";
   if (kind === "ordinary-family") return "Matched";
   if (kind === "full-check-unavailable") return "Check online";
-  if (kind === "unmatched") return "No entry";
+  if (kind === "unmatched") return "Not matched";
   if (item.status === "AMBIGUOUS") return "Choose a family";
   if (item.status === "BLOCKED") return "Check spelling or use";
-  return "No entry";
+  return "Not matched";
 }
 
 export function groupPendingFullDatabaseChecks(
@@ -119,7 +132,7 @@ export function groupUnmatchedWords(results: ResolvedOccurrence[]): UnmatchedWor
         normalizedForm,
         displayForm: item.surface,
         count: 1,
-        explanation: "No entry found in the wordlist.",
+        explanation: "No automatic match in this text.",
       });
     }
   }

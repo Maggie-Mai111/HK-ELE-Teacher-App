@@ -120,7 +120,7 @@ export function OccurrenceCard({
           <ActionButton
             disabled={inList}
             kind="secondary"
-            label={inList ? "In Teaching list" : "Add to Teaching list"}
+            label={inList ? "Selected" : "Add to selected words"}
             onPress={() => teaching.add(owner, item.surface, "Check a text")}
           />
         </View>
@@ -132,12 +132,12 @@ export function OccurrenceCard({
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   badges: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
-  context: { color: colors.muted, fontSize: 15, fontStyle: "italic", lineHeight: 22 },
+  context: { color: colors.muted, fontSize: 17, fontStyle: "italic", lineHeight: 25 },
   cpbBadge: {
     backgroundColor: colors.cpbSoft,
     borderRadius: 7,
     color: colors.cpb,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "800",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,
@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.customSoft,
     borderRadius: 7,
     color: colors.custom,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "800",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   },
   hkBadge: {
     borderRadius: 7,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "800",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,
@@ -164,23 +164,23 @@ const styles = StyleSheet.create({
   hkLaterBadge: { backgroundColor: colors.hkLaterSoft, color: colors.hkLater },
   hkNextBadge: { backgroundColor: colors.hkNextSoft, color: colors.hkNext },
   hkTopBadge: { backgroundColor: colors.hkTopSoft, color: colors.hkTop },
-  offset: { color: colors.muted, fontSize: 14, lineHeight: 20 },
+  offset: { color: colors.muted, fontSize: 16, lineHeight: 23 },
   mapping: {
     backgroundColor: colors.subdued,
     borderRadius: 10,
     gap: spacing.xs,
     padding: spacing.sm,
   },
-  mappingLabel: { color: colors.muted, fontSize: 14, fontWeight: "800" },
-  mappingValue: { color: colors.ink, fontSize: 16, fontWeight: "800" },
+  mappingLabel: { color: colors.muted, fontSize: 16, fontWeight: "800" },
+  mappingValue: { color: colors.ink, fontSize: 18, fontWeight: "800" },
   relation: {
     backgroundColor: colors.primarySoft,
     borderRadius: 10,
     gap: spacing.xs,
     padding: spacing.sm,
   },
-  relationNote: { color: colors.muted, fontSize: 15, lineHeight: 22 },
-  relationValue: { color: colors.primary, fontSize: 17, fontWeight: "800" },
+  relationNote: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  relationValue: { color: colors.primary, fontSize: 19, fontWeight: "800" },
   result: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     color: colors.primary,
     flexShrink: 1,
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: "800",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,
@@ -214,8 +214,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
     borderRadius: 8,
     color: colors.ink,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 17,
+    lineHeight: 25,
     padding: spacing.sm,
   },
 });

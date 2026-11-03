@@ -55,7 +55,7 @@ test("Excel export is a valid OOXML package with filter and frozen header", () =
   assert.ok(workbook["xl/styles.xml"]);
   const sheet = strFromU8(workbook["xl/worksheets/sheet1.xml"]!);
   assert.match(sheet, /state="frozen"/);
-  assert.match(sheet, /autoFilter ref="A1:Q2"/);
+  assert.match(sheet, /autoFilter ref="A1:R2"/);
   assert.match(sheet, /analyse/);
   assert.match(strFromU8(workbook["xl/styles.xml"]!), /FF176B45/);
 });

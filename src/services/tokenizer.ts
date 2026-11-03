@@ -213,3 +213,37 @@ export function scan(text: string, maxOccurrences = 500): TokenScan {
 
 export const tokenize = (text: string, maxOccurrences = 500): TokenOccurrence[] =>
   scan(text, maxOccurrences).occurrences;
+
+// Teacher input is partial-match text, not the strict research/legacy scan contract above.
+export const TEACHER_TEXT_TOKENIZER_ID = "HK-ELE-TEACHER-PARTIAL-1.0.0";
+const TEACHER_WORD_PATTERN =
+  /['\u2018\u2019\u02bc\uff07]*[\p{L}\p{M}]+(?:['\u2018\u2019\u02bc\uff07\p{Cf}\u00ad]+[\p{L}\p{M}]+)*['\u2018\u2019\u02bc\uff07]*/gu;
+
+export function scanTeacherText(text: string, maxOccurrences = 500): TokenScan {
+  const occurrences: TokenOccurrence[] = [];
+  const scanText = quotationMask(text).masked;
+  TEACHER_WORD_PATTERN.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = TEACHER_WORD_PATTERN.exec(scanText)) !== null) {
+    const surface = match[0];
+    if (!/\p{L}/u.test(surface)) continue;
+    const supported = SUPPORTED_SURFACE_PATTERN.test(surface);
+    const normalized = supported ? normalizeSurface(surface) : null;
+    occurrences.push({
+      occurrenceId: `occ-${String(occurrences.length + 1).padStart(4, "0")}`,
+      tokenStatus: supported ? "SUPPORTED_TOKEN" : "UNSUPPORTED_TOKEN",
+      surface,
+      normalizedToken: normalized?.normalizedToken ?? null,
+      normalizationRuleIds: normalized?.normalizationRuleIds ?? ["UNCLEAR_TEXT_FORM_PRESERVED"],
+      startOffset: match.index,
+      endOffset: match.index + surface.length,
+      occurrenceOrder: occurrences.length + 1,
+      failureReason: supported ? null : "UNCLEAR_TEXT_FORM",
+    });
+    if (occurrences.length > maxOccurrences)
+      throw new Error(
+        `The technical limit is ${maxOccurrences} recognized occurrences. Shorten the text and try again.`,
+      );
+  }
+  return { occurrences, separatorEvents: separatorAudit(text) };
+}
