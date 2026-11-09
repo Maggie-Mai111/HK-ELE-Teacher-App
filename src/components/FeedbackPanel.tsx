@@ -97,18 +97,15 @@ export function FeedbackPanel({
               ) : null}
             </View>
           ) : null}
-          <Text style={styles.note}>
-            {context.product} · {context.page}
-          </Text>
           <Text style={styles.body}>
             {request.context.family || request.context.expressionId
-              ? "Your word and page details are filled in."
-              : "Your page details are filled in."}{" "}
-            Submit your response in Google Forms.
+              ? "The word is already filled in."
+              : "The page is already filled in."}{" "}
+            Answer the short Google Form to send your feedback.
           </Text>
           <ActionButton
             disabled={!url}
-            label="Continue to Google Form ↗"
+            label="Open Google Form ↗"
             onPress={() => void openForm()}
           />
           {!url ? (

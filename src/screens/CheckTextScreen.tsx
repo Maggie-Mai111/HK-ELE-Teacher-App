@@ -1,16 +1,20 @@
+import { PassageCoverage } from "../components/PassageCoverage";
+import { occurrenceInCoverage, type CoverageTarget } from "../services/coverageLists";
 import { normalizedCounts } from "../services/textNormalization";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { ActionButton } from "../components/ActionButton";
+import { AutoGrowingTextInput } from "../components/AutoGrowingTextInput";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { ComplexityPanel } from "../components/ComplexityPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
-import { CurrentLesson } from "../components/CurrentLesson";
 import { HighlightedText } from "../components/HighlightedText";
 import { KnowledgeTestPanel } from "../components/KnowledgeTestPanel";
 import { LessonWordPicker } from "../components/LessonWordPicker";
-import { OccurrenceCard } from "../components/OccurrenceCard";
+import { TextOccurrencesModal } from "../components/TextOccurrencesModal";
+import type { TextReviewTools } from "../components/TextReviewActions";
+import { textOccurrenceExcerpt, updateWordJudgement, type WordJudgements } from "../services/textReviewService";
 import { OcrInputPanel } from "../components/OcrInputPanel";
 import { PreteachPanel } from "../components/PreteachPanel";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
@@ -20,7 +24,6 @@ import { CompoundCard } from "../components/CompoundCard";
 import type { DataMode, HkeleRepository, ResolvedOccurrence } from "../domain/hkele";
 import { matchCpb100 } from "../services/cpbService";
 import { validHkRange } from "../services/frequencyService";
-import type { KnowledgeFamily } from "../services/knowledgeTestService";
 import {
   groupOccurrences,
   nextBatchSize,
@@ -38,6 +41,7 @@ import type { SessionWork } from "../services/reopenSession";
 
 type ResultFilter =
   | "all"
+  | "outside"
   | "candidate"
   | "other"
   | "grammar"
@@ -47,7 +51,7 @@ type ResultFilter =
   | "review"
   | "compound";
 type ResultSort = "occurrence" | "family";
-type Category = Exclude<ResultFilter, "all" | "cpb">;
+type Category = Exclude<ResultFilter, "all" | "cpb" | "outside">;
 interface Props {
   onSessionWorkChange: (work: SessionWork) => void;
   onRevealSection: (section: View | null) => void;
@@ -58,6 +62,7 @@ interface Props {
     basewordKey: string,
     evidence?: CheckedTextEvidence,
     selectedForm?: string,
+    textTools?: TextReviewTools,
   ) => void;
 }
 function category(item: ResolvedOccurrence): Category {
@@ -73,6 +78,10 @@ export function CheckTextScreen({
   onSessionWorkChange,
 }: Props) {
   const [text, setText] = useState("");
+  const [coverageTarget, setCoverageTarget] = useState<CoverageTarget>("90");
+  const [allResultsOpen, setAllResultsOpen] = useState(false);
+  const [moreToolsOpen, setMoreToolsOpen] = useState(false);
+  const allResultsRef = useRef<View>(null);
   const sourceRef = useRef("");
   const [checkedText, setCheckedText] = useState<string | null>(null);
   const [results, setResults] = useState<ResolvedOccurrence[]>([]);
@@ -90,15 +99,21 @@ export function CheckTextScreen({
   const [filter, setFilter] = useState<ResultFilter>("all");
   const [sort, setSort] = useState<ResultSort>("occurrence");
   const [groupLimit, setGroupLimit] = useState(OCCURRENCE_BATCH_SIZE);
-  const [occurrenceLimit, setOccurrenceLimit] = useState(OCCURRENCE_BATCH_SIZE);
-  const [knowledgeNotKnown, setKnowledgeNotKnown] = useState<KnowledgeFamily[]>([]);
-  const [knowledgeKnownForms, setKnowledgeKnownForms] = useState<string[]>([]);
+  const [occurrencesWord, setOccurrencesWord] = useState<string | null>(null);
+  const [wordJudgements, setWordJudgements] = useState<WordJudgements>({});
+  const judgementsRef = useRef(wordJudgements);
+  judgementsRef.current = wordJudgements;
+  const judgeWord = (occurrenceId: string, value: boolean | undefined) => setWordJudgements(current => updateWordJudgement(current, occurrenceId, value));
+  useEffect(() => { setWordJudgements({}); setOccurrencesWord(null); }, [teaching.activeLessonId]);
   const [ocrWork, setOcrWork] = useState(false);
+  const [ocrOpen, setOcrOpen] = useState(false);
+  const [ocrReviewing, setOcrReviewing] = useState(false);
+  const editorRef = useRef<View>(null);
   const [knowledgeWork, setKnowledgeWork] = useState(false);
   const hasText = Boolean(text.trim() || checkedText?.trim());
   useEffect(
-    () => onSessionWorkChange({ text: hasText, ocr: ocrWork, knowledge: knowledgeWork }),
-    [hasText, ocrWork, knowledgeWork, onSessionWorkChange],
+    () => onSessionWorkChange({ text: hasText, ocr: ocrWork, knowledge: knowledgeWork || Object.keys(wordJudgements).length > 0 }),
+    [hasText, ocrWork, knowledgeWork, wordJudgements, onSessionWorkChange],
   );
   const readerRef = useRef<View>(null);
   const suggestionsRef = useRef<View>(null);
@@ -106,6 +121,12 @@ export function CheckTextScreen({
     sourceRef.current = value;
     setText(value);
     setWordSheet(null);
+  };
+  const applyPhotoText = (value: string) => {
+    changeText(value);
+    setOcrOpen(false);
+    setOcrReviewing(false);
+    setTimeout(()=>onRevealSection(editorRef.current),0);
   };
   const analyze = async () => {
     const source = sourceRef.current;
@@ -127,9 +148,8 @@ export function CheckTextScreen({
       setFilter("all");
       setSort("occurrence");
       setGroupLimit(OCCURRENCE_BATCH_SIZE);
-      setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
-      setKnowledgeNotKnown([]);
-      setKnowledgeKnownForms([]);
+      setOccurrencesWord(null);
+      setWordJudgements({});
       setDataMode(repository.getDataMode());
       setTimeout(() => onRevealSection(readerRef.current), 0);
     } catch (reason) {
@@ -153,17 +173,17 @@ export function CheckTextScreen({
       cpb: 0,
     };
     for (const item of results) {
-      values[category(item)] += 1;
+      values[item.status === "RESOLVED" ? (occurrenceInCoverage(item,coverageTarget) ? "candidate" : "other") : category(item)] += 1;
       if (matchCpb100(item.surface)) values.cpb += 1;
     }
     return values;
-  }, [results]);
+  }, [results,coverageTarget]);
   const visible = useMemo(() => {
     const values =
       filter === "all"
         ? [...results]
         : results.filter((item) =>
-            filter === "cpb" ? Boolean(matchCpb100(item.surface)) : category(item) === filter,
+            filter === "outside" ? !occurrenceInCoverage(item,coverageTarget) : filter === "cpb" ? Boolean(matchCpb100(item.surface)) : (item.status === "RESOLVED" ? (occurrenceInCoverage(item,coverageTarget) ? "candidate" : "other") : category(item)) === filter,
           );
     if (sort === "family")
       values.sort((a, b) =>
@@ -172,7 +192,7 @@ export function CheckTextScreen({
         ),
       );
     return values;
-  }, [filter, results, sort]);
+  }, [filter, results, sort,coverageTarget]);
   const groups = useMemo(() => groupOccurrences(visible, sort), [visible, sort]);
   const uniqueFamilies = useMemo(
     () =>
@@ -208,26 +228,29 @@ export function CheckTextScreen({
       ...(context ? { context } : {}),
     };
   };
+  const reviewTools = (item: ResolvedOccurrence):TextReviewTools => ({surface:item.surface,occurrenceId:item.occurrenceId,excerpt:textOccurrenceExcerpt(checkedText ?? "",item),getKnown:()=>judgementsRef.current[item.occurrenceId],onJudge:value=>judgeWord(item.occurrenceId,value),onShowOccurrences:()=>setOccurrencesWord(item.surface)});
   const openWord = (item: ResolvedOccurrence) => {
     if (textWordAction(item) === "family")
       onOpenFamily(
         item.owners[0]!.baseword_key,
         { ...familyEvidence(item.owners[0]!.baseword_key), context: item.context },
         item.surface,
+        reviewTools(item),
       );
     else setWordSheet(item);
   };
   return (
     <View style={styles.content}>
-      <ScreenHeader title="Check a text" intro="Explore the vocabulary in your lesson text." />
+      <ScreenHeader title="Check a text" intro="Paste text or scan a photo, then choose Check text." />
       {editing || !current || !results.length ? (
         <>
-          <ProgressiveDisclosure title="Scan text from a photo">
-            <OcrInputPanel currentText={text} onApplyText={changeText} onWorkChange={setOcrWork} />
+          <ProgressiveDisclosure title="Scan text from a photo" open={ocrOpen} onOpenChange={setOcrOpen} keepMounted>
+            <OcrInputPanel currentText={text} onApplyText={applyPhotoText} onWorkChange={setOcrWork} onReviewChange={setOcrReviewing} />
           </ProgressiveDisclosure>
-          <TextInput
+          {!(ocrOpen&&ocrReviewing)?<View ref={editorRef} style={styles.editor}>
+          <Text style={styles.editorLabel}>Text to check</Text>
+          <AutoGrowingTextInput
             accessibilityLabel="Text to check"
-            multiline
             value={text}
             onChangeText={changeText}
             placeholder="Paste or type your text here…"
@@ -253,6 +276,7 @@ export function CheckTextScreen({
               />
             ) : null}
           </View>
+          </View>:null}
         </>
       ) : null}
       <DataModeNotice mode={dataMode} />
@@ -289,11 +313,11 @@ export function CheckTextScreen({
                 {uniqueFamilies === 1 ? "family" : "families"}
               </Text>
             </View>
-            <Text style={styles.meta}>Tap a word to see its information.</Text>
+            <Text style={styles.meta}>Tap a word to view it; choose Add to keep it.</Text>
             {results.length > 80 ? (
               <ActionButton
                 kind="secondary"
-                label="Pre-teaching suggestions ↓"
+                label="Words to explain ↓"
                 onPress={() => onRevealSection(suggestionsRef.current)}
               />
             ) : null}
@@ -359,10 +383,11 @@ export function CheckTextScreen({
               onWordPress={openWord}
             />
           </View>
+          <PassageCoverage results={results} target={coverageTarget} onTarget={setCoverageTarget} onOutside={()=>{setFilter("outside");setMoreToolsOpen(true);setAllResultsOpen(true);setTimeout(()=>onRevealSection(allResultsRef.current),0);}} />
           <View
             ref={suggestionsRef}
             tabIndex={-1}
-            accessibilityLabel="Pre-teaching suggestions"
+            accessibilityLabel="Words to explain"
             style={styles.resultContent}
           >
             {results.length > 80 ? (
@@ -372,20 +397,18 @@ export function CheckTextScreen({
                 onPress={() => onRevealSection(readerRef.current)}
               />
             ) : null}
-            <CurrentLesson teaching={teaching} />
+
             <PreteachPanel
               key={teaching.activeLessonId}
               text={checkedText!}
               results={results}
               teaching={teaching}
-              notKnownFamilies={knowledgeNotKnown}
-              knownForms={knowledgeKnownForms}
-              onOpenFamily={(key, surface) =>
-                onOpenFamily(key, familyEvidence(key, surface), surface)
-              }
+              judgements={wordJudgements}
+              onOpenWord={openWord}
               onOpenList={onOpenTeachingList}
             />
           </View>
+          <ProgressiveDisclosure title="More text tools" keepMounted open={moreToolsOpen} onOpenChange={setMoreToolsOpen}>
           {results.some((item) => item.expression) ? (
             <ProgressiveDisclosure title="Compound words in this text">
               {[
@@ -405,18 +428,24 @@ export function CheckTextScreen({
               ))}
             </ProgressiveDisclosure>
           ) : null}
-          <ProgressiveDisclosure title="Check word knowledge" keepMounted>
+          <ProgressiveDisclosure title="Check word familiarity" keepMounted>
             <KnowledgeTestPanel
               key={teaching.activeLessonId}
               text={checkedText!}
               results={results}
               teaching={teaching}
-              onNotKnownChange={setKnowledgeNotKnown}
-              onKnownChange={setKnowledgeKnownForms}
+              judgements={wordJudgements}
+              onJudge={judgeWord}
               onHasResponsesChange={setKnowledgeWork}
             />
           </ProgressiveDisclosure>
-          <ProgressiveDisclosure title="Choose more lesson words" keepMounted>
+            {results.some(item=>item.normalizedAnalysis?.applied) ? <Text style={styles.meta}>Original text: {results.length} words. After expanding short forms and recorded spellings: {normalizedCounts(results).tokens} words, {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the HK-ELE Word List. These counts keep your original text and selected words unchanged.</Text> : null}
+            <ProgressiveDisclosure title="Readability estimates">
+              <ComplexityPanel text={checkedText!} results={results} />
+            </ProgressiveDisclosure>
+            <View ref={allResultsRef}><ProgressiveDisclosure title="All word results" keepMounted open={allResultsOpen} onOpenChange={setAllResultsOpen}>
+              <Text style={styles.meta}>Choose a word to see every occurrence in your text.</Text>
+            <ProgressiveDisclosure title="Choose several words" keepMounted>
             <LessonWordPicker
               key={`${checkedText}:${teaching.activeLessonId}`}
               showHeading={false}
@@ -424,28 +453,23 @@ export function CheckTextScreen({
               teaching={teaching}
               onOpenList={onOpenTeachingList}
             />
-          </ProgressiveDisclosure>
-          <ProgressiveDisclosure title="More text details">
-            {results.some(item=>item.normalizedAnalysis?.applied) ? <Text style={styles.meta}>Original text: {results.length} words. After expanding short forms and recorded spellings: {normalizedCounts(results).tokens} words, {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the HK-ELE Word List. These counts keep your original text and selected words unchanged.</Text> : null}
-            <ProgressiveDisclosure title="Readability estimates">
-              <ComplexityPanel text={checkedText!} results={results} />
             </ProgressiveDisclosure>
-            <ProgressiveDisclosure title="All word results">
               <View style={styles.actions}>
                 {(
                   [
                     ["all", `All (${results.length})`],
-                    ["candidate", `HK-ELE Word List (${counts.candidate})`],
+                    ["outside", `Outside ${coverageTarget}% list (${results.filter(item=>!occurrenceInCoverage(item,coverageTarget)).length})`],
+                    ["candidate", `${coverageTarget}% list (${counts.candidate})`],
                     ["other", `Other words (${counts.other})`],
                     ["compound", `Compounds (${counts.compound})`],
                     ["grammar", `Short forms (${counts.grammar})`],
-                    ["cpb", `Common words (${counts.cpb})`],
+                    ["cpb", `CPB100 words (${counts.cpb})`],
                     ["unavailable", `Check online (${counts.unavailable})`],
                     ["unmatched", `Not matched (${counts.unmatched})`],
                     ["review", `Check in context (${counts.review})`],
                   ] as Array<[ResultFilter, string]>
                 )
-                  .filter(([value]) => value === "all" || counts[value as keyof typeof counts] > 0)
+                  .filter(([value]) => value === "all" || value === "outside" || counts[value as keyof typeof counts] > 0)
                   .map(([value, label]) => (
                     <ChoiceChip
                       key={value}
@@ -454,7 +478,6 @@ export function CheckTextScreen({
                       onPress={() => {
                         setFilter(value);
                         setGroupLimit(OCCURRENCE_BATCH_SIZE);
-                        setOccurrenceLimit(OCCURRENCE_BATCH_SIZE);
                       }}
                     />
                   ))}
@@ -472,15 +495,13 @@ export function CheckTextScreen({
                 />
               </View>
               <Text style={styles.meta}>
-                {visible.length} word occurrences · {groups.length} different forms
+                {visible.length} word {visible.length === 1 ? "occurrence" : "occurrences"} · {groups.length} different {groups.length === 1 ? "form" : "forms"}
               </Text>
               {groups.slice(0, groupLimit).map((group) => (
                 <View key={group.key} style={styles.groupRow}>
-                  <Text style={styles.groupTitle}>
-                    {group.form} × {group.count}
-                  </Text>
+                  <ActionButton kind="secondary" label={`${group.form} · ${group.count} ${group.count === 1 ? "occurrence" : "occurrences"}`} onPress={() => setOccurrencesWord(group.form)} />
                   <Text style={styles.meta}>
-                    {group.family} · {group.status}
+                    {group.family === "No single family" ? group.status : `${group.family} · ${group.status}`}
                   </Text>
                 </View>
               ))}
@@ -495,46 +516,18 @@ export function CheckTextScreen({
                   }
                 />
               ) : null}
-            </ProgressiveDisclosure>
-            <ProgressiveDisclosure title="Words in context">
-              {visible.slice(0, occurrenceLimit).map((item) => (
-                <OccurrenceCard
-                  key={item.occurrenceId}
-                  item={item}
-                  teaching={teaching}
-                  cpbEnabled={cpbEnabled}
-                  hkEnabled={hkEnabled}
-                  customRange={customRange}
-                  onOpenFamily={(key) =>
-                    onOpenFamily(
-                      key,
-                      { ...familyEvidence(key), context: item.context },
-                      item.surface,
-                    )
-                  }
-                />
-              ))}
-              {occurrenceLimit < visible.length ? (
-                <ActionButton
-                  kind="secondary"
-                  label="Show more occurrences"
-                  onPress={() =>
-                    setOccurrenceLimit((value) =>
-                      nextBatchSize(value, visible.length, OCCURRENCE_BATCH_SIZE),
-                    )
-                  }
-                />
-              ) : null}
-            </ProgressiveDisclosure>
+            </ProgressiveDisclosure></View>
           </ProgressiveDisclosure>
         </View>
       ) : null}
+      <TextOccurrencesModal surface={occurrencesWord} results={results} text={checkedText ?? ""} onClose={() => setOccurrencesWord(null)} onOpenWord={openWord} />
       <TextWordSheet
         teaching={teaching}
+        reviewTools={wordSheet ? reviewTools(wordSheet) : undefined}
         item={wordSheet}
         onClose={() => setWordSheet(null)}
         onOpenFamily={(key, surface, context) =>
-          onOpenFamily(key, { members: [{ surface, count: 1 }], count: 1, context }, surface)
+          onOpenFamily(key, { members: [{ surface, count: 1 }], count: 1, context }, surface, wordSheet && surface === wordSheet.surface ? reviewTools(wordSheet) : undefined)
         }
         onRetry={() => void analyze()}
       />
@@ -543,6 +536,8 @@ export function CheckTextScreen({
 }
 
 const styles = StyleSheet.create({
+  editor: { gap: spacing.md },
+  editorLabel: { color: colors.ink, fontSize: 19, fontWeight: "700" },
   resultContent: { gap: spacing.md },
   hiddenResults: { display: "none" },
   content: { padding: spacing.lg, gap: spacing.md },

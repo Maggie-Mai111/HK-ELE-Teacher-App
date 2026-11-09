@@ -4,6 +4,7 @@ export interface KnowledgeFamily {
   basewordKey: string;
   displayFamily: string;
   actualForm: string;
+  occurrenceId?: string;
   context: string;
   tokenCount: number;
   actualFormTokenCount?: number;
@@ -43,6 +44,7 @@ export function collectEligibleFamilies(results: ResolvedOccurrence[]): Knowledg
         basewordKey: owner.baseword_key,
         displayFamily: owner.display_family,
         actualForm: result.surface,
+        occurrenceId: result.occurrenceId,
         context: result.context,
         tokenCount: 1,
         actualFormTokenCount: 1,

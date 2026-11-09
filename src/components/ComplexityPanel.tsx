@@ -19,7 +19,7 @@ export function ComplexityPanel({
   return (
     <View style={styles.box}>
       <Text style={styles.meta}>
-        {value.words} English words · {value.sentences} sentences
+        {value.words} English words · {value.sentences} {value.sentences === 1 ? "sentence" : "sentences"}
       </Text>
       {value.status === "TOO_SHORT" ? (
         <Text style={styles.notice}>
@@ -37,6 +37,9 @@ export function ComplexityPanel({
           </View>
         </View>
       )}
+      {value.status === "READY" && value.words < 100 ? (
+        <Text style={styles.note}>This is a short passage; use the scores as a rough guide.</Text>
+      ) : null}
       <Text style={styles.note}>Higher Reading Ease scores indicate easier text.</Text>
       <Text style={styles.note}>Use alongside your knowledge of the class.</Text>
       <ProgressiveDisclosure title="How these estimates are calculated">

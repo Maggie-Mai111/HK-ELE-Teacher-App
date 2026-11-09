@@ -7,7 +7,7 @@ import { validateUpdateManifest, type DataUpdateManifest } from "../src/services
 import { aiEvidenceForms, type AiFormEvidence } from "../src/services/aiFormEvidence";
 import release from "../src/config/aiFormEvidence.json";
 
-const version = "2026-11-03-a2658-finite-family-closure-v1";
+const version = "2026-11-08-hk4-familiar1764-v1";
 test("old same-spelled agency cannot retain age evidence after its registered move to agent", () => {
   assert.equal(savedIdentityStillApplies("age", ["agency"], "2026-10-20-a-main-v1", version), false);
   assert.equal(savedIdentityStillApplies("use", ["reusable"], "2026-10-20-a-main-v1", version), true);
@@ -18,8 +18,8 @@ test("mixed saved forms require review as a whole instead of silently dropping t
 });
 test("six screened identities remain in Full while ranked and unavailable populations stay distinct", () => {
   const manifest = JSON.parse(readFileSync("public/hkele-data/update-manifest.json", "utf8")) as DataUpdateManifest;
-  assert.equal(validateUpdateManifest(manifest, "0.5.0").counts.teachingScopeExcluded, 176);
-  assert.throws(() => validateUpdateManifest({...manifest, counts: {...manifest.counts, teachingScopeExcluded: 0}}, "0.5.0"), /relationships/);
+  assert.equal(validateUpdateManifest(manifest, "0.5.0").counts.teachingScopeExcluded, 0);
+  assert.throws(() => validateUpdateManifest({...manifest, counts: {...manifest.counts, teachingScopeExcluded: 1}}, "0.5.0"), /relationships/);
 });
 test("the exact AI evidence has classical roots only and the repaired owner, without GPT fallback", () => {
   const document = JSON.parse(gunzipSync(readFileSync("public/assets/" + release.path)).toString()) as AiFormEvidence;

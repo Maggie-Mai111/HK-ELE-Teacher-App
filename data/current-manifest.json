@@ -9,16 +9,16 @@
     "stableFormKey": "form_key"
   },
   "counts": {
-    "candidate": 2658,
-    "inclusiveReference": 2658,
+    "candidate": 1764,
+    "inclusiveReference": 1764,
     "referenceOnly": 0,
-    "totalFamilies": 167630,
-    "forms": 328253,
-    "ranked": 142432,
-    "unranked": 25022,
-    "teachingScopeExcluded": 176
+    "totalFamilies": 167780,
+    "forms": 329202,
+    "ranked": 14245,
+    "unranked": 153535,
+    "teachingScopeExcluded": 0
   },
-  "dataVersion": "2026-11-03-a2658-finite-family-closure-v1",
+  "dataVersion": "2026-11-08-hk4-familiar1764-v1",
   "files": [
     {
       "path": "cpb/cpb-sight-words-100.json",
@@ -43,34 +43,34 @@
     },
     {
       "path": "reference/families.json.gz",
-      "byteSize": 278544,
-      "sha256": "2f0be9c4666ed323664ee5f70ca0a72d0c4edca70225e22be1be2bbb3d93e7fe",
+      "byteSize": 196256,
+      "sha256": "5a7b017977a5d788ce9801de63d7b31a92cf264c5e42224b5e306fc48776ac01",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
     {
       "path": "reference/forms.json.gz",
-      "byteSize": 3808764,
-      "sha256": "f0057753abe081c48a24c35b49f8aa2a18f2be4be5f8a2384a8ed1792d144f29",
+      "byteSize": 3082017,
+      "sha256": "62263f2d3eb0c9beef677c0b2305319d0f648e1650e6462bc96e48654a117c92",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
     {
       "path": "reference/search-routes.json.gz",
-      "byteSize": 3057190,
-      "sha256": "db8a4eb1273a5271e9badcc04ccd28920773ce30b973613fcf53c5cff08c7e9c",
+      "byteSize": 2364002,
+      "sha256": "2d1ef509ba34100f223a169ee893f681fb037de8e1e1950817dd3a04386b4025",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     }
   ],
   "minimumAppVersion": "0.5.0",
-  "releaseDate": "2026-11-03",
+  "releaseDate": "2026-11-05",
   "schemaVersion": "1.0.0",
   "sourcePackages": [
     {
       "packageId": "SEALED_FULL_BAWF_HKELE",
       "path": "DATA_PROVENANCE.md",
-      "sha256": "60846e17ade4a2f748690b67fddbbcd953863aa4b4f39171000c8c4fbebc11fd",
+      "sha256": "1c6e5156f39f3e4f15265b7b8fd84c09456f65d46c5e6b55ac048edc2322ddc8",
       "role": "USER_SELECTED_FULL_HANDOVER"
     }
   ]

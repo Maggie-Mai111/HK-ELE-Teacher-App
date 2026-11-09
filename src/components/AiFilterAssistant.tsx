@@ -144,18 +144,19 @@ export function AiFilterAssistant({
     setBusy(true);
     setError("");
     try {
+      const reviewedScope = teacherAiScope(query, latestScope.current);
       const context = await prepareAiFilterContext(
         repository,
-        interpretation.filters.scope === "full" ? "full" : "core",
+        reviewedScope,
       );
       if (hasAiWordConditions(interpretation.filters)) {
         const evidence = await loadAiFormEvidence(await repository.getDataVersion!());
         onApply(
-          filterAiWordEvidence(context, interpretation.filters, (key) =>
+          {...filterAiWordEvidence(context, interpretation.filters, (key) =>
             aiEvidenceForms(evidence, key),
-          ),
+          ),browseScope:reviewedScope},
         );
-      } else onApply(executeAiFilter(context, interpretation.filters));
+      } else onApply({...executeAiFilter(context, interpretation.filters),browseScope:reviewedScope});
       setExpanded(false);
     } catch {
       setError(
@@ -206,11 +207,11 @@ export function AiFilterAssistant({
             </Text>
           ) : null}
           <Text style={styles.description}>
-            Describe the words you need from the {scope === "core" ? "HK-ELE Word List" : "Full database"}.
+            Describe the words you need from the {scope === "core" ? "90% list" : scope === "core95" ? "95% list" : "Full database"}.
           </Text>
           <Text style={styles.description}>
-            Filters apply to each spelling; frequency ranks describe its word family. Review your
-            search before showing the results.
+            Word details apply to the spelling; ranks compare families. Review the search before
+            showing results.
           </Text>
           <TextInput
             accessibilityLabel="Describe the words to find"
@@ -218,7 +219,7 @@ export function AiFilterAssistant({
             maxLength={300}
             multiline
             onChangeText={setQuery}
-            placeholder="Example: Find 10 words first observed by P4 with HK rank 1–2000 and suffix -tion"
+            placeholder="Example: Find words with the root act."
             ref={inputRef}
             style={styles.input}
             value={query}

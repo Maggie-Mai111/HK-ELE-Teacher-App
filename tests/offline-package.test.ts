@@ -201,8 +201,8 @@ test("actual built package includes full data, OCR and cold-start assets with ex
     await hash(new TextEncoder().encode(JSON.stringify(data))),
     approvals[m.dataVersion].dataInventorySha256,
   );
-  assert.equal(m.counts.totalFamilies, 167630);
-  assert.equal(m.counts.candidate, 2658);
+  assert.equal(m.counts.totalFamilies, 167780);
+  assert.equal(m.counts.candidate, 1764);
   for (const file of m.files) {
     const actual = readFileSync("dist/" + file.path);
     assert.equal(actual.length, file.byteSize, file.path);

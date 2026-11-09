@@ -1,3 +1,6 @@
+import type { TextReviewTools } from "./src/components/TextReviewActions";
+import { useAppDimensions } from "./src/components/useAppDimensions";
+import { TeacherHelp } from "./src/components/TeacherHelp";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -33,6 +36,7 @@ import { colors } from "./src/theme/tokens";
 import { EMPTY_SESSION_WORK } from "./src/services/reopenSession";
 
 export default function App() {
+  const phoneDisplay = useAppDimensions();
   const [sessionWork, setSessionWork] = useState(EMPTY_SESSION_WORK);
   const [feedbackRequest, setFeedbackRequest] = useState<FeedbackRequest | null>(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
@@ -110,9 +114,11 @@ export default function App() {
     previousRoute: AppRoute;
     selectedForm?: string;
     textEvidence?: CheckedTextEvidence;
+    textTools?: TextReviewTools;
   } | null>(null);
   const appRepository = useMemo(() => repository, []);
   const teaching = useTeachingList(appRepository);
+  const [helpOpen, setHelpOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const pageRef = useRef<View>(null);
   const revealTextSection = (section: View | null) => {
@@ -148,12 +154,14 @@ export default function App() {
     basewordKey: string,
     textEvidence?: CheckedTextEvidence,
     selectedForm?: string,
+    textTools?: TextReviewTools,
   ) => {
     setDetail({
       basewordKey,
       previousRoute: route,
       ...(selectedForm ? { selectedForm } : {}),
       ...(textEvidence ? { textEvidence } : {}),
+      ...(textTools ? { textTools: { ...textTools, onShowOccurrences: () => { setDetail(null); textTools.onShowOccurrences(); } } } : {}),
     });
   };
   const navigate = (next: AppRoute) => {
@@ -175,7 +183,7 @@ export default function App() {
     style: Boolean(detail) || route !== screen ? styles.hiddenScreen : styles.activeScreen,
   });
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { width: phoneDisplay.width, maxWidth: phoneDisplay.width, marginHorizontal: "auto", ...(phoneDisplay.phonePreview ? {height: phoneDisplay.height, maxHeight: phoneDisplay.height, overflow: "hidden" as const} : {}) }]}>
       <StatusBar barStyle="dark-content" backgroundColor={colors.canvas} />
       <View style={styles.app}>
         {privacyReady && !firstVisit ? (
@@ -192,6 +200,8 @@ export default function App() {
             >
               <View ref={pageRef} style={styles.page}>
                 <AppMenu
+                  onHelp={() => setHelpOpen(true)}
+                  onSavedWords={() => navigate("list")}
                   onOffline={() => navigate("offline")}
                   onOpenAbout={() => navigate("data")}
                   onFeedback={() =>
@@ -243,10 +253,11 @@ export default function App() {
                           : "Find words"
                     }
                     {...(detail.textEvidence ? { textEvidence: detail.textEvidence } : {})}
+                    {...(detail.textTools ? { textTools: detail.textTools } : {})}
                   />
                 ) : null}
                 <View {...screenVisibility("home")}>
-                  <HomeScreen onNavigate={navigate} />
+                  <HomeScreen onNavigate={navigate} selectedWordCount={teaching.items.reduce((sum, item) => sum + item.selectedForms.length, 0)} />
                 </View>
                 <View {...screenVisibility("browse")}>
                   <BrowseScreen
@@ -295,6 +306,7 @@ export default function App() {
                 0,
               )}
             />
+            {helpOpen ? <TeacherHelp mode="guide" returnFocusLabel="Open menu" onClose={() => setHelpOpen(false)} /> : null}
             <FeedbackPanel request={feedbackRequest} onClose={() => setFeedbackRequest(null)} />
           </>
         ) : !privacyReady ? (

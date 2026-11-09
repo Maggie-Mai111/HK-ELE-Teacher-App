@@ -78,7 +78,7 @@ test("family-label searches do not invent an accepted spelling or promise an abs
     const normalGroups = await loadFamilySearchGroups(repository, normal.owners);
     assert.equal(
       familySearchFormSummary(normalGroups, "stressed"),
-      "51 word forms · Your search first; other forms follow Sort.",
+      "51 word forms · Your search stays first. Sort changes the other forms.",
     );
     for (const sort of ["frequency-desc", "az", "za"] as const)
       assert.equal(

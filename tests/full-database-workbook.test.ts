@@ -9,7 +9,7 @@ const hash = async (bytes: Uint8Array) => createHash("sha256").update(bytes).dig
 test("the full database download is the verified complete workbook", async () => {
   const file = new Uint8Array(readFileSync(`public/${release.assetPath}`));
   await verifyWorkbookDownload(file, release, release.dataVersion, hash);
-  assert.deepEqual(release.counts, {wordForms: 328253, fullFamilies: 167630, wordListFamilies: 2658, worksheets: 1});
+  assert.deepEqual(release.counts, {wordForms: 329202, fullFamilies: 167780, wordListFamilies: 1764, worksheets: 1});
 });
 test("download refuses an older data generation, a truncated file and a corrupt file", async () => {
   const file = new Uint8Array([0x50, 0x4b, 3, 4]);

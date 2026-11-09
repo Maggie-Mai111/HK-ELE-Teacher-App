@@ -1,3 +1,4 @@
+import { teacherUseResult } from "../services/teacherUsePolicy";
 import currentManifest from "../../data/current-manifest.json";
 import { Asset } from "expo-asset";
 import { gunzipSync, strFromU8 } from "fflate";
@@ -145,7 +146,7 @@ export class BundledReferenceRepository implements HkeleRepository {
   }
 
   async browse(request: BrowseRequest): Promise<BrowsePage> {
-    if (request.scope === "full") {
+    if (request.scope === "full" || request.scope === "core95") {
       throw new Error("Full database requires the registered static-shard connection.");
     }
     const source = (await this.families()).filter((family) =>
@@ -173,7 +174,7 @@ export class BundledReferenceRepository implements HkeleRepository {
   }
 
   async aiFilterFamilies(scope?: import("../domain/hkele").BrowseScope): Promise<FamilyRecord[]> {
-    if (scope === "full") throw new Error("Connect to load the full database for AI filtering.");
+    if (scope === "full" || scope === "core95") throw new Error("Connect to load the full database for AI filtering.");
     const [families, forms] = await Promise.all([this.families(), this.forms()]);
     return deriveAiFilterFamilies(families, forms);
   }
@@ -286,7 +287,7 @@ export class BundledReferenceRepository implements HkeleRepository {
       records.filter((row) => Number(row.match_priority) !== bestPriority),
     );
     const allowed = owners.filter((owner) => !owner.blocked);
-    return {
+    return teacherUseResult({
       status: allowed.length === 0 ? "BLOCKED" : allowed.length > 1 ? "AMBIGUOUS" : "RESOLVED",
       submittedQuery,
       normalizedQuery,
@@ -296,7 +297,7 @@ export class BundledReferenceRepository implements HkeleRepository {
       alternatives,
       identityException: null,
       dataMode: "bundled-reference",
-    };
+    });
   }
 
   async resolveOccurrences(
@@ -324,7 +325,8 @@ export class BundledReferenceRepository implements HkeleRepository {
             dataMode: "bundled-reference",
           };
         }
-        const result = await cache.get(occurrence.surface);
+        const cached = await cache.get(occurrence.surface);
+        const result = cached ? teacherUseResult(cached,{text,start:occurrence.startOffset,end:occurrence.endOffset}) : undefined;
         if (!result) throw new Error("Occurrence search result is missing");
         const owners = result.owners.filter(owner => !owner.match_classes.includes("CONDITIONAL_LOOKUP_ONLY") && !owner.match_classes.includes("FAMILY_LABEL_ONLY"));
         const reviewOnly = owners.length !== result.owners.length;

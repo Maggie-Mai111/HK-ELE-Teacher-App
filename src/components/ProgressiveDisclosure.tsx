@@ -9,6 +9,8 @@ interface Props extends PropsWithChildren {
   summary?: string;
   defaultOpen?: boolean;
   keepMounted?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ProgressiveDisclosure({
@@ -16,9 +18,12 @@ export function ProgressiveDisclosure({
   summary,
   defaultOpen = false,
   keepMounted = false,
+  open: controlledOpen,
+  onOpenChange,
   children,
 }: Props) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [expandedState, setOpen] = useState(defaultOpen);
+  const open=controlledOpen??expandedState;
   return (
     <View style={styles.box}>
       <Pressable
@@ -26,7 +31,7 @@ export function ProgressiveDisclosure({
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         aria-expanded={open}
-        onPress={() => setOpen((value) => !value)}
+        onPress={() => {setOpen(!open);onOpenChange?.(!open);}}
         style={({ pressed }) => [styles.trigger, pressed && styles.pressed]}
       >
         <View style={styles.titleGroup}>

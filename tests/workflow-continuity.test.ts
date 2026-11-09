@@ -29,6 +29,7 @@ const web = webContext.HKELE_TEXT_WORKSPACE as {
     items: WebOccurrence[],
     common: Set<string>,
     level?: string | null,
+    options?: {filter?: string; judgements?: Record<string,boolean>},
   ) => Array<{
     key: string;
     form: string;
@@ -37,6 +38,7 @@ const web = webContext.HKELE_TEXT_WORKSPACE as {
 };
 const toWeb = (item: ResolvedOccurrence): WebOccurrence => ({
   surface: item.surface,
+  occurrence_id: item.occurrenceId,
   normalized_token: item.normalizedToken,
   status: item.status,
   start_offset: item.startOffset,
@@ -138,6 +140,7 @@ test("Web reader reconstructs every original character and makes only verified o
   const text = "‘cell’ & <notes>\ncell.";
   const tokens = scan(text).occurrences.map((item) => ({
     surface: item.surface,
+  occurrence_id: item.occurrenceId,
     start_offset: item.startOffset,
     end_offset: item.endOffset,
   }));
@@ -154,35 +157,11 @@ test("Web reader reconstructs every original character and makes only verified o
   assert.equal(safe.filter((part) => part.item).length, 0);
 });
 
-test("Web pre-teaching follows App evidence choices, missing-rank handling and explicit class context", () => {
-  const records = [
-    makeOccurrence("reusable", makeFamily("use", 30), 0),
-    makeOccurrence("plastic", makeFamily("plastic", 1500, { msvl: "Science" }), 10),
-    makeOccurrence("rare", makeFamily("rare", 8000), 18),
-    makeOccurrence("unknown", makeFamily("unknown", null), 23),
-    makeOccurrence(
-      "later",
-      makeFamily("later", 200, {
-        textbook_first_seen_level: "P1",
-        matched_form_evidence: {
-          first_seen_hk_textbooks: "P5",
-        } as import("../src/domain/hkele").FormRecord,
-      }),
-      31,
-    ),
-    makeOccurrence("Name", makeFamily("name", 9000), 37),
-  ];
-  for (const level of [null, "P4"] as const) {
-    const app = generatePreteachSuggestions("", records, level);
-    const entries = web.suggestions(records.map(toWeb), new Set(), level);
-    assert.equal(
-      JSON.stringify(entries.map((item) => item.key)),
-      JSON.stringify(app.map((item) => item.basewordKey)),
-    );
-    assert.ok(!entries.some((item) => item.key === "unknown"));
-    assert.equal(
-      entries.some((item) => item.reasons.includes("Textbooks: P5 · after P4")),
-      level === "P4",
-    );
-  }
+test("Web and App share teacher-mark and explicit fact-filter behaviour",()=>{
+ const family=makeFamily("run",1001),records=[makeOccurrence("run",family,0),makeOccurrence("run",family,10),makeOccurrence("rare",makeFamily("rare",8000),20)];
+ for(const filter of ["marked","all","academic","later","repeated"] as const){
+  const options={filter,judgements:{[records[0]!.occurrenceId]:true,[records[1]!.occurrenceId]:false}};
+  const app=generatePreteachSuggestions("",records,"P4",Infinity,options),entries=web.suggestions(records.map(toWeb),new Set(),"P4",options);
+  assert.equal(JSON.stringify(entries.map(e=>[e.key,e.form,e.reasons])),JSON.stringify(app.map(e=>[e.basewordKey,e.actualForm,e.reasons])));
+ }
 });

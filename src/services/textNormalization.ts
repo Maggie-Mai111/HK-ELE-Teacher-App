@@ -1,5 +1,8 @@
 import rules from "../config/textNormalization.json";
 import type { SurfaceSearchResult } from "../domain/hkele";
+export function isWordListForm(owner: SurfaceSearchResult["owners"][number] | undefined | null): boolean {
+  return (owner?.candidate_member === true || owner?.candidate_member === 1) && owner?.matched_form_evidence?.familiar_member === 1;
+}
 const RULES=rules as Record<string,{forms:string[];owners:string[];ambiguous:boolean}>;
 export async function normalizedAnalysis(surface:string, lookup:(form:string)=>Promise<SurfaceSearchResult>) {
   const key=surface.normalize("NFKC").toLowerCase().replace(/[’‘ʼ＇]/g,"'");
@@ -10,7 +13,7 @@ export async function normalizedAnalysis(surface:string, lookup:(form:string)=>P
     const result=await lookup(targets[i]!);
     const owners=(rule ? [...result.owners,...(result.alternatives??[])] : result.owners).filter(o=>!o.blocked && (rule || !o.match_classes.includes("FAMILY_LABEL_ONLY")) && !o.match_classes.includes("CONDITIONAL_LOOKUP_ONLY"));
     const chosen=rule ? owners.find(o=>o.baseword_key===rule.owners[i]) : owners.length===1 ? owners[0] : null;
-    output.push({form:targets[i]!,familyKey:chosen?.baseword_key??null,wordListMember:chosen?Boolean(chosen.candidate_member):false});
+    output.push({form:targets[i]!,familyKey:chosen?.baseword_key??null,wordListMember:chosen?isWordListForm(chosen):false});
   }
   return {applied:Boolean(rule),ambiguous:Boolean(rule?.ambiguous),tokens:output};
 }

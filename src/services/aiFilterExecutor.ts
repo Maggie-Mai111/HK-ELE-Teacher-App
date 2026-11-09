@@ -17,6 +17,7 @@ export interface AiFilterExecutionContext {
 }
 
 export interface AiFilterExecution {
+  browseScope?: BrowseScope;
   filters: AiFilterConditions;
   matchedBeforeLimit: number;
   families: FamilyRecord[];

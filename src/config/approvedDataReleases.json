@@ -60,6 +60,26 @@
       "ranked": 142432,
       "unranked": 25022,
       "teachingScopeExcluded": 176
+    },
+    "2026-11-08-hk4-familiar1764-v1": {
+      "candidate": 1764,
+      "inclusiveReference": 1764,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 14245,
+      "unranked": 153535,
+      "teachingScopeExcluded": 0
+    },
+    "2026-11-08-hk4-familiar1764-v1": {
+      "candidate": 1764,
+      "inclusiveReference": 1764,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 14245,
+      "unranked": 153535,
+      "teachingScopeExcluded": 0
     }
   }
 }

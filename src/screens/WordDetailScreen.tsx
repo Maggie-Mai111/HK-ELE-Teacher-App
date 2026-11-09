@@ -1,3 +1,7 @@
+import { teacherBandLabel } from "../services/teacherLabels";
+import { MarkedContext } from "../components/MarkedContext";
+import { TextReviewActions, type TextReviewTools } from "../components/TextReviewActions";
+import { normalizeCpbSurface } from "../services/cpbService";
 import { LexicalUsesPanel } from "../components/LexicalUsesPanel";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
@@ -10,7 +14,6 @@ import { EvidenceTokens } from "../components/EvidenceTokens";
 import { evidenceKind } from "../services/evidenceTokens";
 import type { FeedbackRequest } from "../components/FeedbackPanel";
 import { DataModeNotice } from "../components/DataModeNotice";
-import { CurrentLesson } from "../components/CurrentLesson";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { MorphologyLegend, SafeMorphologyForm } from "../components/SafeMorphologyForm";
 import {
@@ -43,6 +46,7 @@ interface Props {
   backLabel?: string;
   onFeedback: (request: FeedbackRequest) => void;
   textEvidence?: CheckedTextEvidence;
+  textTools?: TextReviewTools;
   sourceLabel?: string;
 }
 
@@ -142,6 +146,7 @@ export function WordDetailScreen({
   onBack,
   onFeedback,
   textEvidence,
+  textTools,
   selectedForm,
   backLabel = "← Back to results",
   sourceLabel = "Find words",
@@ -249,7 +254,7 @@ export function WordDetailScreen({
               <View style={styles.contextBox}>
                 <Text style={styles.caution}>In your text</Text>
                 <Text selectable style={styles.context}>
-                  {textEvidence.context}
+                  {textTools?.excerpt && normalizeCpbSurface(chosenWord) === normalizeCpbSurface(textTools.surface) ? <MarkedContext excerpt={textTools.excerpt} /> : textEvidence.context}
                 </Text>
               </View>
             ) : null}
@@ -290,7 +295,7 @@ export function WordDetailScreen({
               label={inList ? "Selected" : `Add ${chosenWord} to selected words`}
               onPress={() => teaching.add(detail.family, chosenWord, sourceLabel)}
             />
-            <CurrentLesson teaching={teaching} />
+
             <View style={styles.feedbackActions}>
               <ActionButton
                 kind="secondary"
@@ -350,6 +355,7 @@ export function WordDetailScreen({
                   .join(" · ")}
               />
               <DetailRow label="Total occurrences" value={textEvidence.count} />
+              {textTools && normalizeCpbSurface(chosenWord) === normalizeCpbSurface(textTools.surface) ? <TextReviewActions key={textTools.occurrenceId ?? textTools.surface} tools={textTools} /> : null}
             </AppCard>
           ) : null}
           <ProgressiveDisclosure
@@ -359,7 +365,7 @@ export function WordDetailScreen({
             <DetailRow label="Word list" value={familySetLabel(detail.family)} />
             <DetailRow label="Overall family rank" value={detail.family.overall_frequency_order} />
             <DetailRow label="HK family rank" value={detail.family.current_hk_frequency_rank} />
-            <DetailRow label="HK frequency band" value={detail.family.current_hk_frequency_band} />
+            <DetailRow label="HK frequency band" value={teacherBandLabel(detail.family.current_hk_frequency_band)} />
             <DetailRow label="First seen in HK textbooks" value={morphology.firstSeen} />
             <DetailRow
               label="US grade reference"

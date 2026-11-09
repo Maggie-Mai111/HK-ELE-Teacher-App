@@ -128,34 +128,14 @@ test("safe morphology highlights only exact registered concatenation", () => {
   assert.equal(safeMorphologySegments({ ...form, prefix: "re · over" }), null);
 });
 
-test("pre-teach suggestions exclude CPB and review items and show transparent reasons", () => {
-  const technical = makeFamily("technical", 3500, {
-    awl: 1,
-    textbook_first_seen_level: "S1",
-    matched_form_evidence: { awl: 1, first_seen_hk_textbooks: "S1" } as FormRecord,
-  });
-  const results = [
-    makeOccurrence("The", makeFamily("the", 1), 0),
-    makeOccurrence("technical", technical, 4),
-    makeOccurrence("technical", technical, 14),
-    makeOccurrence("London", makeFamily("london", 6000), 24),
-    { ...makeOccurrence("US", technical, 24), status: "BLOCKED" as const, owners: [] },
-    {
-      ...makeOccurrence("unclear", technical, 30),
-      status: "AMBIGUOUS" as const,
-      bestOwnerCount: 2,
-      owners: [technical, makeFamily("unclear", 5000)],
-    },
-  ];
-  const suggestions = generatePreteachSuggestions(
-    "The technical technical London US",
-    results,
-    "P4",
-  );
-  assert.equal(suggestions.length, 2);
-  assert.equal(suggestions[0]?.basewordKey, "technical");
-  assert.ok(suggestions[0]?.reasons.includes("HK family rank: 3,500"));
-  assert.ok(suggestions[0]?.reasons.includes("Listed in AWL"));
-  assert.ok(suggestions[0]?.reasons.includes("Appears 2 times"));
-  assert.ok(suggestions[0]?.reasons.includes("Textbooks: S1 · after P4"));
+test("teacher chooses explanation uses; record browsing preserves exact evidence and no inferred ownership",()=>{
+ const f=makeFamily("technical",3500,{matched_form_evidence:{awl:1,first_seen_hk_textbooks:"S1"} as FormRecord});
+ const a=makeOccurrence("technical",f,0),b=makeOccurrence("technical",f,10);
+ const ambiguous={...makeOccurrence("unclear",f,30),status:"AMBIGUOUS" as const,owners:[f,makeFamily("other",50)]};
+ const items=[a,b,ambiguous];
+ assert.deepEqual(generatePreteachSuggestions("",items,"P4"),[]);
+ const entries=generatePreteachSuggestions("",items,"P4",Infinity,{filter:"all"});
+ assert.equal(entries.length,1);assert.equal(entries[0]!.occurrences,2);
+ assert.ok(entries[0]!.reasons.includes("Listed in AWL"));
+ assert.ok(entries[0]!.reasons.includes("Textbooks: S1 · after P4"));
 });

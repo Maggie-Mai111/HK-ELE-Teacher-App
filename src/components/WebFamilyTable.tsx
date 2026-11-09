@@ -1,3 +1,4 @@
+import { teacherBandLabel } from "../services/teacherLabels";
 import { useMemo, useState } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
@@ -61,7 +62,7 @@ function cellValue(key: ColumnKey, family: FamilyRecord): string {
       return family.overall_frequency_order?.toLocaleString("en") ?? "Unranked";
     case "hk":
       return (
-        [family.current_hk_frequency_rank?.toLocaleString("en"), family.current_hk_frequency_band]
+        [family.current_hk_frequency_rank?.toLocaleString("en"), teacherBandLabel(family.current_hk_frequency_band)]
           .filter(Boolean)
           .join(" · ") || "—"
       );

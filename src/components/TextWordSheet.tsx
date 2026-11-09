@@ -1,8 +1,11 @@
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { ResolvedOccurrence } from "../domain/hkele";
 import { grammaticalRelationDisplay } from "../services/grammaticalRelationService";
 import { textWordAction } from "../services/textReaderService";
 import { colors, spacing } from "../theme/tokens";
+import { useAppDimensions } from "./useAppDimensions";
+import { MarkedContext } from "./MarkedContext";
+import { TextReviewActions, type TextReviewTools } from "./TextReviewActions";
 import { ActionButton } from "./ActionButton";
 import { CompoundCard } from "./CompoundCard";
 import type { TeachingListStore } from "../services/teachingListService";
@@ -13,13 +16,16 @@ export function TextWordSheet({
   onOpenFamily,
   onRetry,
   teaching,
+  reviewTools,
 }: {
   item: ResolvedOccurrence | null;
   onClose: () => void;
   onOpenFamily: (key: string, surface: string, context: string) => void;
   onRetry: () => void;
   teaching?: TeachingListStore;
+  reviewTools?: TextReviewTools | undefined;
 }) {
+  const { height } = useAppDimensions();
   if (!item) return null;
   const action = textWordAction(item);
   const owners = item.owners.filter((owner) => !owner.blocked && !owner.display_blocked);
@@ -32,7 +38,8 @@ export function TextWordSheet({
           onPress={onClose}
           style={StyleSheet.absoluteFill}
         />
-        <View accessibilityViewIsModal style={styles.sheet}>
+        <View accessibilityViewIsModal style={[styles.sheet, { maxHeight: height - 32 }]}>
+          <ScrollView style={{ flexShrink: 1 }} contentContainerStyle={{ gap: spacing.md }}>
           <Text accessibilityRole="header" aria-level={2} style={styles.word}>
             {item.surface}
           </Text>
@@ -48,7 +55,7 @@ export function TextWordSheet({
             />
           ) : action === "choices" ? (
             <>
-              <Text style={styles.note}>Choose a word family</Text>
+              <Text style={styles.note}>Choose the family that fits this sentence.</Text>
               {owners.map((owner) => (
                 <ActionButton
                   key={owner.baseword_key}
@@ -82,12 +89,17 @@ export function TextWordSheet({
           ) : (
             <Text style={styles.note}>
               {item.status === "BLOCKED"
-                ? "Check the spelling or use in this sentence."
+                ? "Check how this word is used in the sentence."
                 : item.status === "UNSUPPORTED"
-                  ? "No word entry for this part. You can still explore the other words in your text."
-                  : "No entry found in the wordlist."}
+                  ? "This part was not checked. You can still explore the other words."
+                  : "Not automatically matched in this text. You can still explore the other words."}
             </Text>
           )}
+          {reviewTools && /[A-Za-z]/.test(item.surface) ? <>
+            <Text style={styles.note}>{reviewTools.excerpt ? <MarkedContext excerpt={reviewTools.excerpt} /> : item.context}</Text>
+            <TextReviewActions key={item.occurrenceId} tools={reviewTools} />
+          </> : null}
+          </ScrollView>
           <ActionButton kind="secondary" label="Close" onPress={onClose} />
         </View>
       </View>

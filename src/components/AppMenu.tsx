@@ -4,15 +4,19 @@ import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../theme/tokens";
 
 export function AppMenu({
+  onHelp,
   onOpenAbout,
   onFeedback,
   onPrivacy,
   onOffline,
+  onSavedWords,
 }: {
+  onHelp: () => void;
   onOpenAbout: () => void;
   onFeedback: () => void;
   onPrivacy: () => void;
   onOffline: () => void;
+  onSavedWords?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<View>(null);
@@ -46,6 +50,12 @@ export function AppMenu({
       </Pressable>
       {open ? (
         <View accessibilityLabel="Application menu" style={styles.menu}>
+          <Pressable accessibilityRole="button" onPress={() => { setOpen(false); onHelp(); }} style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}>
+            <Text style={styles.menuTitle}>Quick guide</Text>
+          </Pressable>
+          {onSavedWords ? <Pressable accessibilityRole="button" onPress={() => { setOpen(false); onSavedWords(); }} style={({ pressed }) => [styles.menuItem, pressed && styles.pressed]}>
+            <Text style={styles.menuTitle}>Selected words</Text>
+          </Pressable> : null}
           <Pressable
             accessibilityRole="button"
             onPress={() => {

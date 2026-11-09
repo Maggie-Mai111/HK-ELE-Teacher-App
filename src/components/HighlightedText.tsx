@@ -82,7 +82,7 @@ export function HighlightedText({
       {cpbEnabled || hkEnabled || customRange ? (
         <View accessibilityLabel="Highlight legend" style={styles.legend}>
           {cpbEnabled ? (
-            <Text style={[styles.legendItem, styles.cpb]}>★ CPB100 sight words</Text>
+            <Text style={[styles.legendItem, styles.cpb]}>CPB100 sight words · underline</Text>
           ) : null}
           {hkEnabled ? (
             <>
@@ -98,17 +98,7 @@ export function HighlightedText({
           ) : null}
         </View>
       ) : null}
-      {cpbEnabled ? (
-        <Text style={styles.legendItem}>
-          CPB100 is a reference list of 100 common sight words. HK frequency is a separate measure.
-        </Text>
-      ) : null}
-      {hkEnabled ? (
-        <Text style={styles.legendItem}>
-          HK colours show how often word families appear in Hong Kong English. Use your knowledge of
-          the class to decide which words need attention.
-        </Text>
-      ) : null}
+      {cpbEnabled && hkEnabled ? <Text style={styles.legendItem}>CPB100 uses an underline; HK family rank uses colour.</Text> : null}
     </View>
   );
 }
@@ -117,7 +107,7 @@ const styles = StyleSheet.create({
   box: { gap: spacing.sm },
   text: { color: colors.ink, fontSize: 20, lineHeight: 32 },
   token: { borderRadius: 3, overflow: "hidden" },
-  cpb: { backgroundColor: colors.cpbSoft, color: colors.cpb, textDecorationLine: "underline" },
+  cpb: { textDecorationLine: "underline", textDecorationStyle: "dotted", textDecorationColor: colors.cpb },
   hkTop: { backgroundColor: colors.hkTopSoft, color: colors.hkTop },
   hkNext: { backgroundColor: colors.hkNextSoft, color: colors.hkNext },
   hkLater: { backgroundColor: colors.hkLaterSoft, color: colors.hkLater },

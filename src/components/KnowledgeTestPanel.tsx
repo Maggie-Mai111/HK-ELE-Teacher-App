@@ -10,15 +10,13 @@ import {
   type KnowledgeResponses,
 } from "../services/knowledgeTestService";
 import type { TeachingListStore } from "../services/teachingListService";
+import { MarkedContext } from "./MarkedContext";
+import { textOccurrenceExcerpt, responsesForWords, type WordJudgements } from "../services/textReviewService";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
 import { ProgressiveDisclosure } from "./ProgressiveDisclosure";
 
 type Mode = "n10" | "n20" | "full" | null;
-
-function percent(value: number | null): string {
-  return value === null ? "Complete all questions to calculate" : `${value.toFixed(1)}%`;
-}
 
 export function KnowledgeTestPanel({
   text,
@@ -27,6 +25,8 @@ export function KnowledgeTestPanel({
   onNotKnownChange,
   onHasResponsesChange,
   onKnownChange,
+  judgements,
+  onJudge,
 }: {
   text: string;
   results: ResolvedOccurrence[];
@@ -34,11 +34,13 @@ export function KnowledgeTestPanel({
   onNotKnownChange?: (families: KnowledgeFamily[]) => void;
   onHasResponsesChange?: (hasResponses: boolean) => void;
   onKnownChange?: (forms: string[]) => void;
+  judgements?: WordJudgements;
+  onJudge?: (occurrenceId: string, value: boolean) => void;
 }) {
   const eligible = useMemo(() => collectEligibleFamilies(results), [results]);
   const [mode, setMode] = useState<Mode>(null);
-  const [responses, setResponses] = useState<KnowledgeResponses>({});
-  const hasResponses = Object.keys(responses).length > 0;
+  const [localResponses, setResponses] = useState<KnowledgeResponses>({});
+  const hasResponses = Object.keys(judgements ?? localResponses).length > 0;
   useEffect(() => onHasResponsesChange?.(hasResponses), [hasResponses, onHasResponsesChange]);
   useEffect(() => () => onHasResponsesChange?.(false), [onHasResponsesChange]);
   const seed = useMemo(() => `hkele:${text.length}:${text}`, [text]);
@@ -54,6 +56,7 @@ export function KnowledgeTestPanel({
     if (mode === "full") return eligible;
     return [];
   }, [eligible, mode, seed]);
+  const responses = useMemo(() => judgements ? responsesForWords(active, judgements) : localResponses, [active, judgements, localResponses]);
   const coverage = calculateCoverage(active, responses);
   const notKnown = useMemo(
     () => active.filter((family) => responses[family.basewordKey] === false),
@@ -74,23 +77,20 @@ export function KnowledgeTestPanel({
   return (
     <View style={styles.box}>
       <Text style={styles.intro}>
-        Mark whether your students know each word in context. Answers clear when you reopen HK-ELE
-        or check another text.
+        Mark whether students know each word in the sentence shown. You can also tap words
+        in the passage. Marks clear when you check another text or close HK-ELE.
       </Text>
       <ProgressiveDisclosure title="How this check works">
         <Text style={styles.note}>
-          Quick checks choose 10 or 20 word families from your text. The same text gives the same
-          selection each time. To include every family found, choose All matched families.
+          Choose 10, 20 or all matched families. The check shows one word from each family.
+          The same text gives the same quick-check selection.
         </Text>
         <Text style={styles.note}>
-          You answer one word in context for each family. Percentages cover only the displayed words
-          and appearances of those spellings in the text. Words without a match, words needing a
-          context check and separate compound entries are not included.
+          Results describe only the examples shown. Other uses of the same spelling are separate. Unmatched words,
+          words with more than one possible family and separate compounds are left out.
         </Text>
         <Text style={styles.note}>
-          Not known puts the displayed word first in pre-teaching. Known hides that displayed word
-          from automatic suggestions for this check. Other forms and meanings are not marked as
-          known.
+          May need explaining keeps this example in Words to explain. Known applies only to this occurrence; it does not mark other uses or the whole family as known.
         </Text>
       </ProgressiveDisclosure>
       <View style={styles.actions}>
@@ -124,12 +124,11 @@ export function KnowledgeTestPanel({
                 </Text>
                 <Text style={styles.form}>{item.actualForm}</Text>
                 <Text style={styles.family}>
-                  Family: {item.displayFamily} · {item.actualFormTokenCount ?? item.tokenCount} occurrence
-                  {(item.actualFormTokenCount ?? item.tokenCount) === 1 ? "" : "s"} of this word
+                  Family: {item.displayFamily}
                 </Text>
-                <Text style={styles.context}>{item.context}</Text>
+                <Text style={styles.context}>{item.occurrenceId && results.find(row => row.occurrenceId === item.occurrenceId) ? <MarkedContext excerpt={textOccurrenceExcerpt(text, results.find(row => row.occurrenceId === item.occurrenceId)!)} /> : item.context}</Text>
                 <Text style={styles.prompt}>
-                  Do your students (or you) know the meaning of this word?
+                  Do students know this meaning in the sentence?
                 </Text>
                 <View style={styles.actions}>
                   <ActionButton
@@ -137,21 +136,21 @@ export function KnowledgeTestPanel({
                     kind={answer === true ? "primary" : "secondary"}
                     label="Known"
                     onPress={() =>
-                      setResponses((current) => ({ ...current, [item.basewordKey]: true }))
+                      onJudge ? onJudge(item.occurrenceId ?? item.basewordKey, true) : setResponses((current) => ({ ...current, [item.basewordKey]: true }))
                     }
                   />
                   <ActionButton
-                    accessibilityLabel={`Not known: ${item.actualForm}`}
+                    accessibilityLabel={`May need explaining: ${item.actualForm}`}
                     kind={answer === false ? "primary" : "secondary"}
-                    label="Not known"
+                    label="May need explaining"
                     onPress={() =>
-                      setResponses((current) => ({ ...current, [item.basewordKey]: false }))
+                      onJudge ? onJudge(item.occurrenceId ?? item.basewordKey, false) : setResponses((current) => ({ ...current, [item.basewordKey]: false }))
                     }
                   />
                 </View>
                 {answer === false ? (
                   <View style={styles.notKnownAction}>
-                    <Text style={styles.note}>Marked Not known</Text>
+                    <Text style={styles.note}>Marked May need explaining</Text>
                     <ActionButton
                       disabled={teaching.items.some(
                         (entry) =>
@@ -172,7 +171,7 @@ export function KnowledgeTestPanel({
                         teaching.add(
                           item.family,
                           item.actualForm,
-                          "Learner/teacher marked as Not known",
+                          "Chosen from word check",
                         )
                       }
                     />
@@ -192,22 +191,8 @@ export function KnowledgeTestPanel({
                     ? `Checked words (${active.length})`
                     : `Sample of ${active.length} words from ${active.length} matched families`}
                 </Text>
-                <Text style={styles.resultLine}>
-                  Words marked Known: {coverage.knownFamilies}/{coverage.totalFamilies} (
-                  {percent(coverage.familyKnownPercent)})
-                </Text>
-                <Text style={styles.resultLine}>
-                  Words marked Not known: {coverage.unfamiliarFamilies}/{coverage.totalFamilies} (
-                  {percent(coverage.familyUnfamiliarPercent)})
-                </Text>
-                <Text style={styles.resultLine}>
-                  Known occurrences in this check: {coverage.knownTokens}/{coverage.totalTokens} (
-                  {percent(coverage.tokenCoveragePercent)})
-                </Text>
-                <Text style={styles.resultLine}>
-                  Unfamiliar occurrences in this check:{" "}
-                  {percent(coverage.unfamiliarTokenRatePercent)}
-                </Text>
+                <Text style={styles.resultLine}>Known: {coverage.knownFamilies} · May need explaining: {coverage.unfamiliarFamilies}</Text>
+                <Text style={styles.note}>These are your marks for the examples shown, not a score for the whole text or class.</Text>
               </>
             ) : (
               <Text style={styles.note}>Mark the remaining words to see the results.</Text>

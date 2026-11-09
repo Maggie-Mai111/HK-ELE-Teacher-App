@@ -57,7 +57,7 @@ test("real A search lists all related forms with the exact query, genuine form c
     const rows = sortWordForms(groups[0]!.forms, "reusable", groups[0]!.frequencies);
     assert.equal(rows[0]!.form.form, "reusable");
     assert.equal(rows[1]!.form.form, "use");
-    assert.equal(rows[1]!.frequency, 39997);
+    assert.equal(rows[1]!.frequency, 39899);
     assert.equal(rows[2]!.form.form, "used");
     const be = await repository.getFamily("stress");
     assert.equal(
@@ -72,13 +72,14 @@ test("real A search lists all related forms with the exact query, genuine form c
     globalThis.fetch = original;
   }
 });
-test("ambiguous search retains both registered families and every accepted form", async () => {
+test("special spelling stays in alternatives with every accepted form while the ordinary family is preferred", async () => {
   const original = globalThis.fetch;
   globalThis.fetch = async (input) => dataResponse(String(input));
   try {
     const repository = new StaticShardRepository("https://fixture.invalid/hkele-data");
     const result = await repository.searchSurface("da");
-    const groups = await loadFamilySearchGroups(repository, result.owners);
+    assert.deepEqual(result.owners.map(owner=>owner.baseword_key),["da"]);
+    const groups = await loadFamilySearchGroups(repository, [...result.owners,...result.alternatives.filter(owner=>owner.match_classes.includes("SECONDARY_RECORDED_READING"))]);
     assert.deepEqual(
       groups.map((g) => g.family.baseword_key),
       ["da", "the"],
@@ -110,7 +111,7 @@ test("frequency shard failure retries; installed generations never fall back to 
     );
     const hybrid = new HybridRepository(primary, {} as HkeleRepository);
     await assert.rejects(hybrid.getWordFormFrequencies("use"), /503/);
-    assert.equal(wordFormFrequency((await hybrid.getWordFormFrequencies("use")).use), 39997);
+    assert.equal(wordFormFrequency((await hybrid.getWordFormFrequencies("use")).use), 39899);
     assert.equal(hybrid.getDataMode(), "installed-full");
   } finally {
     globalThis.fetch = original;

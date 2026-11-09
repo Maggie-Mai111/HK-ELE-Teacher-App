@@ -98,15 +98,17 @@ test("main passage flow starts with reading and pre-teaching, with extra tools o
   const source = readFileSync("src/screens/CheckTextScreen.tsx", "utf8");
   const reader = source.indexOf('accessibilityLabel="Checked text"');
   const suggestions = source.indexOf("<PreteachPanel", reader);
-  const knowledge = source.indexOf('title="Check word knowledge"', suggestions);
-  const picker = source.indexOf('title="Choose more lesson words"', knowledge);
-  const details = source.indexOf('title="More text details"', picker);
+  const tools = source.indexOf('title="More text tools" keepMounted', suggestions);
+  const knowledge = source.indexOf('title="Check word familiarity"', tools);
+  const details = source.indexOf('title="All word results" keepMounted', knowledge);
+  const picker = source.indexOf("<LessonWordPicker", details);
   assert.ok(
     reader > 0 &&
       suggestions > reader &&
-      knowledge > suggestions &&
-      picker > knowledge &&
-      details > picker,
+      tools > suggestions &&
+      knowledge > tools &&
+      details > knowledge &&
+      picker > details,
   );
   assert.match(source, /useState\(false\)/);
   assert.match(source, /setCheckedText\(source\)/);
@@ -131,7 +133,7 @@ test("teacher workflow copy omits internal disclaimers while retaining privacy a
     /An intention for this lesson, not a test|Source this session:|cannot accurately distinguish|Vocabulary coverage is not the same/,
   );
   assert.match(knowledge, /Sample of/);
-  assert.match(knowledge, /Answers clear when you reopen HK-ELE/);
+  assert.match(knowledge, /Marks clear when you check another text or close HK-ELE/);
   assert.match(
     readFileSync("src/components/PrivacyPanel.tsx", "utf8"),
     /Click and feature-use records\s+are\s+not currently collected/,

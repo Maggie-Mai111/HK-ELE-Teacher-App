@@ -6,32 +6,38 @@ import {
   Platform,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 
 import { ocrAdapter } from "../services/ocr/ocrAdapter";
 import { recognizeToEditableText } from "../services/ocr/OcrContract";
+import { joinOcrWrappedLines } from "../services/ocr/ocrTextLayout";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
+import { AutoGrowingTextInput } from "./AutoGrowingTextInput";
 
 interface Props {
   currentText: string;
   onApplyText: (text: string) => void;
   onWorkChange?: (hasWork: boolean) => void;
+  onReviewChange?: (reviewing: boolean) => void;
 }
-export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props) {
+export function OcrInputPanel({ currentText, onApplyText, onWorkChange, onReviewChange }: Props) {
   const [image, setImage] = useState<string | null>(null);
   const [recognizedText, setRecognizedText] = useState("");
+  const [originalText, setOriginalText] = useState<string|null>(null);
+  const flowedText=originalText===null?"":joinOcrWrappedLines(originalText);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState("");
   const [replaceConfirmed, setReplaceConfirmed] = useState(false);
   const controller = useRef<AbortController | null>(null);
   const mounted = useRef(true);
-  const hasWork = Boolean(image || recognizedText.trim() || busy);
+  const hasWork = Boolean(image || originalText!==null || busy);
   useEffect(() => onWorkChange?.(hasWork), [hasWork, onWorkChange]);
   useEffect(() => () => onWorkChange?.(false), [onWorkChange]);
+  useEffect(()=>onReviewChange?.(originalText!==null),[originalText,onReviewChange]);
+  useEffect(()=>()=>onReviewChange?.(false),[onReviewChange]);
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -75,6 +81,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
         throw new Error("Choose a photo smaller than 12 MB, or crop it first.");
       setImage(asset.uri);
       setRecognizedText("");
+      setOriginalText(null);
       setReplaceConfirmed(false);
       setMessage("Photo ready. Recognition works best with clear printed English.");
     } catch (reason) {
@@ -105,9 +112,10 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
         },
       });
       if (mounted.current && !job.signal.aborted) {
-        setRecognizedText(result.text);
+        setOriginalText(result.text);
+        setRecognizedText(joinOcrWrappedLines(result.text));
         setReplaceConfirmed(false);
-        setMessage("Review and edit the recognized text before using it.");
+        setMessage("Check the wording against your photo.");
       }
     } catch {
       if (mounted.current)
@@ -125,15 +133,21 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
       if (controller.current === job) controller.current = null;
     }
   };
+  const apply=(value:string)=>{
+    onApplyText(value);
+    setRecognizedText("");
+    setOriginalText(null);
+    setImage(null);
+    setReplaceConfirmed(false);
+    setMessage("");
+  };
   const replace = () => {
-    if (currentText.trim() && !replaceConfirmed) {
+    if (currentText.trim() && currentText!==recognizedText && !replaceConfirmed) {
       setReplaceConfirmed(true);
       setMessage("Replace your existing text? Choose Confirm replacement, or Add to existing text to keep both.");
       return;
     }
-    onApplyText(recognizedText);
-    setReplaceConfirmed(false);
-    setMessage("Text inserted. Review it, then choose Check text.");
+    apply(recognizedText);
   };
   return (
     <View style={styles.box}>
@@ -176,7 +190,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
       ) : null}
       {image && !busy ? (
         <ActionButton
-          label={recognizedText ? "Recognize again" : "Recognize text"}
+          label={originalText!==null ? "Recognize again" : "Recognize text"}
           onPress={() => void recognize()}
         />
       ) : null}
@@ -201,12 +215,13 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
           {message}
         </Text>
       ) : null}
-      {recognizedText ? (
+      {originalText!==null ? (
         <View style={styles.review}>
           <Text style={styles.title}>Review recognized text</Text>
-          <TextInput
+          <AutoGrowingTextInput
             accessibilityLabel="Text from your photo"
-            multiline
+            minimumHeight={240}
+            editable={!busy}
             onChangeText={(value) => {
               setRecognizedText(value);
               setReplaceConfirmed(false);
@@ -215,6 +230,11 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
             textAlignVertical="top"
             value={recognizedText}
           />
+          {originalText!==flowedText && (recognizedText===flowedText || recognizedText===originalText) ? (
+            <ActionButton kind="secondary" disabled={busy}
+              label={recognizedText===flowedText?"Keep photo line breaks":"Join wrapped lines"}
+              onPress={()=>{setRecognizedText(recognizedText===flowedText?originalText:flowedText);setReplaceConfirmed(false);}}/>
+          ):null}
           <View style={styles.actions}>
             <ActionButton
               disabled={!recognizedText.trim() || busy}
@@ -226,9 +246,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
               kind="secondary"
               label="Add to existing text"
               onPress={() => {
-                onApplyText(`${currentText.trimEnd()}\n${recognizedText}`);
-                setReplaceConfirmed(false);
-                setMessage("Text appended. Choose Check text when ready.");
+                apply(`${currentText.trimEnd()}\n\n${recognizedText}`);
               }}
             />
             <ActionButton
@@ -238,6 +256,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange }: Props)
               onPress={() => {
                 setImage(null);
                 setRecognizedText("");
+                setOriginalText(null);
                 setReplaceConfirmed(false);
                 setMessage("Photo and result discarded. Existing text is unchanged.");
               }}

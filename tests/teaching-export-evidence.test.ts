@@ -14,7 +14,7 @@ function savedItem(): TeachingListItem {
     basewordKey:"stress",displayFamily:"stress",status:"Notice",teachingFocus:"focus",
     notes:'Target meaning: under pressure, then "explain".',connections:"Compare stress and stressed.",
     selectedForms:["stressed"],customOrder:2,addedAt:"2026-10-29",updatedAt:"2026-10-29",
-    sourceLabels:["Check a text"],dataVersion:"2026-11-03-a2658-finite-family-closure-v1",
+    sourceLabels:["Check a text"],dataVersion:"2026-11-08-hk4-familiar1764-v1",
     derived:{set_membership:"Candidate",overall_frequency_order:1025,current_hk_frequency_rank:1330,
       current_hk_frequency_band:"HK Top 2k",textbook_first_seen_level:"P5",external_level_reference_display:"Grade 6; Grades 6�C7; Grades 8�C9"},
   };

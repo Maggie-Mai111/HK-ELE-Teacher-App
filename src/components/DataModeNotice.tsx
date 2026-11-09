@@ -10,7 +10,7 @@ export function DataModeNotice({ mode, detailed = false }: { mode: DataMode; det
   return (
     <View accessibilityLabel={`Available data: ${value.title}`} style={styles.box}>
       <Text style={styles.title}>
-        {detailed ? value.title : "Using saved words. Connect to check the full wordlist."}
+        {detailed ? value.title : "Only part of the wordlist is on this device. Connect or download for offline use."}
       </Text>
       {detailed ? <Text style={styles.note}>{value.explanation}</Text> : null}
     </View>

@@ -1,4 +1,5 @@
-import { Image, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useAppDimensions } from "../components/useAppDimensions";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import classroomHero from "../../assets/learning-classroom-hero.png";
 import type { AppRoute } from "../components/NavigationBar";
 import { colors, spacing } from "../theme/tokens";
@@ -21,8 +22,8 @@ const tasks = [
   },
 ] as const;
 
-export function HomeScreen({ onNavigate }: { onNavigate: (route: AppRoute) => void }) {
-  const { width } = useWindowDimensions();
+export function HomeScreen({ onNavigate, selectedWordCount = 0 }: { onNavigate: (route: AppRoute) => void; selectedWordCount?: number }) {
+  const { width } = useAppDimensions();
   const wide = width >= 840;
   const contentWidth = Math.min(width, 1180) - spacing.lg * 2;
   const imageHeight = (wide ? (contentWidth - spacing.lg) / 2 : contentWidth) / 1.5;
@@ -31,7 +32,7 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: AppRoute) => vo
       <Text style={styles.brand}>HK-ELE · Hong Kong English Language Education</Text>
       <View style={[styles.hero, wide && styles.heroWide]}>
         <View style={[styles.introduction, wide && styles.half]}>
-          <Text style={styles.eyebrow}>FOR TEACHERS, WITH LEARNERS IN MIND</Text>
+          <Text style={styles.eyebrow}>FOR HONG KONG TEACHERS</Text>
           <Text
             accessibilityRole="header"
             aria-level={1}
@@ -40,9 +41,8 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: AppRoute) => vo
             Find the words your lesson needs.
           </Text>
           <Text style={styles.description}>
-            HK-ELE helps you choose vocabulary, check classroom reading and plan what to teach.
-            Explore word information and evidence from Hong Kong English and textbooks, then use
-            your knowledge of your students to make the final choice.
+            Check a lesson text, explore related words, and choose what your class needs,
+            with frequency and Hong Kong textbook records.
           </Text>
         </View>
         <View style={[styles.illustration, wide && styles.half]}>
@@ -58,7 +58,7 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: AppRoute) => vo
         Start with your lesson
       </Text>
       <View style={styles.tasks}>
-        {tasks.map((task, index) => (
+        {tasks.filter(task => task.route !== "list" || selectedWordCount > 0).map((task, index) => (
           <Pressable
             accessibilityLabel={`Start ${task.title}`}
             accessibilityRole="button"

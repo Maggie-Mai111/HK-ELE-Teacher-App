@@ -32,9 +32,9 @@ export function dataModePresentation(mode: DataMode): DataModePresentation {
     };
   }
   return {
-    title: "Some words saved",
-    shortLabel: "saved words",
-    explanation: `${BUNDLED_REFERENCE_COUNT.toLocaleString("en")} saved families are available offline. Connect to search the full wordlist.`,
+    title: "Partial wordlist on this device",
+    shortLabel: "partial offline wordlist",
+    explanation: `${BUNDLED_REFERENCE_COUNT.toLocaleString("en")} word families are available offline. Connect or use Menu → Offline use to download the full wordlist.`,
     fullDatabaseAvailable: false,
     worksOffline: true,
   };

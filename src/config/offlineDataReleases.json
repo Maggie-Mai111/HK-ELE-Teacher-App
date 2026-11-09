@@ -80,5 +80,19 @@
       "unranked": 25022,
       "teachingScopeExcluded": 176
     }
+  },
+  "2026-11-08-hk4-familiar1764-v1": {
+    "dataInventorySha256": "12e5c32ce0c63118b7902b1ae3b05da5b0357dc3388d252e5b576150d61bd179",
+    "sourceManifestSha256": "9661abebefefef320408fdf0a8c71368f6647403115e54cdc2e948d44ffc34e7",
+    "counts": {
+      "candidate": 1764,
+      "inclusiveReference": 1764,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 14245,
+      "unranked": 153535,
+      "teachingScopeExcluded": 0
+    }
   }
 }

@@ -301,12 +301,12 @@ test("published update manifest matches the frozen static inventory", async () =
   ) as DataUpdateManifest;
   const checked = validateUpdateManifest(value, "0.5.0");
   const frequency = checked.files.filter((file) =>
-    file.path.startsWith("word-frequency/spelling-frequency-20261103-v1/"),
+    file.path.startsWith("word-frequency/spelling-frequency-20261105-v1/"),
   );
   const origins = checked.files.filter((file) => file.path.startsWith("word-origins/"));
   assert.equal(origins.length, 27);
   const base = checked.files.filter((file) => !frequency.includes(file) && !origins.includes(file));
-  assert.equal(base.length, 1340);
+  assert.equal(base.length, 1331);
   assert.ok(base.reduce((total, file) => total + file.byteSize, 0) > 65_273_928);
   assert.equal(frequency.length, 128);
   for (const file of frequency) {
@@ -316,12 +316,12 @@ test("published update manifest matches the frozen static inventory", async () =
     assert.equal(bytes.byteLength, file.byteSize);
     assert.equal(await sha256Hex(bytes), file.sha256);
   }
-  assert.equal(checked.fileCount, 1495);
+  assert.equal(checked.fileCount, 1486);
   assert.equal(
     checked.sourceManifestSha256,
-    "4b39e7971dcf8f1e4bca57491fab2c0e9b6da0839e724725f655d93b80d4a030",
+    "9661abebefefef320408fdf0a8c71368f6647403115e54cdc2e948d44ffc34e7",
   );
-  assert.equal(checked.counts.totalFamilies, 167_630);
-  assert.equal(checked.counts.forms, 328_253);
+  assert.equal(checked.counts.totalFamilies, 167_780);
+  assert.equal(checked.counts.forms, 329_202);
   assert.equal(checked.archive, undefined); // Per-file verified transport avoids a >100MB Pages asset.
 });

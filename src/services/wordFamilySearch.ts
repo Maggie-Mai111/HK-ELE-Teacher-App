@@ -60,7 +60,7 @@ export function familySearchFormSummary(groups: FamilySearchGroup[], query: stri
     sortWordForms(group.forms, query, group.frequencies).some((row) => row.isSearch),
   );
   return hasSearch
-    ? `${total.toLocaleString("en")} word forms · Your search first; other forms follow Sort.`
+    ? `${total.toLocaleString("en")} word forms · Your search stays first. Sort changes the other forms.`
     : `${total.toLocaleString("en")} related word forms`;
 }
 export async function loadFamilySearchGroups(

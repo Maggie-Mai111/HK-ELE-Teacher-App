@@ -187,6 +187,14 @@ test("the real data resolver checks surrounding words and compounds without quer
 test("the App paste and OCR insertion converge on the tolerant teacher scanner", () => {
   const source = readFileSync("src/screens/CheckTextScreen.tsx", "utf8");
   assert.match(source, /scanTeacherText\(source\)/);
-  assert.match(source, /onApplyText=\{changeText\}/);
+  assert.match(source, /onApplyText=\{applyPhotoText\}/);
+  const body=source.match(/const applyPhotoText = \(value: string\) => \{([\s\S]*?)\n  \};/)?.[1];
+  assert.ok(body);
+  const received:string[]=[];
+  const input="Cells • have walls.\nTeachers’ notes.";
+  vm.runInNewContext(`(value=>{${body}})(input)`,{
+    input,changeText:(value:string)=>received.push(value),setOcrOpen:()=>{},setOcrReviewing:()=>{},setTimeout:()=>{},
+  });
+  assert.deepEqual(received,[input]);
   assert.doesNotMatch(source, /Check the spelling and symbols/);
 });

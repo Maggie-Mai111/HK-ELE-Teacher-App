@@ -203,7 +203,7 @@ test("library writes use a new key; legacy keys and session-only answers are not
 
 test("long passage links reveal the correct section and class responses reset per lesson", () => {
   const screen = readFileSync("src/screens/CheckTextScreen.tsx", "utf8");
-  assert.match(screen, /Pre-teaching suggestions ↓/);
+  assert.match(screen, /Words to explain ↓/);
   assert.match(screen, /↑ Back to text/);
   assert.match(screen, /results.length > 80/);
   assert.match(screen, /onRevealSection\(suggestionsRef.current\)/);

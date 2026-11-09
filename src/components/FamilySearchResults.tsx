@@ -1,3 +1,4 @@
+import { useAppDimensions } from "./useAppDimensions";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -5,7 +6,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 import {
@@ -43,7 +43,6 @@ const shown = (value: unknown) =>
   value === null || value === undefined || value === "" ? "—" : String(value);
 const columns = [
   ["Word", 160],
-  ["Times in HK texts", 120],
   ["First seen in HK textbooks", 150],
   ["US grade reference", 160],
   ["Academic Word List (AWL)", 160],
@@ -80,7 +79,7 @@ export function FamilySearchResults({
     [error, setError] = useState("");
   const [retry, setRetry] = useState(0),
     [sort, setSort] = useState<WordFormSort>("frequency-desc");
-  const wide = useWindowDimensions().width >= 760;
+  const wide = useAppDimensions().width >= 760;
   useEffect(() => {
     setSort("frequency-desc");
   }, [query]);
@@ -115,13 +114,13 @@ export function FamilySearchResults({
   return (
     <View style={styles.stack}>
       <Text style={styles.note}>{familySearchFormSummary(groups, query)}</Text>
-      <Text style={styles.note}>Counts are for each word form. Ranks compare whole word families; 1 is the highest.</Text>
+      <Text style={styles.note}>Ranks compare whole word families; 1 is the highest.</Text>
       <ProgressiveDisclosure title="Sort words">
         <View style={styles.chips}>
           {(
             [
-              ["frequency-desc", "Most occurrences in HK texts"],
-              ["frequency-asc", "Fewest occurrences in HK texts"],
+              ["frequency-desc", "Most frequent forms"],
+              ["frequency-asc", "Least frequent forms"],
               ["az", "A–Z"],
               ["za", "Z–A"],
             ] as const
@@ -138,12 +137,11 @@ export function FamilySearchResults({
       {groups.some((group) => group.frequencyUnavailable) ? (
         <View style={styles.stack}>
           <Text style={styles.note}>
-            Counts could not be loaded. You can still view and choose words. For offline use,
-            update the downloaded word data.
+            Frequency sorting is temporarily unavailable. You can still view and choose words.
           </Text>
           <ActionButton
             kind="secondary"
-            label="Retry frequencies"
+            label="Retry sorting"
             onPress={() => setRetry((value) => value + 1)}
           />
         </View>
@@ -173,10 +171,9 @@ export function FamilySearchResults({
                       </Text>
                     ))}
                   </View>
-                  {rows.map(({ form, isSearch, frequency }) => {
+                  {rows.map(({ form, isSearch }) => {
                     const values = [
                       form.form,
-                      frequency?.toLocaleString("en") ?? "—",
                       ...evidence(form),
                     ];
                     const added = hasSelectedForm(teaching.items, group.family, form.form);
@@ -196,14 +193,14 @@ export function FamilySearchResults({
                               <Text style={styles.word}>{form.form}</Text>
                               {isSearch ? <Text style={styles.marker}>Your search</Text> : null}
                             </Pressable>
-                          ) : index === 5 || index === 6 || index === 7 ? (
+                          ) : index === 4 || index === 5 || index === 6 ? (
                             <View key={label} style={[styles.cell, { width }]}>
                               <EvidenceTokens
                                 value={values[index]}
-                                kind={index === 5 ? "subject" : index === 6 ? "root" : "meaning"}
+                                kind={index === 4 ? "subject" : index === 5 ? "root" : "meaning"}
                               />
                             </View>
-                          ) : index < 10 ? (
+                          ) : index < 9 ? (
                             <Text key={label} style={[styles.cell, { width }]}>
                               {values[index]}
                             </Text>
@@ -211,10 +208,10 @@ export function FamilySearchResults({
                             <View key={label} style={[styles.cell, { width }]}>
                               <ActionButton
                                 kind="secondary"
-                                disabled={index === 11 && (added || !teaching.ready)}
-                                label={index === 10 ? "View" : added ? "Added" : "Add"}
+                                disabled={index === 10 && (added || !teaching.ready)}
+                                label={index === 9 ? "View" : added ? "Added" : "Add"}
                                 onPress={() =>
-                                  index === 10
+                                  index === 9
                                     ? onOpenFamily(group.family.baseword_key, form.form)
                                     : add(form)
                                 }
@@ -228,7 +225,7 @@ export function FamilySearchResults({
                 </View>
               </ScrollView>
             ) : (
-              rows.map(({ form, isSearch, frequency }) => {
+              rows.map(({ form, isSearch }) => {
                 const values = evidence(form),
                   added = hasSelectedForm(teaching.items, group.family, form.form);
                 return (
@@ -247,16 +244,13 @@ export function FamilySearchResults({
                       </Pressable>
                       {isSearch ? <Text style={styles.marker}>Your search</Text> : null}
                     </View>
-                    <Text style={styles.frequency}>
-                      Times in HK texts: {frequency?.toLocaleString("en") ?? "—"}
-                    </Text>
                     <View style={styles.evidenceRow}>
                       <Text style={styles.textbook}>First seen in HK textbooks: {values[0]}</Text>
                       <Text style={styles.grade}>US grade reference: {values[1]}</Text>
                     </View>
                     <ProgressiveDisclosure title="Word information">
                       <View style={styles.stack}>
-                        {columns.slice(4, 10).map(([label], index) => {
+                        {columns.slice(3, 9).map(([label], index) => {
                           const kind = evidenceKind(label);
                           return kind ? (
                             <View key={label} style={styles.stack}>
@@ -332,7 +326,6 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: 5,
   },
-  frequency: { fontSize: 17, color: colors.ink, fontWeight: "600" },
   bold: { fontWeight: "700" },
   evidenceRow: { gap: spacing.xs },
   textbook: { fontSize: 17, lineHeight: 25, color: colors.hkTop },

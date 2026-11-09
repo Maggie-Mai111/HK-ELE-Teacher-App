@@ -13,7 +13,7 @@ interface CompactTable {
   rows: unknown[][];
 }
 
-const release = join(process.cwd(), "data", "releases", "2026-11-03-a2658-finite-family-closure-v1");
+const release = join(process.cwd(), "data", "releases", "2026-11-08-hk4-familiar1764-v1");
 const publicData = join(process.cwd(), "public", "hkele-data");
 
 async function readGzipJson<T>(path: string): Promise<T> {
@@ -83,8 +83,8 @@ test("online and offline AI use the same authoritative form-enriched A-main Core
     loadAuthoritativeProjection(),
     loadOnlineBrowseProjection(),
   ]);
-  assert.equal(authoritative.filter((family) => Boolean(family.candidate_member)).length, 2658);
-  assert.equal(authoritative.filter((family) => Boolean(family.reference_member)).length, 2658);
+  assert.equal(authoritative.filter((family) => Boolean(family.candidate_member)).length, 1764);
+  assert.equal(authoritative.filter((family) => Boolean(family.reference_member)).length, 1764);
 
   const rootFilter = {
     scope: "inclusive_reference",

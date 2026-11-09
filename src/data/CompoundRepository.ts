@@ -1,3 +1,4 @@
+import { teacherUseResult } from "../services/teacherUsePolicy";
 import { normalizedAnalysis, analysisSurface } from "../services/textNormalization";
 import type { TokenOccurrence } from "../domain/contracts";
 import type {
@@ -71,7 +72,7 @@ export class CompoundRepository implements HkeleRepository {
       results.map(async (item) => {
         if(item.tokenStatus!=="SUPPORTED_TOKEN")return item;
         const surface=analysisSurface(text,item.startOffset,item.endOffset);
-        return {...await this.attach(item,item.surface), normalizedAnalysis:surface===null ? {applied:true,ambiguous:false,tokens:[]} : await normalizedAnalysis(surface,word=>this.base.searchSurface(word))};
+        return {...await this.attach(item,item.surface), normalizedAnalysis:surface===null ? {applied:true,ambiguous:false,tokens:[]} : await normalizedAnalysis(surface,async word=>teacherUseResult(await this.base.searchSurface(word),{text,start:item.startOffset,end:item.endOffset}))};
       }),
     );
   }

@@ -22,7 +22,7 @@ const paragraph = `Last month, our school started a project to make the campus g
 My classmates and I decided to reduce plastic waste. We brought reusable water bottles, collected used paper, and reminded each other to recycle. After four weeks, we noticed that there was much less rubbish in our classroom.
 This experience taught me that protecting the environment does not always require big changes. When everyone makes a small effort, we can achieve something meaningful together.`;
 
-test("the classroom example reproduces 99 tokens, four data gaps and one distinct context check", async () => {
+test("the classroom example preserves 99 tokens and data gaps while ordinary readings reduce unnecessary ambiguity", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (input) => {
     const url = new URL(String(input));
@@ -38,17 +38,17 @@ test("the classroom example reproduces 99 tokens, four data gaps and one distinc
       "https://fixture.invalid/hkele-data",
     ).resolveOccurrences(paragraph, scan(paragraph).occurrences);
     assert.equal(results.length, 99);
-    assert.equal(results.filter((item) => item.status === "RESOLVED").length, 81);
+    assert.equal(results.filter((item) => item.status === "RESOLVED").length, 85);
     assert.deepEqual(knowledgeCheckScope(results), {
       totalOccurrences: 99,
-      eligibleOccurrences: 81,
-      excludedOccurrences: 18,
+      eligibleOccurrences: 85,
+      excludedOccurrences: 14,
     });
     assert.ok(groupUnmatchedWords(results).every(item => item.displayForm.trim()));
     const context = groupContextReviews(results);
     assert.ok(context.some(item => item.displayForm === "does"));
     for (const item of results) assert.equal(paragraph.slice(item.startOffset,item.endOffset),item.surface);
-    assert.equal(results.filter(item => item.status === "AMBIGUOUS").length,13);
+    assert.equal(results.filter(item => item.status === "AMBIGUOUS").length,9);
 
   } finally {
     globalThis.fetch = originalFetch;

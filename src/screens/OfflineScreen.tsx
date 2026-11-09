@@ -65,7 +65,7 @@ export function OfflineScreen({
         current.ready && current.releaseId === next.releaseId
           ? "Your offline download is up to date."
           : current.activeVersion
-            ? "An offline download is ready to install."
+            ? "A newer offline download is available."
             : "Ready to download. Keep HK-ELE open until it finishes.",
       );
     } catch {
@@ -84,14 +84,14 @@ export function OfflineScreen({
       setStatus(await offlineManager.install(setProgress, request.signal));
       setReopen(true);
       setMessage(
-        "Download complete. Save any lesson edits, then reopen HK-ELE to use the offline wordlist.",
+        "Download complete. Finish any edits, then reopen HK-ELE to use it offline.",
       );
     } catch {
       setProgress(null);
       setMessage(
         request.signal.aborted
-          ? "Download cancelled. Your saved wordlist and lessons have been kept."
-          : "Download unsuccessful. Check your connection and free space, then try again. Your saved wordlist and lessons have been kept.",
+          ? "Download cancelled. Your offline wordlist, selected words and notes have been kept."
+          : "Download unsuccessful. Check your connection and free space, then try again. Your offline wordlist, selected words and notes have been kept.",
       );
       setStatus(await offlineManager.getStatus().catch(() => null));
     } finally {
@@ -106,7 +106,7 @@ export function OfflineScreen({
       await offlineManager.rollback();
       setStatus(await offlineManager.getStatus());
       setReopen(true);
-      setMessage("Previous download restored. Save any lesson edits, then reopen HK-ELE.");
+      setMessage("Previous download restored. Finish any edits, then reopen HK-ELE.");
     } catch {
       setMessage("The previous download could not be restored. Please try again.");
     } finally {
@@ -160,7 +160,7 @@ export function OfflineScreen({
               <View style={styles.actions}>
                 <ActionButton
                   disabled={busy || !status}
-                  label={status?.ready ? "Check for updates" : "Check download"}
+                  label={status?.ready ? "Check for updates" : "Prepare download"}
                   onPress={() => void check()}
                 />
                 {preview ? (
@@ -207,12 +207,12 @@ export function OfflineScreen({
             {reopen && sessionDescription ? (
               <Text style={styles.note}>
                 Reopening will clear your {sessionDescription}. Copy anything you need first. Your
-                saved lessons and notes will stay.
+                saved words and notes will stay.
               </Text>
             ) : null}
             {reopen && !canReopen ? (
               <Text style={styles.note}>
-                Your lesson changes still need to be saved. Check your selected words before
+                Your word changes still need to be saved. Check your selected words before
                 reopening.
               </Text>
             ) : null}
@@ -229,8 +229,7 @@ export function OfflineScreen({
               open the browser menu and choose Install app or Add to Home screen.
             </Text>
             <Text style={styles.note}>
-              Open HK-ELE from that icon and prepare the offline download there. The browser and the
-              installed App may keep separate storage.
+              Open HK-ELE from its home-screen icon and download for offline use there too.
             </Text>
           </ProgressiveDisclosure>
           <ProgressiveDisclosure title="What works without internet?">
@@ -240,7 +239,7 @@ export function OfflineScreen({
             </Text>
             <Text style={styles.note}>
               AI search, Google Forms and new wordlist downloads need an internet connection.
-              Reopening clears a passage you have not saved; your saved lessons and notes remain on
+              Your passage is not saved when you close HK-ELE. Selected words and notes stay on
               this device.
             </Text>
           </ProgressiveDisclosure>
@@ -272,7 +271,7 @@ export function OfflineScreen({
             </Text>
             <Text style={styles.note}>
               This will clear your {sessionDescription}. Go back to finish your work or copy
-              anything you need first. Your saved lessons and notes will stay.
+              anything you need first. Your saved words and notes will stay.
             </Text>
             <ActionButton
               label="Back to my text"

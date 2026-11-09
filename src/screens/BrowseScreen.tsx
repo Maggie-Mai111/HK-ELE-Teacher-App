@@ -1,3 +1,6 @@
+import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
+import { useAppDimensions } from "../components/useAppDimensions";
+import { TeacherHelp } from "../components/TeacherHelp";
 import { LexicalUsesPanel } from "../components/LexicalUsesPanel";
 import { FullDatabaseDownload } from "../components/FullDatabaseDownload";
 import dataManifest from "../../data/current-manifest.json";
@@ -8,7 +11,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  useWindowDimensions,
   View,
 } from "react-native";
 
@@ -16,7 +18,6 @@ import { ActionButton } from "../components/ActionButton";
 import { AiFilterAssistant } from "../components/AiFilterAssistant";
 import { ChoiceChip } from "../components/ChoiceChip";
 import { DataModeNotice } from "../components/DataModeNotice";
-import { CurrentLesson } from "../components/CurrentLesson";
 import { FamilySearchResults } from "../components/FamilySearchResults";
 import { FamilyCard } from "../components/FamilyCard";
 import { CompoundCard } from "../components/CompoundCard";
@@ -47,7 +48,8 @@ interface Props {
 
 const scopes: Array<[BrowseScope, string]> = [
   ["full", "Full database"],
-  ["core", "HK-ELE Word List"],
+  ["core", "90% list"],
+  ["core95", "95% list"],
 ];
 const sorts: Array<[BrowseSort, string]> = [
   ["overall", "Overall family rank"],
@@ -77,7 +79,8 @@ function focusAndReveal(target: View | null) {
 }
 
 export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
-  const viewport = useWindowDimensions();
+  const [columnHelp, setColumnHelp] = useState(false);
+  const viewport = useAppDimensions();
   const [dataMode, setDataMode] = useState<DataMode>(() => repository.getDataMode());
   const [scope, setScope] = useState<BrowseScope>("full");
   const [sort, setSort] = useState<BrowseSort>("overall");
@@ -219,7 +222,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
     (family) => !family.blocked && inTeacherWordScope(family, scope),
   );
   const outsideCore =
-    scope === "core" && Boolean(search?.owners.length) && searchFamilies.length === 0;
+    scope !== "full" && Boolean(search?.owners.length) && searchFamilies.length === 0;
   const activeFamilies = useMemo(
     () =>
       state.aiActive
@@ -269,7 +272,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   const applyAi = (execution: AiFilterExecution) => {
     searchRequest.current += 1;
     setSearching(false);
-    setScope(execution.filters.scope === "full" ? "full" : "core");
+    setScope(execution.browseScope ?? (execution.filters.scope === "full" ? "full" : "core"));
     setAiSelection(execution);
     setSearch(null);
     setResultMode("ai");
@@ -279,7 +282,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
 
   return (
     <View style={styles.content}>
-      <ScreenHeader intro="Find words for your lesson." title="Find words" />
+      <ScreenHeader intro="Search a word to see its family and related forms." title="Find words" />
       <FullDatabaseDownload dataVersion={dataManifest.dataVersion} repository={repository} />
       <View style={styles.searchBox}>
         <TextInput
@@ -296,7 +299,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             }
           }}
           onSubmitEditing={() => void searchNow()}
-          placeholder="Search a word or exact form"
+          placeholder="Search a word"
           returnKeyType="search"
           style={styles.input}
           value={query}
@@ -317,9 +320,13 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           />
         ))}
       </View>
+      <Text style={styles.label}>{scope === "full" ? "90% and 95% refer to the Hong Kong texts analysed in the study." : `${scope === "core95" ? "3,779" : "1,764"} word families · ${scope === "core95" ? "includes all families in the 90% list" : "a more focused range"}`}</Text>
+      <ProgressiveDisclosure title="What do 90% and 95% mean?">
+        <Text style={styles.label}>Each list covers at least that share of counted word occurrences in each of the four Hong Kong text collections used in the study. Your own passage may have a different percentage.</Text>
+      </ProgressiveDisclosure>
       {state.searchActive && search ? <LexicalUsesPanel word={search.submittedQuery} repository={repository} /> : null}
       <DataModeNotice mode={dataMode} />
-      <CurrentLesson teaching={teaching} />
+
       {state.searchActive && search?.expression ? (
         <CompoundCard
           expression={search.expression}
@@ -388,6 +395,10 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       {loading && resultMode === "browse" ? (
         <ActivityIndicator accessibilityLabel="Loading words" color={colors.primary} size="large" />
       ) : null}
+      <View style={{ alignSelf: "flex-end" }}>
+        <ActionButton kind="secondary" label="About these columns" onPress={() => setColumnHelp(true)} />
+      </View>
+      {columnHelp ? <TeacherHelp mode="columns" returnFocusLabel="About these columns" onClose={() => setColumnHelp(false)} /> : null}
       <View
         accessibilityLiveRegion="polite"
         ref={resultSummaryRef}
@@ -402,12 +413,12 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
               {search.submittedQuery}”
             </Text>
             <Text style={styles.resultStatus}>
-              {outsideCore ? "Outside the HK-ELE Word List" : searchStatus(search)}
+              {outsideCore ? "Outside the selected list" : searchStatus(search)}
             </Text>
             {outsideCore ? (
               <>
                 <Text style={styles.muted}>
-                  This word is recorded in the full database. It is outside the HK-ELE Word List.
+                  This word is recorded in the full database. It is outside the selected list.
                 </Text>
                 <ActionButton
                   kind="secondary"

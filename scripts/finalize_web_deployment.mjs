@@ -60,6 +60,10 @@ if (!html.includes("/HK-ELE-Teacher-App/_expo/")) {
   throw new Error("Expo bundle assets were not exported beneath /HK-ELE-Teacher-App/.");
 }
 
+// Match portal-based dialogs to the phone frame on desktop as well.
+if (!html.includes('id="hkele-phone-frame"')) {
+  html = html.replace("</head>", '<style id="hkele-phone-frame">@media(min-width:760px){[aria-modal="true"]{max-width:390px!important;margin-inline:auto!important}}</style></head>');
+}
 await writeFile(indexPath, html, "utf8");
 await writeFile(resolve(root, "404.html"), html, "utf8");
 await writeFile(resolve(root, ".nojekyll"), "", "utf8");
@@ -71,7 +75,7 @@ const compactAssets = allFiles
     relative(root, path)
       .split(sep)
       .join("/")
-      .match(/^assets\/data\/releases\/2026-11-03-a2658-finite-family-closure-v1\/reference\/.+\.gz$/),
+      .match(/^assets\/data\/releases\/2026-11-08-hk4-familiar1764-v1\/reference\/.+\.gz$/),
   )
   .map(toUrl)
   .sort();

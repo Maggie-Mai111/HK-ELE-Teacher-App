@@ -1,7 +1,7 @@
 {
   "schemaVersion": "HK_ELE_IDENTITY_MIGRATION_V1",
   "fromDataVersion": "2026-10-20-a-main-v1",
-  "dataVersion": "2026-11-03-a2658-finite-family-closure-v1",
+  "dataVersion": "2026-11-08-hk4-familiar1764-v1",
   "transitions": {
     "a": {
       "a": [
@@ -250860,7 +250860,7 @@
       "zygomatici": []
     }
   },
-  "previousDataVersion": "2026-11-02-final-normalized-a2713-v1",
+  "previousDataVersion": "2026-11-05-familiar1764-v1",
   "transitionsBySource": {
     "2026-10-29-repaired-main-core2827-v1": {
       "a": {
@@ -284857,6 +284857,9 @@
         "woven": [],
         "wovens": []
       }
-    }
+    },
+    "2026-11-03-a2658-finite-family-closure-v1": {},
+    "2026-11-08-hk4-familiar1764-v1": {},
+    "2026-11-05-familiar1764-v1": {}
   }
 }

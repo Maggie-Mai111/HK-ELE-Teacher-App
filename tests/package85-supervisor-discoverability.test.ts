@@ -124,29 +124,17 @@ test("all Known and all Not known produce bounded complementary extremes", () =>
   );
 });
 
-test("knowledge UI distinguishes sample estimates, exact checked results and progress", () => {
-  const panel = source("src/components/KnowledgeTestPanel.tsx");
-  for (const label of [
-    "Quick check (10)",
-    "More words (20)",
-    "All matched families",
-    "Sample of",
-    "Checked words",
-    "Known",
-    "Not known",
-    "Words marked Not known",
-    "Unfamiliar occurrences in this check",
-  ])
-    assert.match(panel, new RegExp(label.replace(/[()]/g, "\\$&")));
-  assert.match(panel, /coverage\.complete \? \(/);
-  assert.match(panel, /Mark the remaining words/);
-  assert.match(panel, /Sample of.*active.length/);
+test("knowledge UI reports only answers to the examples shown, without extrapolated percentages",()=>{
+ const panel=source("src/components/KnowledgeTestPanel.tsx");
+ for(const text of ["Quick check (10)","More words (20)","All matched families","Known:","May need explaining:","not a score for the whole text or class"] )assert.ok(panel.includes(text));
+ assert.doesNotMatch(panel,/tokenCoveragePercent|unfamiliarTokenRatePercent|familyKnownPercent/);
+ assert.match(panel,/Mark the remaining words/);
 });
 
 test("knowledge check remains optional after the reader and pre-teach suggestions", () => {
   const check = source("src/screens/CheckTextScreen.tsx");
   const summary = check.indexOf('accessibilityLabel="Checked text"');
-  const entry = check.indexOf("Check word knowledge", summary);
+  const entry = check.indexOf("Check word familiarity", summary);
   const preteach = check.indexOf("<PreteachPanel", summary);
   assert.ok(summary >= 0 && preteach > summary && entry > preteach);
   assert.doesNotMatch(check, /title="Knowledge check"/);
@@ -157,37 +145,21 @@ test("Not known words have one-click Teaching List action with a session-only so
   const service = source("src/services/teachingListService.ts");
   const list = source("src/screens/TeachingListScreen.tsx");
   assert.match(panel, /Add to selected words/);
-  assert.match(panel, /Learner\/teacher marked as Not known/);
+  assert.match(panel, /Chosen from word check/);
   assert.match(service, /sessionSources/);
   assert.doesNotMatch(service, /writeDocument\([^)]*sessionSources/);
   assert.doesNotMatch(list, /Source this session:/);
 });
 
-test("pre-teach suggestions remain deterministic, excluded and visibly reasoned", () => {
-  const technical = makeFamily("technical", 3500, { awl: 1 });
-  const results = [
-    makeOccurrence("The", makeFamily("the", 1), 0),
-    makeOccurrence("technical", technical, 4),
-    { ...makeOccurrence("blocked", technical, 20), status: "BLOCKED" as const, owners: [] },
-    {
-      ...makeOccurrence("ambiguous", technical, 30),
-      status: "AMBIGUOUS" as const,
-      bestOwnerCount: 2,
-      owners: [technical, makeFamily("other", 4000)],
-    },
-  ];
-  const suggestions = generatePreteachSuggestions("The technical blocked ambiguous", results, "P4");
-  assert.equal(suggestions.length, 1);
-  assert.ok((suggestions[0]?.reasons.length ?? 0) > 0);
-  const preteach = source("src/services/preteachService.ts");
-  assert.doesNotMatch(preteach, /aiFilter|DeepSeek|LLM|fetch\(/i);
+test("teacher marks select explanation uses without AI judgement or invented ownership",()=>{
+ const a=makeOccurrence("technical",makeFamily("technical",3500),4);
+ assert.equal(generatePreteachSuggestions("",[a],"P4").length,0);
+ assert.equal(generatePreteachSuggestions("",[a],"P4",Infinity,{judgements:{[a.occurrenceId]:false}}).length,1);
+ assert.doesNotMatch(source("src/services/preteachService.ts"),/aiFilter|DeepSeek|LLM|fetch\(/i);
 });
 
-test("pre-teach UI separates direct marks from registered system reasons", () => {
-  const panel = source("src/components/PreteachPanel.tsx");
-  assert.match(panel, /Learner\/teacher marked as Not known/);
-  assert.match(panel, /Suggested words for pre-teaching/);
-  assert.match(panel, /onOpenFamily/);
-  assert.match(panel, /reasonLabel/);
-  assert.match(panel, /slice\(0, limit\)/);
+test("explanation panel separates teacher marks from optional factual filters",()=>{
+ const panel=source("src/components/PreteachPanel.tsx");
+ for(const value of ["Words to explain","Browse words by records","onOpenWord","preteachEvidence","slice(0, limit)"])assert.ok(panel.includes(value));
+ assert.doesNotMatch(panel,/Suggested when|rank of 1,001/);
 });

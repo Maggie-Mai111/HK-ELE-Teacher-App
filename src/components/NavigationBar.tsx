@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
+import { showSelectedWords } from "../services/textReviewService";
 import { colors, spacing } from "../theme/tokens";
 
 export type AppRoute = "home" | "browse" | "check" | "list" | "data" | "offline";
@@ -24,7 +25,7 @@ export function NavigationBar({
 }: NavigationBarProps) {
   return (
     <View accessibilityRole="tablist" style={styles.bar}>
-      {items.map((item) => {
+      {items.filter(item => item.route !== "list" || showSelectedWords(lessonWordCount, activeRoute === "list")).map((item) => {
         const selected = item.route === activeRoute;
         return (
           <Pressable

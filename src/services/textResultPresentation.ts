@@ -1,3 +1,4 @@
+import { isWordListForm } from "./textNormalization";
 import type { ResolvedOccurrence } from "../domain/hkele";
 
 export type TextResultKind =
@@ -74,7 +75,7 @@ export function textResultFilterCategory(item: ResolvedOccurrence) {
   if (kind === "full-check-unavailable") return "unavailable";
   if (kind === "unmatched" || item.status === "UNSUPPORTED") return "unmatched";
   if (item.status !== "RESOLVED" || item.owners.length !== 1) return "review";
-  return item.owners[0]?.candidate_member ? "candidate" : "other";
+  return isWordListForm(item.owners[0]) ? "candidate" : "other";
 }
 
 export function textResultStatusLabel(item: ResolvedOccurrence): string {

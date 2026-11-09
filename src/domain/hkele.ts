@@ -1,7 +1,7 @@
 import type { RegisteredGrammaticalRelation, ResolutionStatus, TokenOccurrence } from "./contracts";
 import type { SupplementaryExpression } from "./supplementaryExpressions";
 
-export type BrowseScope = "core" | "broader" | "full";
+export type BrowseScope = "core" | "core95" | "broader" | "full";
 export type BrowseSort = "overall" | "hk" | "az";
 export type DataMode = "bundled-reference" | "remote-full" | "installed-full";
 
@@ -126,5 +126,5 @@ export interface HkeleRepository {
 export const hasFlag = (value: unknown): boolean => value === true || value === 1;
 
 export function familySetLabel(family: FamilyRecord): string {
-  return hasFlag(family.candidate_member) ? "HK-ELE Word List" : "Full database";
+  return hasFlag(family.candidate_member) ? "90% list family" : typeof family.overall_frequency_order === "number" && family.overall_frequency_order >= 1 && family.overall_frequency_order <= 3779 ? "95% list family" : "Full database";
 }

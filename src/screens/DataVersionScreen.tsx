@@ -20,7 +20,7 @@ assertCompatibleManifest(manifest, APP_VERSION);
 function versionRows(version: string): ReadonlyArray<[string, string]> {
   const counts = (approved.releases as Record<string, typeof manifest.counts>)[version];
   return [
-    ["HK-ELE Word List families", counts?.candidate.toLocaleString("en") ?? "—"],
+    ["90% list families", counts?.candidate.toLocaleString("en") ?? "—"],
     ["Full database families", counts?.totalFamilies.toLocaleString("en") ?? "—"],
     ["Word forms", counts?.forms.toLocaleString("en") ?? "—"],
   ];
@@ -47,8 +47,8 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
         About HK-ELE
       </Text>
       <Text style={styles.intro}>
-        Find vocabulary for your lessons using word information and evidence from English corpora
-        and Hong Kong teaching materials.
+        Explore vocabulary for your lessons using English text collections and Hong Kong
+        teaching materials.
       </Text>
       <DataModeNotice detailed mode={repository.getDataMode()} />
       <ProgressiveDisclosure title="Wordlist information">
@@ -65,7 +65,7 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
       <DataUpdatePanel />
       <ProgressiveDisclosure title="How to read the word information">
         <Text style={styles.note}>
-          HK-ELE Word List contains {coreCount?.toLocaleString("en") ?? "—"} word families selected to reach at least 90% in each of four research corpora.
+          HK-ELE Word List contains {coreCount?.toLocaleString("en") ?? "—"} word families selected to cover at least 90% of the words counted in each of four Hong Kong text collections in the study.
           Choose words that fit your class and text. Full database includes more word families.
         </Text>
         <Text style={styles.note}>

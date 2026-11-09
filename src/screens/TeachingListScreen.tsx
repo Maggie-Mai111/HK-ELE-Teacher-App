@@ -1,5 +1,5 @@
-import { CopySelectedWords } from "../components/CopySelectedWords";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
+import { CopySelectedWords } from "../components/CopySelectedWords";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -104,6 +104,7 @@ function ListItem({
             style={styles.input}
             value={item.notes}
           />
+          <ProgressiveDisclosure title="More actions">
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={`Teaching options for ${item.displayFamily}`}
@@ -156,7 +157,7 @@ function ListItem({
             ))}
           </View>
           {teaching.sourceFor(item.basewordKey) ? (
-            <Text style={styles.meta}>Added from: {teaching.sourceFor(item.basewordKey)}</Text>
+            <Text style={styles.meta}>Added from: {teaching.sourceFor(item.basewordKey)?.replace("Not known", "May need explaining")}</Text>
           ) : null}
           {item.status !== "Notice" ? (
             <Text style={styles.meta}>Previous setting: {item.status}</Text>
@@ -188,7 +189,7 @@ function ListItem({
             />
             <ActionButton
               kind="danger"
-              label="Remove from lesson"
+              label="Remove word"
               onPress={() => teaching.remove(item.basewordKey)}
             />
           </View>
@@ -204,6 +205,7 @@ function ListItem({
               ))}
             </View>
           ) : null}
+          </ProgressiveDisclosure>
         </View>
       ) : null}
     </View>
@@ -223,7 +225,7 @@ export function TeachingListScreen({ teaching, repository, onOpenFamily, onFindW
   };
   const count=teaching.items.reduce((n,item)=>n+item.selectedForms.length,0);
   return <View style={styles.content}>
-    <ScreenHeader title="Selected words" intro="Collect words and copy them into your lesson materials." />
+    <ScreenHeader title="Selected words" intro="Copy your words straight into your materials." />
     {teaching.saveError ? <View><Text accessibilityRole="alert" style={styles.error}>{teaching.saveError}</Text>{teaching.ready ? <ActionButton kind="secondary" label="Try saving again" onPress={teaching.retrySave} /> : null}</View> : null}
     {!teaching.ready ? <ActivityIndicator accessibilityLabel="Loading selected words" color={colors.primary} size="large" /> : <>
       {teaching.items.length ? <View style={styles.exportBox}>
@@ -232,11 +234,7 @@ export function TeachingListScreen({ teaching, repository, onOpenFamily, onFindW
         <ActionButton disabled={exporting} kind="secondary" label="Download Excel" onPress={()=>void runExport()} />
         {message ? <Text accessibilityRole="alert" style={styles.meta}>{message}</Text> : null}
       </View> : null}
-      <ProgressiveDisclosure title="Saved lists" summary={teaching.lessonTitle || "Your words"}>
-        <Text style={styles.label}>Lesson name (optional)</Text>
-        <TextInput accessibilityLabel="Lesson name" placeholder="For example: P5 · A greener school" value={teaching.lessonTitle} onChangeText={teaching.updateLessonTitle} style={styles.titleInput} />
-        <LessonLibraryControls teaching={teaching} />
-      </ProgressiveDisclosure>
+      <LessonLibraryControls teaching={teaching} />
       <Text accessibilityLiveRegion="polite" style={styles.meta}>{teaching.saving ? "Saving…" : teaching.saveError ? "" : "Saved on this device."}</Text>
       {!teaching.items.length ? <View style={styles.empty}>
         <Text style={styles.emptyTitle}>Which words would you like to keep?</Text>
@@ -245,7 +243,7 @@ export function TeachingListScreen({ teaching, repository, onOpenFamily, onFindW
         <ActionButton kind="secondary" label="Find a word" onPress={onFindWords} />
       </View> : null}
       {teaching.undoState ? <View accessibilityLiveRegion="polite" style={styles.undoBox}>
-        <Text style={styles.meta}>{teaching.undoState.label === "Bulk addition to Teaching list" ? "Added selected words" : teaching.undoState.label}</Text>
+        <Text style={styles.meta}>{teaching.undoState.label === "Bulk addition to Teaching list" ? "Added selected words" : teaching.undoState.label.replace(/lesson/gi, "saved")}</Text>
         <ActionButton kind="secondary" label="Undo last change" onPress={teaching.undo} />
       </View> : null}
       {teaching.items.map((item,index)=><ListItem key={`${teaching.activeLessonId}:${item.basewordKey}`} item={item} index={index} total={teaching.items.length} teaching={teaching} onOpenFamily={onOpenFamily} />)}

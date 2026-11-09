@@ -1,3 +1,4 @@
+import { teacherUseResult } from "../services/teacherUsePolicy";
 import type { TokenOccurrence } from "../domain/contracts";
 import type {
   BrowsePage,
@@ -144,7 +145,7 @@ export class HybridRepository implements HkeleRepository {
         const end = Math.min(text.length, occurrence.endOffset + 36);
         const context = `${start > 0 ? "…" : ""}${text.slice(start, end)}${end < text.length ? "…" : ""}`;
         const searched = await searches.get(occurrence.surface);
-        const result = searched ? acceptedWordResolution(searched) : undefined;
+        const result = searched ? acceptedWordResolution(teacherUseResult(searched,{text,start:occurrence.startOffset,end:occurrence.endOffset})) : undefined;
         return {
           ...occurrence,
           status: result?.status ?? "UNSUPPORTED",

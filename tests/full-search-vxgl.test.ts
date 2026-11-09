@@ -71,7 +71,7 @@ test("full database includes non-Candidate words and retries failed manifests an
     assert.equal(result.status, "RESOLVED");
     assert.equal(result.owners[0]?.candidate_member, 0);
     const page = await repository.browse({ scope: "full", sort: "overall", page: 1, pageSize: 25 });
-    assert.equal(page.availableItems, 167630);
+    assert.equal(page.availableItems, 167780);
   } finally {
     globalThis.fetch = original;
   }
@@ -81,7 +81,7 @@ test("displayed word uses its own grade, including a higher grade and an absent 
   const data = JSON.parse(
     gunzipSync(
       readFileSync(
-        join(process.cwd(), "data/releases/2026-11-03-a2658-finite-family-closure-v1/reference/forms.json.gz"),
+        join(process.cwd(), "data/releases/2026-11-08-hk4-familiar1764-v1/reference/forms.json.gz"),
       ),
     ).toString("utf8"),
   );
@@ -201,7 +201,7 @@ test("all compact family and form VXGL values use the registered source labels w
     const table = JSON.parse(
       gunzipSync(
         readFileSync(
-          join(process.cwd(), `data/releases/2026-11-03-a2658-finite-family-closure-v1/reference/${kind}.json.gz`),
+          join(process.cwd(), `data/releases/2026-11-08-hk4-familiar1764-v1/reference/${kind}.json.gz`),
         ),
       ).toString("utf8"),
     ) as { fields: string[]; rows: unknown[][] };

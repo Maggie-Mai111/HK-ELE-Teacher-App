@@ -4,7 +4,7 @@ import { join } from "node:path";
 import test from "node:test";
 import { gunzipSync } from "node:zlib";
 
-const release = join(process.cwd(), "data", "releases", "2026-11-03-a2658-finite-family-closure-v1");
+const release = join(process.cwd(), "data", "releases", "2026-11-08-hk4-familiar1764-v1");
 
 async function readJson(path: string, gzip = false): Promise<unknown> {
   const bytes = await readFile(join(release, path));
@@ -14,8 +14,8 @@ async function readJson(path: string, gzip = false): Promise<unknown> {
 test("offline A-main compact Core with ambiguity context package has exact family and form boundaries", async () => {
   const families = (await readJson("reference/families.json.gz", true)) as { rows: unknown[][] };
   const forms = (await readJson("reference/forms.json.gz", true)) as { rows: unknown[][] };
-  assert.equal(families.rows.length, 4692);
-  assert.equal(forms.rows.length, 72611);
+  assert.equal(families.rows.length, 3576);
+  assert.equal(forms.rows.length, 58471);
 });
 
 test("CPB output contains exactly unique ranks 1-100", async () => {

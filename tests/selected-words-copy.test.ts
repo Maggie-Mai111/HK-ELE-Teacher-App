@@ -23,7 +23,7 @@ test("copy uses the supplied text exactly, never clears an empty clipboard and t
 });
 test("selected-word UI provides direct copying, a selectable fallback and Excel without format management",()=>{
   const screen=readFileSync("src/screens/TeachingListScreen.tsx","utf8"),actions=readFileSync("src/components/CopySelectedWords.tsx","utf8");
-  assert.match(screen,/title="Selected words"/);assert.match(screen,/title="Saved lists"/);assert.match(screen,/label="Download Excel"/);assert.doesNotMatch(screen,/More formats|label="CSV"|label="Markdown"/);
+  assert.match(screen,/title="Selected words"/);assert.match(screen,/<LessonLibraryControls/);assert.doesNotMatch(screen,/Lesson name|title="Saved lists"/);assert.match(screen,/label="Download Excel"/);assert.doesNotMatch(screen,/More formats|label="CSV"|label="Markdown"/);
   assert.match(actions,/Text to copy/);assert.match(actions,/readOnly selectTextOnFocus/);
   for(const file of ["PreteachPanel","LessonWordPicker"])assert.match(readFileSync(`src/components/${file}.tsx`,"utf8"),/<CopySelectedWords/);
 });

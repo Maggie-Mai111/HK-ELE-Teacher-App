@@ -9,11 +9,13 @@ function teacherText(value: string): string {
     .replace(/\bregistered\s+/gi, "");
 }
 
-export function teacherAiScope(query: string, selected: BrowseScope = "full"): "full" | "core" {
+export function teacherAiScope(query: string, selected: BrowseScope = "full"): "full" | "core" | "core95" {
   if (/full database|entire database|whole database|完整(?:数据库|词库)|全部词库/i.test(query))
     return "full";
   if (/hk[-–]?ele\s+word\s+list|core\s+list|核心词[表库]/i.test(query)) return "core";
-  return selected === "core" ? "core" : "full";
+  if (/95\s*%/.test(query)) return "core95";
+  if (/90\s*%/.test(query)) return "core";
+  return selected === "core95" ? "core95" : selected === "core" ? "core" : "full";
 }
 
 /** Translate the two teacher scopes for the already deployed legacy interpreter. */
@@ -30,7 +32,7 @@ export function teacherAiInterpreterQuery(query: string): string {
 /** Scope is reviewed and executed locally; the Worker only interprets other conditions. */
 export function teacherAiResult(
   result: AiFilterResult,
-  scope: "full" | "core" = "full",
+  scope: "full" | "core" | "core95" = "full",
 ): AiFilterResult {
   return {
     ...result,
@@ -38,7 +40,7 @@ export function teacherAiResult(
       ? { ...result.filters, scope: scope === "core" ? "candidate" : "full" }
       : null,
     summary: result.filters
-      ? `${scope === "core" ? "HK-ELE Word List" : "Full database"} words matching these filters.`
+      ? `${scope === "core95" ? "95% list" : scope === "core" ? "HK-ELE Word List" : "Full database"} words matching these filters.`
       : teacherText(result.summary),
     clarifyingQuestion: result.clarifyingQuestion ? teacherText(result.clarifyingQuestion) : null,
     warnings: result.warnings.map(teacherText),

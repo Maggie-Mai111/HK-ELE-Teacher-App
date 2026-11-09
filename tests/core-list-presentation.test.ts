@@ -27,17 +27,17 @@ test("teacher membership unifies Reference-only and other records without mutati
   ] as const) {
     const record = { set_membership: membership, candidate_member: member } as FamilyRecord;
     const before = JSON.stringify(record);
-    assert.equal(familySetLabel(record), label);
+    assert.equal(familySetLabel(record), member === 1 ? "90% list family" : label);
     assert.equal(teacherWordListLabel(membership), label);
     assert.equal(JSON.stringify(record), before);
   }
   assert.equal(teacherWordListLabel(null), "Not recorded");
 });
 
-test("the A-main compact data contains 2658 Core families and four related-owner records", () => {
+test("the A-main compact data contains 1764 Core families and four related-owner records", () => {
   const packed = JSON.parse(
     gunzipSync(
-      readFileSync("data/releases/2026-11-03-a2658-finite-family-closure-v1/reference/families.json.gz"),
+      readFileSync("data/releases/2026-11-08-hk4-familiar1764-v1/reference/families.json.gz"),
     ).toString(),
   ) as { fields: string[]; rows: unknown[][] };
   const families = packed.rows.map(
@@ -46,8 +46,8 @@ test("the A-main compact data contains 2658 Core families and four related-owner
         packed.fields.map((field, index) => [field, row[index]]),
       ) as unknown as FamilyRecord,
   );
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 2658);
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 4692);
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 1764);
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 3576);
   const fabric = families.find((family) => !family.candidate_member)!;
   assert.equal(familySetLabel(fabric), "Full database");
   assert.equal(inTeacherWordScope(fabric, "core"), false);

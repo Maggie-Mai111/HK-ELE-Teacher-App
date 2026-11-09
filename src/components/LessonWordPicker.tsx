@@ -7,7 +7,6 @@ import { lessonChoicesFromResults } from "../services/lessonPlanning";
 import type { TeachingListStore } from "../services/teachingListService";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
-import { CurrentLesson } from "./CurrentLesson";
 
 export function LessonWordPicker({
   results,
@@ -36,11 +35,11 @@ export function LessonWordPicker({
     <View style={styles.box}>
       {showHeading ? (
         <Text accessibilityRole="header" aria-level={2} style={styles.title}>
-          Choose words for this lesson
+          Choose words to keep
         </Text>
       ) : null}
       <Text style={styles.note}>Choose the words you want to keep.</Text>
-      <CurrentLesson teaching={teaching} />
+
       <TextInput
         accessibilityLabel="Find a word in this text"
         placeholder="Find a word in this text"
@@ -108,8 +107,8 @@ export function LessonWordPicker({
             const result = teaching.addSelections(chosen);
             setMessage(
               result.formsAdded
-                ? `${result.formsAdded} ${result.formsAdded === 1 ? "word" : "words"} added to your lesson.`
-                : "These words are already in your lesson.",
+                ? `${result.formsAdded} ${result.formsAdded === 1 ? "word" : "words"} added to selected words.`
+                : "These words are already selected.",
             );
             setSelected(new Set());
           }}
@@ -121,7 +120,7 @@ export function LessonWordPicker({
             onPress={() => setSelected(new Set())}
           />
         ) : null}
-        <CopySelectedWords key={teaching.activeLessonId} items={teaching.items} onReview={onOpenList} />
+        {teaching.items.some(item => item.selectedForms.length > 0) ? <CopySelectedWords key={teaching.activeLessonId} items={teaching.items} onReview={onOpenList} /> : null}
       </View>
       {message ? (
         <Text accessibilityLiveRegion="polite" style={styles.success}>
