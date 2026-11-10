@@ -1,20 +1,21 @@
+import {getWordView,viewCounts,type WordView} from "./wordView";
 import type { FamilyRecord, ResolvedOccurrence, SearchFamilyOwner } from "../domain/hkele";
 
 export type CoverageTarget = "90" | "95";
 export const COVERAGE_LISTS = {
-  "90": { label: "90% list", families: 1764 },
-  "95": { label: "95% list", families: 3779 },
+  get "90"() {return { label: "90% list", families: viewCounts()["90"] };},
+  get "95"() {return { label: "95% list", families: viewCounts()["95"] };},
 } as const;
 
-export function inCoverageFamily(family: Pick<FamilyRecord, "overall_frequency_order" | "candidate_member"> | undefined | null, target: CoverageTarget): boolean {
+export function inCoverageFamily(family: Pick<FamilyRecord, "overall_frequency_order" | "candidate_member"> | undefined | null, target: CoverageTarget, view: WordView = getWordView()): boolean {
   if (!family) return false;
   if (target === "90") return family.candidate_member === true || family.candidate_member === 1;
   const rank = family.overall_frequency_order;
-  return typeof rank === "number" && Number.isInteger(rank) && rank >= 1 && rank <= 3779;
+  return typeof rank === "number" && Number.isInteger(rank) && rank >= 1 && rank <= viewCounts(view)["95"];
 }
 
 export function inCoverageForm(owner: SearchFamilyOwner | undefined | null, target: CoverageTarget): boolean {
-  return inCoverageFamily(owner, target) && owner?.matched_form_evidence?.familiar_member === 1;
+  return inCoverageFamily(owner, target) && owner?.matched_form_evidence?.coverage_member === 1;
 }
 
 export function occurrenceInCoverage(item: ResolvedOccurrence, target: CoverageTarget): boolean {

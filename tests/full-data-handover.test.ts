@@ -6,7 +6,7 @@ import {StaticShardRepository} from "../src/data/StaticShardRepository";
 import {scan} from "../src/services/tokenizer";
 import {savedIdentityStillApplies} from "../src/services/identityMigration";
 import registry from "../src/config/identityMigration.json";
-const version="2026-11-08-hk4-familiar1764-v1";
+const version="2026-11-10-all-members1663-v1";
 async function withData(run:(repo:StaticShardRepository)=>Promise<void>){const previous=globalThis.fetch;globalThis.fetch=async input=>new Response(new Uint8Array(readFileSync("public/hkele-data/"+String(input).split("/hkele-data/")[1]!.split("?")[0])));try{await run(new StaticShardRepository("https://fixture.invalid/hkele-data"));}finally{globalThis.fetch=previous;}}
 test("new opaque identity lookup keeps meaningful case and ordinary spelling stays separate",async()=>withData(async repo=>{
  const key="final20261102:d:Latin-letter-name",r=await repo.getFamily(key);assert.equal(r.family.baseword_key,key);assert.notEqual(r.family.baseword_key,"d");

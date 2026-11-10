@@ -154,7 +154,7 @@ export function OfflineScreen({
             {status && !status.supported ? (
               <Text style={styles.note}>
                 Open HK-ELE in a recent Safari, Chrome or Edge browser to prepare offline use. You
-                can continue using the online version here.
+                can keep using HK-ELE online here.
               </Text>
             ) : (
               <View style={styles.actions}>
@@ -234,8 +234,8 @@ export function OfflineScreen({
           </ProgressiveDisclosure>
           <ProgressiveDisclosure title="What works without internet?">
             <Text style={styles.note}>
-              Find words in the full database, check a passage, tap its words, review teaching
-              suggestions, scan printed English, and keep and copy selected words.
+              Find words in the full database, check a passage, tap its words, mark words to
+              explain, scan printed English, and keep and copy selected words.
             </Text>
             <Text style={styles.note}>
               AI search, Google Forms and new wordlist downloads need an internet connection.

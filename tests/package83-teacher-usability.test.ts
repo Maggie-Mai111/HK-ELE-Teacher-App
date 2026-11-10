@@ -26,7 +26,7 @@ test("About retains wordlist, source, licence and privacy information without in
   assert.match(data, /Wordlist information/);
   assert.doesNotMatch(data, /\["Data version"|\["Released"|summary=\{`Updated/);
   assert.doesNotMatch(data, /Sources and licences/);
-  assert.match(data, /<FullDatabaseDownload/);
+  assert.doesNotMatch(data, /<FullDatabaseDownload/);
   assert.match(data, /Privacy at a glance/);
   assert.ok(readFileSync("DATA_PROVENANCE.md", "utf8").length > 0);
   assert.match(readFileSync("SOURCE_ACKNOWLEDGEMENTS.txt", "utf8"), /Wiktionary/);

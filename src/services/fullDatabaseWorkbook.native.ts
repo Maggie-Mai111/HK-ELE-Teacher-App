@@ -1,10 +1,13 @@
 import { CryptoDigestAlgorithm, digest } from "expo-crypto";
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
-import release from "../config/fullDatabaseWorkbook.json";
+import fullRelease from "../config/fullDatabaseWorkbook.json";
+import familiarRelease from "../config/familiarDatabaseWorkbook.json";
+import {getWordView} from "./wordView";
 import { verifyWorkbookDownload } from "./fullDatabaseWorkbookContract";
 
 export async function downloadFullDatabase(currentDataVersion: string): Promise<void> {
+  const release=getWordView()==="familiar"?familiarRelease:fullRelease;
   const response = await fetch(
     `https://maggie-mai111.github.io/HK-ELE-Teacher-App/${release.assetPath}`,
   );

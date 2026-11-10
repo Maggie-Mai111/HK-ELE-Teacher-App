@@ -1,4 +1,4 @@
-import cpbJson from "../../data/releases/2026-11-08-hk4-familiar1764-v1/cpb/cpb-sight-words-100.json";
+import cpbJson from "../../data/releases/2026-11-10-all-members1663-v1/cpb/cpb-sight-words-100.json";
 import type { CpbSightWord } from "../domain/contracts";
 
 interface CpbDocument {

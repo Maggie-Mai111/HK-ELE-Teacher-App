@@ -306,7 +306,7 @@ test("published update manifest matches the frozen static inventory", async () =
   const origins = checked.files.filter((file) => file.path.startsWith("word-origins/"));
   assert.equal(origins.length, 27);
   const base = checked.files.filter((file) => !frequency.includes(file) && !origins.includes(file));
-  assert.equal(base.length, 1331);
+  assert.equal(base.length, 1332);
   assert.ok(base.reduce((total, file) => total + file.byteSize, 0) > 65_273_928);
   assert.equal(frequency.length, 128);
   for (const file of frequency) {
@@ -316,10 +316,10 @@ test("published update manifest matches the frozen static inventory", async () =
     assert.equal(bytes.byteLength, file.byteSize);
     assert.equal(await sha256Hex(bytes), file.sha256);
   }
-  assert.equal(checked.fileCount, 1486);
+  assert.equal(checked.fileCount, 1487);
   assert.equal(
     checked.sourceManifestSha256,
-    "9661abebefefef320408fdf0a8c71368f6647403115e54cdc2e948d44ffc34e7",
+    "3513895fa9b3fd01eadaf2a15c026416d18ad9be82649f5d1fa3a788d21805b6",
   );
   assert.equal(checked.counts.totalFamilies, 167_780);
   assert.equal(checked.counts.forms, 329_202);

@@ -4,7 +4,6 @@ import { StyleSheet, Text, View } from "react-native";
 
 import manifestJson from "../../data/current-manifest.json";
 import { APP_VERSION } from "../config/release";
-import { FullDatabaseDownload } from "../components/FullDatabaseDownload";
 import { AppCard } from "../components/AppCard";
 import { DataModeNotice } from "../components/DataModeNotice";
 import { DataUpdatePanel } from "../components/DataUpdatePanel";
@@ -61,7 +60,6 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
           </View>
         ))}
       </ProgressiveDisclosure>
-      <FullDatabaseDownload dataVersion={version} />
       <DataUpdatePanel />
       <ProgressiveDisclosure title="How to read the word information">
         <Text style={styles.note}>

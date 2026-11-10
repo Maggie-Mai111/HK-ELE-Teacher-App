@@ -71,14 +71,14 @@
       "unranked": 153535,
       "teachingScopeExcluded": 0
     },
-    "2026-11-08-hk4-familiar1764-v1": {
-      "candidate": 1764,
-      "inclusiveReference": 1764,
+    "2026-11-10-all-members1663-v1": {
+      "candidate": 1663,
+      "inclusiveReference": 1663,
       "referenceOnly": 0,
       "totalFamilies": 167780,
       "forms": 329202,
-      "ranked": 14245,
-      "unranked": 153535,
+      "ranked": 138729,
+      "unranked": 29051,
       "teachingScopeExcluded": 0
     }
   }

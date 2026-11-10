@@ -180,7 +180,7 @@ export function KnowledgeTestPanel({
               </View>
             );
           })}
-          <View accessibilityLabel="Knowledge check results" style={styles.results}>
+          <View accessibilityLabel="Your word marks" style={styles.results}>
             <Text style={styles.resultsTitle}>
               {coverage.answeredFamilies}/{coverage.totalFamilies} words answered
             </Text>

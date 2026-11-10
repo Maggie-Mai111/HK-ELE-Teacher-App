@@ -1,0 +1,77 @@
+{
+  "compatibilityRules": {
+    "compatibleSchemaMajor": 1,
+    "generalUnavailableMeaning": "SOURCE_COMPONENT_UNAVAILABLE_NOT_ZERO",
+    "incompatibleSchemaAction": "REFUSE_LOAD",
+    "incompatibleStructureUpdateChanges": "schemaVersion",
+    "ordinaryDataUpdateChanges": "dataVersion",
+    "stableFamilyKey": "baseword_key",
+    "stableFormKey": "form_key"
+  },
+  "counts": {
+    "candidate": 1663,
+    "inclusiveReference": 1663,
+    "referenceOnly": 0,
+    "totalFamilies": 167780,
+    "forms": 329202,
+    "ranked": 138729,
+    "unranked": 29051,
+    "teachingScopeExcluded": 0
+  },
+  "dataVersion": "2026-11-10-all-members1663-v1",
+  "files": [
+    {
+      "path": "cpb/cpb-sight-words-100.json",
+      "byteSize": 29356,
+      "sha256": "880c87a5a686289353891926176b284b3957a240da74faea56a0b10c964f64a5",
+      "compressionFormat": "none",
+      "role": "SEALED_PRODUCT_PROJECTION"
+    },
+    {
+      "path": "identity/grammatical-relations.json",
+      "byteSize": 38053,
+      "sha256": "7aca47bfa405a6355300e444303d26934d158faf45bbb5cfc45bd5967279818a",
+      "compressionFormat": "none",
+      "role": "SEALED_PRODUCT_PROJECTION"
+    },
+    {
+      "path": "identity/identity-contract.json",
+      "byteSize": 1103,
+      "sha256": "69362ca81cc3268fd2ff3d29d8820ee6df9f45a6ec74807bee7a8c35c352ec64",
+      "compressionFormat": "none",
+      "role": "SEALED_PRODUCT_PROJECTION"
+    },
+    {
+      "path": "reference/families.json.gz",
+      "byteSize": 205305,
+      "sha256": "8a3f169610cee24389834d54aeb716e581f074d0a104312d0e80c72aed4e6953",
+      "compressionFormat": "gzip",
+      "role": "SEALED_PRODUCT_PROJECTION"
+    },
+    {
+      "path": "reference/forms.json.gz",
+      "byteSize": 3083792,
+      "sha256": "7ff0edbbafced3ea29ec4481c0ad3931b009d1dc1452c9a8d07fd42332721e03",
+      "compressionFormat": "gzip",
+      "role": "SEALED_PRODUCT_PROJECTION"
+    },
+    {
+      "path": "reference/search-routes.json.gz",
+      "byteSize": 2364022,
+      "sha256": "f9db37105a6a1d78168d929c2af4d9a23a287605fbd74b9416ab203d987cb85b",
+      "compressionFormat": "gzip",
+      "role": "SEALED_PRODUCT_PROJECTION"
+    }
+  ],
+  "minimumAppVersion": "0.5.0",
+  "releaseDate": "2026-11-05",
+  "schemaVersion": "1.0.0",
+  "sourcePackages": [
+    {
+      "packageId": "SEALED_FULL_BAWF_HKELE",
+      "path": "DATA_PROVENANCE.md",
+      "sha256": "1c6e5156f39f3e4f15265b7b8fd84c09456f65d46c5e6b55ac048edc2322ddc8",
+      "role": "USER_SELECTED_FULL_HANDOVER"
+    }
+  ]
+}

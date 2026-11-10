@@ -13,7 +13,7 @@ export const VERIFIED_AI_QUICK_EXAMPLES: readonly VerifiedAiQuickExample[] = Obj
     label: "Textbooks: by P2",
     query: "Find 10 words first observed by P2 or earlier, sorted by overall rank",
     verifiedMatchCount: 1027,
-    verifiedCoreMatchCount: 461,
+    verifiedCoreMatchCount: 447,
   },
   {
     id: "hk_band",

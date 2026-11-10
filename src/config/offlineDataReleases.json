@@ -94,5 +94,19 @@
       "unranked": 153535,
       "teachingScopeExcluded": 0
     }
+  },
+  "2026-11-10-all-members1663-v1": {
+    "dataInventorySha256": "ce27ebf669c7ae19ec5992d72750bbb78d8a1f6d17f72be8fe7f613ac9a6aaaf",
+    "sourceManifestSha256": "3513895fa9b3fd01eadaf2a15c026416d18ad9be82649f5d1fa3a788d21805b6",
+    "counts": {
+      "candidate": 1663,
+      "inclusiveReference": 1663,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138729,
+      "unranked": 29051,
+      "teachingScopeExcluded": 0
+    }
   }
 }

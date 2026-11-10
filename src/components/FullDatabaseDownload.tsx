@@ -1,3 +1,4 @@
+import {getWordView} from "../services/wordView";
 import { useEffect, useState } from "react";
 import type { HkeleRepository } from "../domain/hkele";
 import { StyleSheet, Text, View } from "react-native";
@@ -34,7 +35,7 @@ export function FullDatabaseDownload({ dataVersion, repository }: { dataVersion:
       <ActionButton
         kind="secondary"
         disabled={busy}
-        label={busy ? "Preparing download…" : "Download full database (.xlsx)"}
+        label={busy ? "Preparing download…" : (getWordView()==="familiar"?"Download familiar words (.xlsx)":"Download full database (.xlsx)")}
         onPress={() => void download()}
       />
       {message ? (

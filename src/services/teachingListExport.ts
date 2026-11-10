@@ -169,7 +169,7 @@ function sheetXml(items: TeachingListItem[], lessonTitle = "", teacherFacing = f
     ),
   ];
   if (teacherFacing) {
-    const keep = values[0]!.map((_, index) => index < 15 && index !== 8 || index === 17 ? index : -1).filter(index => index >= 0);
+    const keep = values[0]!.map((_, index) => index > 0 && (index < 15 && index !== 8 || index === 17) ? index : -1).filter(index => index >= 0);
     for (let index = 0; index < values.length; index += 1) values[index] = keep.map(column => values[index]![column]!);
     values[0] = values[0]!.map(label => label === "Saved selection status" ? "Selection note" : label);
   }
@@ -190,7 +190,7 @@ function sheetXml(items: TeachingListItem[], lessonTitle = "", teacherFacing = f
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>
-  <cols><col min="1" max="1" width="28" customWidth="1"/><col min="2" max="2" width="8" customWidth="1"/><col min="3" max="4" width="24" customWidth="1"/><col min="5" max="6" width="38" customWidth="1"/><col min="7" max="17" width="22" customWidth="1"/></cols>
+  <cols>${teacherFacing ? '<col min="1" max="1" width="8" customWidth="1"/><col min="2" max="3" width="24" customWidth="1"/><col min="4" max="5" width="38" customWidth="1"/><col min="6" max="14" width="22" customWidth="1"/>' : '<col min="1" max="1" width="28" customWidth="1"/><col min="2" max="2" width="8" customWidth="1"/><col min="3" max="4" width="24" customWidth="1"/><col min="5" max="6" width="38" customWidth="1"/><col min="7" max="17" width="22" customWidth="1"/>'}</cols>
   <sheetData>${rows}</sheetData>
   <autoFilter ref="A1:${columnName(values[0]!.length - 1)}${endRow}"/>
 </worksheet>`;

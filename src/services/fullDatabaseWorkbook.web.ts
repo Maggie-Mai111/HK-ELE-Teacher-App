@@ -1,7 +1,10 @@
-import release from "../config/fullDatabaseWorkbook.json";
+import fullRelease from "../config/fullDatabaseWorkbook.json";
+import familiarRelease from "../config/familiarDatabaseWorkbook.json";
+import {getWordView} from "./wordView";
 import { verifyWorkbookDownload } from "./fullDatabaseWorkbookContract";
 
 export async function downloadFullDatabase(currentDataVersion: string): Promise<void> {
+  const release=getWordView()==="familiar"?familiarRelease:fullRelease;
   const response = await fetch(`/HK-ELE-Teacher-App/${release.assetPath}`, {
     cache: "force-cache",
   });

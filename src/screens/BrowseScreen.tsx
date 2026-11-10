@@ -1,9 +1,9 @@
+import {WordViewSelector} from "../components/WordViewSelector";
+import {getWordView,viewCounts} from "../services/wordView";
 import { ProgressiveDisclosure } from "../components/ProgressiveDisclosure";
 import { useAppDimensions } from "../components/useAppDimensions";
 import { TeacherHelp } from "../components/TeacherHelp";
 import { LexicalUsesPanel } from "../components/LexicalUsesPanel";
-import { FullDatabaseDownload } from "../components/FullDatabaseDownload";
-import dataManifest from "../../data/current-manifest.json";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -60,7 +60,7 @@ const sorts: Array<[BrowseSort, string]> = [
 function searchStatus(result: SurfaceSearchResult): string {
   if (result.status === "REGISTERED_EXPRESSION") return "Compound found";
   if (result.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "Connect to check more words";
-  if (result.status === "UNMATCHED") return "No match in the current wordlist";
+  if (result.status === "UNMATCHED") return getWordView() === "familiar" ? "No match in Familiar words. Try All words." : "No automatic match for this spelling.";
   if (result.status === "RESOLVED") return "Family found";
   if (result.status === "AMBIGUOUS") return "Choose a word family";
   if (result.status === "REGISTERED_GRAMMATICAL_RELATION") return "Grammar word";
@@ -194,6 +194,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
       if (request === searchRequest.current) setSearching(false);
     }
   };
+  useEffect(()=>{setPageNumber(1);setAiSelection(null);if(query.trim())void searchNow();},[repository]);
   const clearSearch = () => {
     searchRequest.current += 1;
     setSearching(false);
@@ -283,7 +284,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
   return (
     <View style={styles.content}>
       <ScreenHeader intro="Search a word to see its family and related forms." title="Find words" />
-      <FullDatabaseDownload dataVersion={dataManifest.dataVersion} repository={repository} />
+      <WordViewSelector />
       <View style={styles.searchBox}>
         <TextInput
           accessibilityLabel="Search a word or form"
@@ -320,7 +321,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           />
         ))}
       </View>
-      <Text style={styles.label}>{scope === "full" ? "90% and 95% refer to the Hong Kong texts analysed in the study." : `${scope === "core95" ? "3,779" : "1,764"} word families · ${scope === "core95" ? "includes all families in the 90% list" : "a more focused range"}`}</Text>
+      <Text style={styles.label}>{scope === "full" ? "90% and 95% refer to the Hong Kong texts analysed in the study." : `${viewCounts()[scope === "core95" ? "95" : "90"].toLocaleString()} word families · ${scope === "core95" ? "includes all families in the 90% list" : "a more focused range"}`}</Text>
       <ProgressiveDisclosure title="What do 90% and 95% mean?">
         <Text style={styles.label}>Each list covers at least that share of counted word occurrences in each of the four Hong Kong text collections used in the study. Your own passage may have a different percentage.</Text>
       </ProgressiveDisclosure>
@@ -435,7 +436,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
                 {search.status === "FULL_DATABASE_CHECK_UNAVAILABLE"
                   ? "This word isn't in the saved wordlist. Connect to the internet and search again."
                   : search.status === "UNMATCHED"
-                    ? "Check the spelling, or try another word form. Common words can also be missing from this wordlist."
+                    ? getWordView() === "familiar" ? "Switch to All words for a wider search, or try another spelling." : "Try another spelling or word form."
                     : "Read the word in context before choosing a family."}
               </Text>
             ) : null}

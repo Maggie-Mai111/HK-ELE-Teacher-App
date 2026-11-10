@@ -1,3 +1,4 @@
+import {viewAllowsForm} from "./wordView";
 import { gunzipSync, strFromU8 } from "fflate";
 import release from "../config/aiFormEvidence.json";
 import type { FormRecord } from "../domain/hkele";
@@ -33,7 +34,7 @@ export function aiEvidenceForms(document: AiFormEvidence, key: string): FormReco
       normalized_form: String(item.form).toLowerCase(),
       form_key: null,
     } as FormRecord);
-  });
+  }).filter(form=>viewAllowsForm(key,form.normalized_form));
 }
 let loading: Promise<AiFormEvidence> | null = null;
 export function loadAiFormEvidence(dataVersion: string): Promise<AiFormEvidence> {

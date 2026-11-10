@@ -9,16 +9,16 @@
     "stableFormKey": "form_key"
   },
   "counts": {
-    "candidate": 1764,
-    "inclusiveReference": 1764,
+    "candidate": 1663,
+    "inclusiveReference": 1663,
     "referenceOnly": 0,
     "totalFamilies": 167780,
     "forms": 329202,
-    "ranked": 14245,
-    "unranked": 153535,
+    "ranked": 138729,
+    "unranked": 29051,
     "teachingScopeExcluded": 0
   },
-  "dataVersion": "2026-11-08-hk4-familiar1764-v1",
+  "dataVersion": "2026-11-10-all-members1663-v1",
   "files": [
     {
       "path": "cpb/cpb-sight-words-100.json",
@@ -43,22 +43,22 @@
     },
     {
       "path": "reference/families.json.gz",
-      "byteSize": 196256,
-      "sha256": "5a7b017977a5d788ce9801de63d7b31a92cf264c5e42224b5e306fc48776ac01",
+      "byteSize": 205305,
+      "sha256": "8a3f169610cee24389834d54aeb716e581f074d0a104312d0e80c72aed4e6953",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
     {
       "path": "reference/forms.json.gz",
-      "byteSize": 3082017,
-      "sha256": "62263f2d3eb0c9beef677c0b2305319d0f648e1650e6462bc96e48654a117c92",
+      "byteSize": 3083792,
+      "sha256": "7ff0edbbafced3ea29ec4481c0ad3931b009d1dc1452c9a8d07fd42332721e03",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
     {
       "path": "reference/search-routes.json.gz",
-      "byteSize": 2364002,
-      "sha256": "2d1ef509ba34100f223a169ee893f681fb037de8e1e1950817dd3a04386b4025",
+      "byteSize": 2364022,
+      "sha256": "f9db37105a6a1d78168d929c2af4d9a23a287605fbd74b9416ab203d987cb85b",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     }

@@ -1,7 +1,7 @@
 {
   "schemaVersion": "HK_ELE_IDENTITY_MIGRATION_V1",
   "fromDataVersion": "2026-10-20-a-main-v1",
-  "dataVersion": "2026-11-08-hk4-familiar1764-v1",
+  "dataVersion": "2026-11-10-all-members1663-v1",
   "transitions": {
     "a": {
       "a": [
@@ -284860,6 +284860,7 @@
     },
     "2026-11-03-a2658-finite-family-closure-v1": {},
     "2026-11-08-hk4-familiar1764-v1": {},
-    "2026-11-05-familiar1764-v1": {}
+    "2026-11-05-familiar1764-v1": {},
+    "2026-11-10-all-members1663-v1": {}
   }
 }

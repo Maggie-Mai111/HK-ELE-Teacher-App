@@ -1,4 +1,5 @@
 import type { RegisteredGrammaticalRelation, ResolutionStatus, TokenOccurrence } from "./contracts";
+import { inCoverageFamily } from "../services/coverageLists";
 import type { SupplementaryExpression } from "./supplementaryExpressions";
 
 export type BrowseScope = "core" | "core95" | "broader" | "full";
@@ -126,5 +127,7 @@ export interface HkeleRepository {
 export const hasFlag = (value: unknown): boolean => value === true || value === 1;
 
 export function familySetLabel(family: FamilyRecord): string {
-  return hasFlag(family.candidate_member) ? "90% list family" : typeof family.overall_frequency_order === "number" && family.overall_frequency_order >= 1 && family.overall_frequency_order <= 3779 ? "95% list family" : "Full database";
+  // Saved selections use full records even while a familiar-view search is open.
+  const view = family.word_view === "familiar" ? "familiar" : "all";
+  return inCoverageFamily(family, "90", view) ? "90% list family" : inCoverageFamily(family, "95", view) ? "95% list family" : "Full database";
 }

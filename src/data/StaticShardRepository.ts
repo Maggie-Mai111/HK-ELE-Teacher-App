@@ -100,9 +100,9 @@ export class StaticShardRepository implements HkeleRepository {
     if (request.scope === "core95") {
       if (manifest.metadata.data_version !== coverageRelease.dataVersion) throw new Error("Please update the offline word data.");
       const rows = await this.load<unknown[][]>(`coverage-lists/${coverageRelease.version}/${request.sort}.json.gz`);
-      if (rows.length !== 3779) throw new Error("Please update the offline word data.");
+      if (rows.length !== 2907) throw new Error("Please update the offline word data.");
       const start = (request.page - 1) * request.pageSize;
-      return {...request, totalItems:3779, availableItems:3779, sourceMode:this.getDataMode(), families:rows.slice(start,start+request.pageSize).map(row=>teacherFamilyRecord(inflateRecord<FamilyRecord>(manifest.browse_fields,row)))};
+      return {...request, totalItems:2907, availableItems:2907, sourceMode:this.getDataMode(), families:rows.slice(start,start+request.pageSize).map(row=>teacherFamilyRecord(inflateRecord<FamilyRecord>(manifest.browse_fields,row)))};
     }
     const info = manifest.browse[request.scope]?.[request.sort];
     if (!info) throw new Error("Unsupported Find words selection");

@@ -1,7 +1,7 @@
 import rules from "../config/textNormalization.json";
 import type { SurfaceSearchResult } from "../domain/hkele";
 export function isWordListForm(owner: SurfaceSearchResult["owners"][number] | undefined | null): boolean {
-  return (owner?.candidate_member === true || owner?.candidate_member === 1) && owner?.matched_form_evidence?.familiar_member === 1;
+  return (owner?.candidate_member === true || owner?.candidate_member === 1) && owner?.matched_form_evidence?.coverage_member === 1;
 }
 const RULES=rules as Record<string,{forms:string[];owners:string[];ambiguous:boolean}>;
 export async function normalizedAnalysis(surface:string, lookup:(form:string)=>Promise<SurfaceSearchResult>) {

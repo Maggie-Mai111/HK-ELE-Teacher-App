@@ -1,0 +1,15 @@
+{
+  "dataVersion": "2026-11-10-all-members1663-v1",
+  "wordOriginsVersion": "2026-11-05-word-origins-v1",
+  "workbookVersion": "2026-11-10-familiar-words-v1",
+  "filename": "HK_ELE_Familiar_Words_20261110.xlsx",
+  "assetPath": "assets/downloads/2026-11-10-familiar-words-v1/HK_ELE_Familiar_Words_20261110.xlsx",
+  "byteSize": 2265494,
+  "sha256": "8aed1204786554ce9548336510ebeb0d8d9a98ae4f0e5612e28b42b5cfc8eb51",
+  "counts": {
+    "wordForms": 49305,
+    "fullFamilies": 14253,
+    "wordListFamilies": 1764,
+    "worksheets": 1
+  }
+}

@@ -46,8 +46,8 @@ test("the App verifies AI form evidence, retries a damaged download, and refuses
   };
   try {
     await assert.rejects(loadAiFormEvidence("other-version"), /current wordlist/);
-    await assert.rejects(loadAiFormEvidence("2026-11-08-hk4-familiar1764-v1"), /changed/);
-    const loaded = await loadAiFormEvidence("2026-11-08-hk4-familiar1764-v1");
+    await assert.rejects(loadAiFormEvidence("2026-11-10-all-members1663-v1"), /changed/);
+    const loaded = await loadAiFormEvidence("2026-11-10-all-members1663-v1");
     assert.equal(loaded.formCount, 329202);
     assert.ok(aiEvidenceForms(loaded, "agent").some((form) => form.form === "agency"));
   } finally {

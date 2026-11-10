@@ -93,7 +93,7 @@ test("compound repository adds exact records and leaves ordinary family ownershi
       await repo.browse({ scope: "core", sort: "overall", page: 1, pageSize: 25 }),
       before,
     );
-    assert.equal(before.availableItems, 1764);
+    assert.equal(before.availableItems, 1663);
   }));
 test("passage compounds preserve original tokens and add no duplicate occurrences", async () =>
   withFiles(async (_base, repo) => {

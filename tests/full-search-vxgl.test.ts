@@ -81,7 +81,7 @@ test("displayed word uses its own grade, including a higher grade and an absent 
   const data = JSON.parse(
     gunzipSync(
       readFileSync(
-        join(process.cwd(), "data/releases/2026-11-08-hk4-familiar1764-v1/reference/forms.json.gz"),
+        join(process.cwd(), "data/releases/2026-11-10-all-members1663-v1/reference/forms.json.gz"),
       ),
     ).toString("utf8"),
   );
@@ -201,7 +201,7 @@ test("all compact family and form VXGL values use the registered source labels w
     const table = JSON.parse(
       gunzipSync(
         readFileSync(
-          join(process.cwd(), `data/releases/2026-11-08-hk4-familiar1764-v1/reference/${kind}.json.gz`),
+          join(process.cwd(), `data/releases/2026-11-10-all-members1663-v1/reference/${kind}.json.gz`),
         ),
       ).toString("utf8"),
     ) as { fields: string[]; rows: unknown[][] };

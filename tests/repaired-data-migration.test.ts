@@ -7,7 +7,7 @@ import { validateUpdateManifest, type DataUpdateManifest } from "../src/services
 import { aiEvidenceForms, type AiFormEvidence } from "../src/services/aiFormEvidence";
 import release from "../src/config/aiFormEvidence.json";
 
-const version = "2026-11-08-hk4-familiar1764-v1";
+const version = "2026-11-10-all-members1663-v1";
 test("old same-spelled agency cannot retain age evidence after its registered move to agent", () => {
   assert.equal(savedIdentityStillApplies("age", ["agency"], "2026-10-20-a-main-v1", version), false);
   assert.equal(savedIdentityStillApplies("use", ["reusable"], "2026-10-20-a-main-v1", version), true);

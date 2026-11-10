@@ -21,9 +21,9 @@ const families = projection.rows.map(
     ) as unknown as FamilyRecord,
 );
 
-test("full AI index covers all 167780 A-main families with the A-main 1764 Core members", () => {
+test("full AI index covers all 167780 A-main families with the A-main 1663 Core members", () => {
   assert.equal(families.length, 167780);
-  assert.equal(families.filter((f) => Boolean(f.candidate_member)).length, 1764);
+  assert.equal(families.filter((f) => Boolean(f.candidate_member)).length, 1663);
   const context = { families, cpbFamilyKeys: new Set(projection.cpb100FamilyKeys) };
   const filters = [
     { scope: "full", earliestObservedTo: "P2", limit: 10, sort: "overall" },
@@ -108,7 +108,7 @@ test("full AI cannot silently fall back to the smaller saved wordlist", async ()
   const hybrid = new HybridRepository(full, saved);
   await assert.rejects(hybrid.aiFilterFamilies("full"), /offline/);
   assert.equal(fallbackCalls, 0);
-  assert.equal((await hybrid.aiFilterFamilies("core")).length, 1764);
+  assert.equal((await hybrid.aiFilterFamilies("core")).length, 1663);
   assert.equal(fallbackCalls, 1);
 });
 

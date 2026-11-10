@@ -23,7 +23,8 @@ test("teacher Excel preserves selected spelling, lesson notes and grades without
   const item: TeachingListItem = { basewordKey: "internal-stress-key", displayFamily: "stress", selectedForms: ["stressed"], customOrder: 0, notes: "Explain this meaning", connections: "a stressful lesson", status: "Notice", addedAt: "", updatedAt: "", dataVersion: "internal-data-version", derived: { set_membership: "Candidate", overall_frequency_order: 1005, current_hk_frequency_rank: 1293, current_hk_frequency_band: "HK Top 2k", textbook_first_seen_level: "P5", external_level_reference_display: "Grade 6" } };
   const before = JSON.stringify(item);
   const sheet = strFromU8(unzipSync(teachingListToXlsx([item], "My lesson", true))["xl/worksheets/sheet1.xml"]!);
-  for (const text of ["stressed", "My lesson", "Explain this meaning", "P5", "Grade 6", "1293"]) assert.ok(sheet.includes(text), text);
+  for (const text of ["stressed", "Explain this meaning", "P5", "Grade 6", "1293"]) assert.ok(sheet.includes(text), text);
+  assert.ok(!sheet.includes("My lesson"));
   for (const text of ["Family key", "Data version", "Earlier teaching depth", "Expression ID", "internal-stress-key", "internal-data-version"]) assert.ok(!sheet.includes(text), text);
   assert.equal(JSON.stringify(item), before);
   assert.ok(strFromU8(unzipSync(teachingListToXlsx([item]))["xl/worksheets/sheet1.xml"]!).includes("Family key"));

@@ -1,8 +1,10 @@
+import {WordViewRepository} from "./src/data/WordViewRepository";
+import {getWordView,subscribeWordView} from "./src/services/wordView";
 import type { TextReviewTools } from "./src/components/TextReviewActions";
 import { useAppDimensions } from "./src/components/useAppDimensions";
 import { TeacherHelp } from "./src/components/TeacherHelp";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -116,8 +118,10 @@ export default function App() {
     textEvidence?: CheckedTextEvidence;
     textTools?: TextReviewTools;
   } | null>(null);
-  const appRepository = useMemo(() => repository, []);
-  const teaching = useTeachingList(appRepository);
+  const wordView = useSyncExternalStore(subscribeWordView,getWordView,getWordView);
+  const appRepository = useMemo(() => wordView === "familiar" ? new WordViewRepository(repository,wordView) : repository, [wordView]);
+  const detailRepository = useMemo(() => wordView === "familiar" ? new WordViewRepository(repository,wordView,detail?.selectedForm) : repository, [wordView,detail?.selectedForm]);
+  const teaching = useTeachingList(repository);
   const [helpOpen, setHelpOpen] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const pageRef = useRef<View>(null);
@@ -243,7 +247,7 @@ export default function App() {
                       setRoute(detail.previousRoute);
                       setDetail(null);
                     }}
-                    repository={appRepository}
+                    repository={detail.previousRoute === "list" ? repository : detailRepository}
                     teaching={teaching}
                     sourceLabel={
                       detail.previousRoute === "check"
@@ -278,7 +282,7 @@ export default function App() {
                 </View>
                 <View {...screenVisibility("list")}>
                   <TeachingListScreen
-                    repository={appRepository}
+                    repository={repository}
                     onCheckText={() => navigate("check")}
                     onFindWords={() => navigate("browse")}
                     onOpenFamily={(key, form) => openFamily(key, undefined, form)}

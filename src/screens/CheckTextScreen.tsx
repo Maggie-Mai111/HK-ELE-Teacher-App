@@ -1,3 +1,4 @@
+import {WordViewSelector} from "../components/WordViewSelector";
 import { PassageCoverage } from "../components/PassageCoverage";
 import { occurrenceInCoverage, type CoverageTarget } from "../services/coverageLists";
 import { normalizedCounts } from "../services/textNormalization";
@@ -161,6 +162,7 @@ export function CheckTextScreen({
       setLoading(false);
     }
   };
+  useEffect(()=>{let active=true;if(checkedText!==null){const source=checkedText;void repository.resolveOccurrences(source,scanTeacherText(source).occurrences).then(next=>{if(active)setResults(next);});}return()=>{active=false;};},[repository]);
   const counts = useMemo(() => {
     const values = {
       candidate: 0,
@@ -242,6 +244,7 @@ export function CheckTextScreen({
   return (
     <View style={styles.content}>
       <ScreenHeader title="Check a text" intro="Paste text or scan a photo, then choose Check text." />
+      <WordViewSelector />
       {editing || !current || !results.length ? (
         <>
           <ProgressiveDisclosure title="Scan text from a photo" open={ocrOpen} onOpenChange={setOcrOpen} keepMounted>
@@ -439,7 +442,7 @@ export function CheckTextScreen({
               onHasResponsesChange={setKnowledgeWork}
             />
           </ProgressiveDisclosure>
-            {results.some(item=>item.normalizedAnalysis?.applied) ? <Text style={styles.meta}>Original text: {results.length} words. After expanding short forms and recorded spellings: {normalizedCounts(results).tokens} words, {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the HK-ELE Word List. These counts keep your original text and selected words unchanged.</Text> : null}
+            {results.some(item=>item.normalizedAnalysis?.applied) ? <Text style={styles.meta}>Original text: {results.length} words. With short forms and spelling variants expanded: {normalizedCounts(results).tokens} words, {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the HK-ELE Word List.</Text> : null}
             <ProgressiveDisclosure title="Readability estimates">
               <ComplexityPanel text={checkedText!} results={results} />
             </ProgressiveDisclosure>
