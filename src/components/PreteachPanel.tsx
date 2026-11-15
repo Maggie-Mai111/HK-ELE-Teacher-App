@@ -12,7 +12,7 @@ import { ActionButton } from "./ActionButton";
 import { ChoiceChip } from "./ChoiceChip";
 import { ProgressiveDisclosure } from "./ProgressiveDisclosure";
 
-const levels: ClassLevel[] = ["P1", "P2", "P3", "P4", "P5", "P6", "S1", "S2", "S3"];
+const levels: ClassLevel[] = ["P1", "P2", "P3", "P4", "P5", "P6", "S1", "S2", "S3", "S4", "S5", "S6"];
 interface Props {
   text: string;
   results: ResolvedOccurrence[];
@@ -49,10 +49,10 @@ export function PreteachPanel({
       <Text accessibilityRole="header" aria-level={2} style={styles.title}>
         Words to explain
       </Text>
-      <Text style={styles.note}>Tap a word in your text and mark May need explaining to keep it here.</Text>
+      <Text style={styles.note}>Tap a word and choose May need explaining to list it here.</Text>
       <ProgressiveDisclosure title="How to choose">
-        <Text style={styles.note}>Might students need help with this use? Would explaining it help them understand the text or complete the task?</Text>
-        <Text style={styles.note}>Marked words are grouped by family, starting with the first marked use. Frequency, list membership and textbook stages are records to consult, not a decision about what students know. CPB100 only highlights words.</Text>
+        <Text style={styles.note}>Choose uses your class may need help with to follow the text or complete the task.</Text>
+        <Text style={styles.note}>Your marks appear in text order, grouped by family. Use the word records to help you choose.</Text>
       </ProgressiveDisclosure>
       <ProgressiveDisclosure title="Browse words by records">
         <View style={styles.actions}>{([
@@ -60,7 +60,7 @@ export function PreteachPanel({
           ["academic", "Academic / subject lists"], ["repeated", "Repeated words"],
           ["later", "Later textbook stages"],
         ] as const).map(([value,label]) => <ChoiceChip key={value} label={label} selected={filter===value} onPress={() => {setFilter(value);setLimit(4);}} />)}</View>
-        {filter !== "marked" ? <Text style={styles.note}>Showing records from this text, most repeated words first. Choose which uses need explaining. You can also mark any word directly in the text.</Text> : null}
+        {filter !== "marked" ? <Text style={styles.note}>Most repeated words appear first. Tap any word in the text to mark a use that needs explaining.</Text> : null}
         {filter === "later" ? <>
       <Pressable
         accessibilityRole="button"
@@ -101,8 +101,8 @@ export function PreteachPanel({
       ) : null}
         </> : null}
       </ProgressiveDisclosure>
-      {filter === "later" && !classLevel ? <Text style={styles.note}>Choose a class level to compare first recorded textbook stages.</Text> : null}
-      {!entries.length && !otherMarked.length ? <Text style={styles.note}>{filter === "marked" ? "No words marked yet. You can start by tapping a word in the text." : "No words match this filter. You can still choose words from the text."}</Text> : null}
+      {filter === "later" && !classLevel ? <Text style={styles.note}>Choose your class level to find words first seen in later textbooks.</Text> : null}
+      {!entries.length && !otherMarked.length ? <Text style={styles.note}>{filter === "marked" ? "No marks yet. Tap a word in your text to get started." : "No words match this filter. You can still choose words from the text."}</Text> : null}
       {cards.slice(0, limit).map(group => group.other ? (
         <View key={group.key} style={styles.item}>
           <Pressable accessibilityRole="button" onPress={() => onOpenWord(group.other!)} style={styles.wordButton}><Text style={styles.word}>{group.other.surface}</Text></Pressable>

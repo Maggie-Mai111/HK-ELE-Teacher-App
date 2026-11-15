@@ -9,24 +9,27 @@ function teacherText(value: string): string {
     .replace(/\bregistered\s+/gi, "");
 }
 
-export function teacherAiScope(query: string, selected: BrowseScope = "full"): "full" | "core" | "core95" {
+export function teacherAiScope(
+  query: string,
+  selected: BrowseScope = "full",
+  intent?: Pick<AiFilterResult, "requestedScope">,
+): "full" | "core" | "core95" {
+  if (intent?.requestedScope !== undefined)
+    return (
+      intent.requestedScope ??
+      (selected === "core95" ? "core95" : selected === "core" ? "core" : "full")
+    );
+  if (/95\s*%/.test(query)) return "core95";
+  if (/90\s*%/.test(query)) return "core";
   if (/full database|entire database|whole database|完整(?:数据库|词库)|全部词库/i.test(query))
     return "full";
   if (/hk[-–]?ele\s+word\s+list|core\s+list|核心词[表库]/i.test(query)) return "core";
-  if (/95\s*%/.test(query)) return "core95";
-  if (/90\s*%/.test(query)) return "core";
   return selected === "core95" ? "core95" : selected === "core" ? "core" : "full";
 }
 
-/** Translate the two teacher scopes for the already deployed legacy interpreter. */
+/** Keep the teacher's wording; the interpreter now supports the current scopes. */
 export function teacherAiInterpreterQuery(query: string): string {
-  return query
-    .replace(/hk[-–]?ele\s+word\s+list|core\s+list|核心词[表库]/gi, "Candidate")
-    .replace(
-      /full database|entire database|whole database|完整(?:数据库|词库)|全部词库/gi,
-      "database",
-    )
-    .trim();
+  return query.trim();
 }
 
 /** Scope is reviewed and executed locally; the Worker only interprets other conditions. */

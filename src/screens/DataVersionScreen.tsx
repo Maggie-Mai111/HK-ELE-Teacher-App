@@ -46,8 +46,7 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
         About HK-ELE
       </Text>
       <Text style={styles.intro}>
-        Explore vocabulary for your lessons using English text collections and Hong Kong
-        teaching materials.
+        Find words for your lessons, with frequency and Hong Kong textbook records.
       </Text>
       <DataModeNotice detailed mode={repository.getDataMode()} />
       <ProgressiveDisclosure title="Wordlist information">
@@ -63,12 +62,12 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
       <DataUpdatePanel />
       <ProgressiveDisclosure title="How to read the word information">
         <Text style={styles.note}>
-          HK-ELE Word List contains {coreCount?.toLocaleString("en") ?? "—"} word families selected to cover at least 90% of the words counted in each of four Hong Kong text collections in the study.
-          Choose words that fit your class and text. Full database includes more word families.
+          In All words, the 90% list contains {coreCount?.toLocaleString("en") ?? "—"} families. It reached 90% coverage in each of the study’s four Hong Kong text collections.
+          Your own text may differ. Full database includes more families.
         </Text>
         <Text style={styles.note}>
-          Textbook stages and US grade references describe the selected spelling. HK ranks compare
-          whole word families. A textbook appearance does not establish when students know a word.
+          Textbook stages and US grade references apply to the selected spelling. HK ranks compare
+          whole families. Textbook records do not tell you when students learn a word.
         </Text>
         <Text style={styles.note}>
           Check the words in your passage and explore compound words too. Your original text stays
@@ -77,10 +76,13 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
       </ProgressiveDisclosure>
       <AppCard title="Privacy at a glance">
         <Text style={styles.note}>
-          Text analysis and selected words remain on the device. Photo recognition runs on this
-          device; review and edit the text before using it. Photos are not uploaded or saved by the
-          App. Linked forms receive only what you submit; AI search sends your request when used.
-          Review your agreement from Menu → Your data choices.
+          Text checking and photo recognition happen on your device. Photos are not uploaded or saved by HK-ELE.
+        </Text>
+        <Text style={styles.note}>
+          Selected words and notes stay on this device. Forms receive what you submit; AI search sends your request.
+        </Text>
+        <Text style={styles.note}>
+          Change your choice in Menu → Your data choices.
         </Text>
       </AppCard>
 

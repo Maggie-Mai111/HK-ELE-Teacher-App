@@ -302,7 +302,7 @@ test("validated request sends only the short query with low-cost non-thinking JS
   assert.equal(base.providerRequests(), 1);
   assert.equal(providerBody?.["model"], "deepseek-flash");
   assert.deepEqual(providerBody?.["thinking"], { type: "disabled" });
-  assert.equal(providerBody?.["max_tokens"], 384);
+  assert.equal(providerBody?.["max_tokens"], 768);
   const bodyText = JSON.stringify(providerBody);
   assert.doesNotMatch(bodyText, /fresh-test-token|123e4567|baseword_key|Teaching List|notes/);
 });

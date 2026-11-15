@@ -11,9 +11,9 @@ export function resolvePublicAiBuildConfig(environment, profile) {
   const resolved = { ...environment };
   if (!explicit) {
     if (
-      profile.environment !== "staging" ||
+      profile.environment !== "production" ||
       profile.endpoint !==
-        "https://hkele-ai-filter-staging.hkele-teacher-webapp.workers.dev/api/ai/interpret-filter" ||
+        "https://hkele-ai-filter.hkele-teacher-webapp.workers.dev/api/ai/interpret-filter" ||
       !/^0x[A-Za-z0-9_-]+$/.test(profile.turnstileSiteKey)
     ) {
       throw new Error("Registered public App AI configuration is invalid.");

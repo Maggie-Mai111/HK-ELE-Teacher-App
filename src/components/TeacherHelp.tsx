@@ -31,12 +31,17 @@ export function TeacherHelp({
   }, [returnFocusLabel]);
   const definitions = (
     <View style={styles.items}>
-      {content.columns.map(([title, body]) => (
-        <View key={title} style={styles.item}>
+      {[
+        { title: "Words and lists", rows: content.columns.slice(0, 4) },
+        { title: "Frequency and ranks", rows: [...content.columns.slice(4, 6), content.columns[12]!] },
+        { title: "Textbooks, grades and subject lists", rows: content.columns.slice(6, 10) },
+        { title: "Word parts and table actions", rows: [...content.columns.slice(10, 12), ...content.columns.slice(13)] },
+      ].map(group => <ProgressiveDisclosure key={group.title} title={group.title}>
+        {group.rows.map(([title, body]) => <View key={title} style={styles.item}>
           <Text style={styles.label}>{title}</Text>
           <Text style={styles.body}>{body}</Text>
-        </View>
-      ))}
+        </View>)}
+      </ProgressiveDisclosure>)}
     </View>
   );
   return (
@@ -86,10 +91,9 @@ export function TeacherHelp({
                 </View>
                 <ProgressiveDisclosure title="Other features">
                   {content.features.map(([title, body]) => (
-                    <View key={title} style={styles.item}>
-                      <Text style={styles.label}>{title}</Text>
+                    <ProgressiveDisclosure key={title} title={title!}>
                       <Text style={styles.body}>{body}</Text>
-                    </View>
+                    </ProgressiveDisclosure>
                   ))}
                 </ProgressiveDisclosure>
                 <ActionButton

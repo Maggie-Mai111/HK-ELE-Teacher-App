@@ -2,7 +2,7 @@ import type { FamilyRecord, ResolvedOccurrence } from "../domain/hkele";
 import { hasFlag } from "../domain/hkele";
 import { normalizeCpbSurface } from "./cpbService";
 
-export type ClassLevel = "P1" | "P2" | "P3" | "P4" | "P5" | "P6" | "S1" | "S2" | "S3";
+export type ClassLevel = "P1" | "P2" | "P3" | "P4" | "P5" | "P6" | "S1" | "S2" | "S3" | "S4" | "S5" | "S6";
 
 export interface PreteachSuggestion {
   basewordKey: string;
@@ -29,6 +29,9 @@ const levelOrder: Record<ClassLevel, number> = {
   S1: 7,
   S2: 8,
   S3: 9,
+  S4: 10,
+  S5: 11,
+  S6: 12,
 };
 
 function recordedLevel(value: string | null): number | null {

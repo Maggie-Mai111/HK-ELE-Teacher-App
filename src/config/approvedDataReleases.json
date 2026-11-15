@@ -80,6 +80,16 @@
       "ranked": 138729,
       "unranked": 29051,
       "teachingScopeExcluded": 0
+    },
+    "2026-11-13-s4s6-all1676-v1": {
+      "candidate": 1676,
+      "inclusiveReference": 1676,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138717,
+      "unranked": 29063,
+      "teachingScopeExcluded": 0
     }
   }
 }

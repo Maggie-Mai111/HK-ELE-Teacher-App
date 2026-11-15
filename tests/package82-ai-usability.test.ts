@@ -142,7 +142,7 @@ test("two unsupported requests are rejected without executable filters or guesse
   assert.match(prompt, /must return unsupported/);
 });
 
-function assertAutoStagingPolicy(workflow: string) {
+function assertAutoProductionPolicy(workflow: string) {
   const push = workflow.match(/^  push:\r?\n((?:[ \t]{4,}.*\r?\n)+)/m);
   assert.ok(push, "push trigger is required");
   assert.deepEqual(push[1]!.split(/\r?\n/).map(line => line.trim()).filter(Boolean), ["branches:", "- main"]);
@@ -150,12 +150,12 @@ function assertAutoStagingPolicy(workflow: string) {
   assert.match(workflow, /^  build:\s*\n    if: github\.ref == 'refs\/heads\/main'\s*$/m);
   assert.doesNotMatch(workflow, /^  (?:pull_request|pull_request_target):/m);
   for (const line of [
-    "EXPO_PUBLIC_HKELE_ENVIRONMENT: staging",
-    "EXPO_PUBLIC_HKELE_AI_FILTER_URL: ${{ vars.HKELE_STAGING_AI_FILTER_URL }}",
-    "EXPO_PUBLIC_HKELE_TURNSTILE_SITE_KEY: ${{ vars.HKELE_STAGING_TURNSTILE_SITE_KEY }}",
-    "EXPO_PUBLIC_HKELE_RELEASE_CHANNEL: web-staging",
+    "EXPO_PUBLIC_HKELE_ENVIRONMENT: production",
+    "EXPO_PUBLIC_HKELE_AI_FILTER_URL: https://hkele-ai-filter.hkele-teacher-webapp.workers.dev/api/ai/interpret-filter",
+    "EXPO_PUBLIC_HKELE_TURNSTILE_SITE_KEY: 0x4AAAAAAFEeVTrwV_ny6k5q",
+    "EXPO_PUBLIC_HKELE_RELEASE_CHANNEL: web-production",
   ]) assert.ok(workflow.includes(line), line);
-  assert.doesNotMatch(workflow, /inputs\.environment|HKELE_PRODUCTION_/);
+  assert.doesNotMatch(workflow, /inputs\.environment|HKELE_STAGING_/);
   const required = ["pnpm install --frozen-lockfile", "pnpm run validate:public", "pnpm run typecheck", "pnpm run lint", "pnpm run build:web", "pnpm run validate:pwa", "pnpm test", "uses: actions/upload-pages-artifact"];
   let previous = -1;
   for (const step of required) {
@@ -166,17 +166,17 @@ function assertAutoStagingPolicy(workflow: string) {
   assert.match(workflow, /uses: actions\/deploy-pages@v4/);
 }
 
-test("Pages deploys main pushes automatically to staging and preserves build-before-test-before-upload", () => {
+test("Pages deploys main pushes automatically to shared production and preserves build-before-test-before-upload", () => {
   const workflow = readFileSync(".github/workflows/deploy-pages.yml", "utf8");
-  assertAutoStagingPolicy(workflow);
+  assertAutoProductionPolicy(workflow);
   // Ensure this check rejects regressions instead of accepting any rewritten workflow.
   for (const invalid of [
     workflow.replace("  push:", "  push_disabled:"),
     workflow.replace("- main", "- feature"),
     workflow.replace("- main", "- main\n      - feature"),
     workflow.replace("    if: github.ref == 'refs/heads/main'", "    if: true"),
-    workflow.replace("EXPO_PUBLIC_HKELE_ENVIRONMENT: staging", "EXPO_PUBLIC_HKELE_ENVIRONMENT: production"),
-    workflow.replace("HKELE_STAGING_AI_FILTER_URL", "HKELE_PRODUCTION_AI_FILTER_URL"),
+    workflow.replace("EXPO_PUBLIC_HKELE_ENVIRONMENT: production", "EXPO_PUBLIC_HKELE_ENVIRONMENT: staging"),
+    workflow.replace("https://hkele-ai-filter.hkele-teacher-webapp.workers.dev/api/ai/interpret-filter", "https://invalid.example/api/ai/interpret-filter"),
     workflow.replace("run: pnpm test", "run: echo skipped"),
-  ]) assert.throws(() => assertAutoStagingPolicy(invalid));
+  ]) assert.throws(() => assertAutoProductionPolicy(invalid));
 });

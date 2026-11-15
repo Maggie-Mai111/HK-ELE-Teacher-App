@@ -72,7 +72,7 @@ export function PrivacyPanel({
               </Text>
               <Text style={styles.note}>
                 Text checking and photo recognition happen on your device. Your selected words and
-                notes are saved here; export a copy to keep a backup. When you use AI word search,
+                notes are saved here; copy or download them to keep a backup. When you use AI word search,
                 only your search request is sent to the AI service.
               </Text>
               <Text style={styles.note}>

@@ -58,6 +58,7 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (
     request.method !== "GET" ||
+    request.cache === "no-store" ||
     url.origin !== self.location.origin ||
     !url.pathname.startsWith(BASE_PATH) ||
     url.pathname.includes("/hkele-data/")

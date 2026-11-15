@@ -2,11 +2,13 @@ import type { FamilyRecord, FormRecord } from "../domain/hkele";
 import { hasFlag } from "../domain/hkele";
 import {
   AI_FILTER_GRADES,
+  AI_RECORD_GRADES,
   validateAiFilterConditions,
   type AiFilterConditions,
 } from "../domain/aiFilterSchema";
 import type { AiFilterExecution, AiFilterExecutionContext } from "./aiFilterExecutor";
 import { matchCpb100 } from "./cpbService";
+import { hasUsReferenceConditions, matchesUsReference } from "../domain/educationFilters";
 
 export const hasAiWordConditions = (f: AiFilterConditions) =>
   [
@@ -20,7 +22,7 @@ export const hasAiWordConditions = (f: AiFilterConditions) =>
     f.msvlSubjects,
     f.externalLevels,
     f.cpb100,
-  ].some((v) => v !== undefined);
+  ].some((v) => v !== undefined) || hasUsReferenceConditions(f);
 const norm = (v: unknown) =>
   String(v ?? "")
     .normalize("NFKC")
@@ -44,8 +46,8 @@ const range = (v: number | null, min?: number, max?: number) =>
 
 export function matchesAiWord(form: FormRecord, f: AiFilterConditions): boolean {
   if (form.lookup_only) return false;
-  const grade = AI_FILTER_GRADES.indexOf(
-    form.first_seen_hk_textbooks as (typeof AI_FILTER_GRADES)[number],
+  const grade = AI_RECORD_GRADES.indexOf(
+    form.first_seen_hk_textbooks as (typeof AI_RECORD_GRADES)[number],
   );
   if (
     f.earliestObservedFrom &&
@@ -63,11 +65,7 @@ export function matchesAiWord(form: FormRecord, f: AiFilterConditions): boolean 
     return false;
   if (f.msvlSubjects && !f.msvlSubjects.some((subject) => includes(form.msvl, subject)))
     return false;
-  if (
-    f.externalLevels &&
-    !f.externalLevels.some((level) => includes(form.external_level_reference, level))
-  )
-    return false;
+  if (!matchesUsReference(form.external_level_reference, f)) return false;
   if (f.cpb100 !== undefined && !!matchCpb100(form.form) !== f.cpb100) return false;
   return true;
 }

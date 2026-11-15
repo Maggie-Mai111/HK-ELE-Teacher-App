@@ -7,11 +7,11 @@ import { gunzipSync } from "node:zlib";
 
 import {
   AI_FILTER_MAX_CONTROLLED_TEXT_LENGTH,
-  AI_FILTER_MAX_EXTERNAL_LEVEL_LENGTH,
   AI_FILTER_MAX_SUMMARY_LENGTH,
   AI_FILTER_MAX_WARNING_LENGTH,
   validateAiFilterResult,
 } from "../src/domain/aiFilterSchema.js";
+import { US_REFERENCE_LABELS } from "../src/domain/educationFilters.js";
 import {
   VERIFIED_AI_QUICK_EXAMPLES,
   VERIFIED_ZERO_RESULT_TEST_QUERY,
@@ -29,7 +29,7 @@ function record(table: CompactTable, row: unknown[]): Record<string, unknown> {
 }
 
 async function table(name: string): Promise<CompactTable> {
-  const path = resolve(process.cwd(), "data/releases/2026-11-10-all-members1663-v1/reference", name);
+  const path = resolve(process.cwd(), "data/releases/2026-11-13-s4s6-all1676-v1/reference", name);
   return JSON.parse(gunzipSync(await readFile(path)).toString("utf8")) as CompactTable;
 }
 
@@ -105,7 +105,7 @@ test("all three public quick examples are deterministic non-zero principal-data 
   assert.match(VERIFIED_ZERO_RESULT_TEST_QUERY, /not-registered/);
 });
 
-test("worst legal ready JSON fixture fits the 384-token output budget without relaxing validation", () => {
+test("expanded source-category response stays bounded and the provider retains a finite output cap", () => {
   const fixture = validateAiFilterResult({
     status: "ready",
     summary: "s".repeat(AI_FILTER_MAX_SUMMARY_LENGTH),
@@ -130,11 +130,7 @@ test("worst legal ready JSON fixture fits the 384-token output budget without re
         "Science",
         "Social Studies and History",
       ],
-      externalLevels: [
-        "a".repeat(AI_FILTER_MAX_EXTERNAL_LEVEL_LENGTH),
-        "b".repeat(AI_FILTER_MAX_EXTERNAL_LEVEL_LENGTH),
-        "c".repeat(AI_FILTER_MAX_EXTERNAL_LEVEL_LENGTH),
-      ],
+      externalLevels: [...US_REFERENCE_LABELS],
       cpb100: true,
       limit: 100,
       sort: "overall",
@@ -143,10 +139,10 @@ test("worst legal ready JSON fixture fits the 384-token output budget without re
     warnings: ["w".repeat(AI_FILTER_MAX_WARNING_LENGTH), "x".repeat(AI_FILTER_MAX_WARNING_LENGTH)],
   });
   const serialized = JSON.stringify(fixture);
-  assert.ok(serialized.length <= 1100, `worst fixture is ${serialized.length} characters`);
+  assert.ok(serialized.length <= 1800, `bounded fixture is ${serialized.length} characters`);
   assert.match(
     readFileSync(resolve(process.cwd(), "worker/src/index.ts"), "utf8"),
-    /max_tokens:\s*384/,
+    /max_tokens:\s*768/,
   );
 });
 

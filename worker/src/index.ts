@@ -3,6 +3,7 @@ import {
   AI_FILTER_MAX_TURNSTILE_TOKEN_LENGTH,
   AI_FILTER_TURNSTILE_ACTION,
   type AiFilterRequest,
+  normalizeAiInterpreterResult,
 } from "../../src/domain/aiFilterSchema";
 import { SYSTEM_PROMPT } from "./prompt";
 import { validateAiFilterGatewayRequest, validateAiFilterResult } from "./validate";
@@ -183,8 +184,9 @@ async function callDeepSeek(
         body: JSON.stringify({
           model: "deepseek-flash",
           thinking: { type: "disabled" },
+          temperature: 0,
           response_format: { type: "json_object" },
-          max_tokens: 384,
+          max_tokens: 768,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             { role: "user", content: request.query },
@@ -320,7 +322,7 @@ export async function handleRequest(
     const rawResult = await callDeepSeek(providerRequest, env, fetcher);
     let result: ReturnType<typeof validateAiFilterResult>;
     try {
-      result = validateAiFilterResult(rawResult);
+      result = validateAiFilterResult(normalizeAiInterpreterResult(rawResult, checked.locale));
     } catch {
       throw new ProviderFailure("provider_result_schema");
     }

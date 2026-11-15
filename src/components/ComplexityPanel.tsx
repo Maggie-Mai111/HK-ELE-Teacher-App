@@ -23,7 +23,7 @@ export function ComplexityPanel({
       </Text>
       {value.status === "TOO_SHORT" ? (
         <Text style={styles.notice}>
-          Add at least {READABILITY_MIN_WORDS} English words for a more useful estimate.
+          Scores appear from {READABILITY_MIN_WORDS} English words.
         </Text>
       ) : (
         <View style={styles.metrics}>
@@ -40,8 +40,10 @@ export function ComplexityPanel({
       {value.status === "READY" && value.words < 100 ? (
         <Text style={styles.note}>This is a short passage; use the scores as a rough guide.</Text>
       ) : null}
-      <Text style={styles.note}>Higher Reading Ease scores indicate easier text.</Text>
-      <Text style={styles.note}>Use alongside your knowledge of the class.</Text>
+      {value.status === "READY" ? <>
+        <Text style={styles.note}>Higher Reading Ease scores suggest easier reading.</Text>
+        <Text style={styles.note}>The US grade estimate is not a Hong Kong class level.</Text>
+      </> : null}
       <ProgressiveDisclosure title="How these estimates are calculated">
         <Text style={styles.note}>
           Both formulas use average sentence length and estimated syllables per word. Flesch Reading
@@ -49,9 +51,7 @@ export function ComplexityPanel({
           0.39 × words per sentence + 11.8 × syllables per word − 15.59.
         </Text>
         <Text style={styles.note}>
-          The scores use estimated syllable and sentence counts and appear for texts with at least
-          30 English words. They describe sentence and word length; they do not predict a Hong Kong
-          class level or how well your students will understand the text.
+          The App estimates syllables. The US grade estimate is a reference, not a Hong Kong class level.
         </Text>
       </ProgressiveDisclosure>
     </View>

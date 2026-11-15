@@ -1,15 +1,35 @@
+import {
+  US_REFERENCE_LABELS,
+  canonicalUsReference,
+  validateUsReferenceConditions,
+  type UsReferenceConditions,
+} from "./educationFilters";
+
 export const AI_FILTER_MAX_QUERY_LENGTH = 300;
 export const AI_FILTER_MAX_RESULTS = 100;
 export const AI_FILTER_MAX_SUMMARY_LENGTH = 100;
 export const AI_FILTER_MAX_WARNING_LENGTH = 60;
 export const AI_FILTER_MAX_WARNINGS = 2;
 export const AI_FILTER_MAX_CONTROLLED_TEXT_LENGTH = 32;
-export const AI_FILTER_MAX_EXTERNAL_LEVELS = 3;
+export const AI_FILTER_MAX_EXTERNAL_LEVELS = US_REFERENCE_LABELS.length;
 export const AI_FILTER_MAX_EXTERNAL_LEVEL_LENGTH = 32;
 export const AI_FILTER_TURNSTILE_ACTION = "ai_filter";
 export const AI_FILTER_MAX_TURNSTILE_TOKEN_LENGTH = 2048;
 
-export const AI_FILTER_GRADES = ["P1", "P2", "P3", "P4", "P5", "P6", "S1", "S2", "S3"] as const;
+export const AI_FILTER_GRADES = [
+  "P1",
+  "P2",
+  "P3",
+  "P4",
+  "P5",
+  "P6",
+  "S1",
+  "S2",
+  "S3",
+  "S4",
+  "S5",
+  "S6",
+] as const;
 export const AI_FILTER_HK_BANDS = [
   "HK Top 1k",
   "HK Top 2k",
@@ -43,7 +63,7 @@ export interface AiFilterGatewayRequest extends AiFilterRequest {
   anonymousSessionId: string;
 }
 
-export interface AiFilterConditions {
+export interface AiFilterConditions extends UsReferenceConditions {
   scope: AiFilterScope;
   earliestObservedFrom?: AiFilterGrade;
   earliestObservedTo?: AiFilterGrade;
@@ -70,6 +90,7 @@ export interface AiFilterResult {
   filters: AiFilterConditions | null;
   clarifyingQuestion: string | null;
   warnings: string[];
+  requestedScope?: "full" | "core" | "core95" | null;
 }
 
 export class AiFilterValidationError extends Error {
@@ -79,7 +100,14 @@ export class AiFilterValidationError extends Error {
   }
 }
 
-const resultKeys = new Set(["status", "summary", "filters", "clarifyingQuestion", "warnings"]);
+const resultKeys = new Set([
+  "status",
+  "summary",
+  "filters",
+  "clarifyingQuestion",
+  "warnings",
+  "requestedScope",
+]);
 const filterKeys = new Set([
   "scope",
   "earliestObservedFrom",
@@ -96,6 +124,10 @@ const filterKeys = new Set([
   "msvl",
   "msvlSubjects",
   "externalLevels",
+  "usGradeFrom",
+  "usGradeTo",
+  "usGradeMatch",
+  "usCollege",
   "cpb100",
   "limit",
   "sort",
@@ -297,6 +329,34 @@ export function validateAiFilterConditions(value: unknown): AiFilterConditions {
       AI_FILTER_MAX_EXTERNAL_LEVEL_LENGTH,
     ),
   );
+  if (result.externalLevels) {
+    result.externalLevels = [
+      ...new Set(
+        result.externalLevels.map((label) => {
+          const canonical = canonicalUsReference(label);
+          if (!canonical)
+            throw new AiFilterValidationError("US grade reference is not a source category.");
+          return canonical;
+        }),
+      ),
+    ];
+  }
+  assign("usGradeFrom", optionalInteger(record, "usGradeFrom", 0, 12));
+  assign("usGradeTo", optionalInteger(record, "usGradeTo", 0, 12));
+  assign(
+    "usGradeMatch",
+    record.usGradeMatch === undefined
+      ? undefined
+      : enumValue(record.usGradeMatch, ["overlap", "within"] as const, "usGradeMatch"),
+  );
+  assign("usCollege", optionalBoolean(record, "usCollege"));
+  try {
+    validateUsReferenceConditions(result);
+  } catch (error) {
+    throw new AiFilterValidationError(
+      error instanceof Error ? error.message : "US grade filter is invalid.",
+    );
+  }
   assign("cpb100", optionalBoolean(record, "cpb100"));
   if (
     result.overallRankMin &&
@@ -348,5 +408,76 @@ export function validateAiFilterResult(value: unknown): AiFilterResult {
     filters,
     clarifyingQuestion,
     warnings,
+    ...(record.requestedScope !== undefined
+      ? {
+          requestedScope:
+            record.requestedScope === null
+              ? null
+              : enumValue(
+                  record.requestedScope,
+                  ["full", "core", "core95"] as const,
+                  "requestedScope",
+                ),
+        }
+      : {}),
   };
 }
+
+/** Normalize display text and documented defaults; never repair or drop filter conditions. */
+export function normalizeAiInterpreterResult(
+  value: unknown,
+  locale: "en-HK" | "zh-HK" = "en-HK",
+): unknown {
+  const record = objectValue(value, "result");
+  const text = (v: unknown, maximum: number) => {
+    if (typeof v !== "string") return v;
+    const cleaned = v.replace(/\s+/g, " ").trim();
+    if (cleaned.length <= maximum) return cleaned;
+    const prefix = cleaned.slice(0, maximum - 1);
+    const space = prefix.lastIndexOf(" ");
+    return (space >= maximum / 2 ? prefix.slice(0, space) : prefix) + "…";
+  };
+  const filters =
+    record.filters && typeof record.filters === "object" && !Array.isArray(record.filters)
+      ? { scope: "full", limit: 25, sort: "overall", ...record.filters }
+      : record.filters;
+  const normalized = {
+    ...record,
+    filters,
+    summary: text(record.summary, AI_FILTER_MAX_SUMMARY_LENGTH),
+    clarifyingQuestion:
+      record.clarifyingQuestion === undefined && record.status !== "needs_clarification"
+        ? null
+        : text(record.clarifyingQuestion, 120),
+    warnings: Array.isArray(record.warnings)
+      ? record.warnings.map((v) => text(v, AI_FILTER_MAX_WARNING_LENGTH))
+      : (record.warnings ?? []),
+  };
+  if (
+    record.status === "ready" &&
+    filters &&
+    typeof filters === "object" &&
+    "limit" in filters &&
+    typeof filters.limit === "number" &&
+    Number.isInteger(filters.limit) &&
+    (filters.limit < 1 || filters.limit > AI_FILTER_MAX_RESULTS)
+  ) {
+    // Validate every other field before offering a smaller request; never discard invalid filters.
+    validateAiFilterResult({ ...normalized, filters: { ...filters, limit: 25 } });
+    return {
+      ...normalized,
+      status: "needs_clarification",
+      filters: null,
+      summary: locale === "zh-HK" ? "請調整要顯示的詞數。" : "Choose how many words to show.",
+      clarifyingQuestion:
+        locale === "zh-HK"
+          ? "請將原要求的數量改為 1 至 100，再試一次。"
+          : "Please change the number in your request to 1–100 and try again.",
+      warnings: [],
+    };
+  }
+  return normalized;
+}
+
+// Request bounds and recorded textbook stages use the same chronological order.
+export const AI_RECORD_GRADES = AI_FILTER_GRADES;

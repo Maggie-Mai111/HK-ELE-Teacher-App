@@ -283,7 +283,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
 
   return (
     <View style={styles.content}>
-      <ScreenHeader intro="Search a word to see its family and related forms." title="Find words" />
+      <ScreenHeader intro="Find a word and its related forms." title="Find words" />
       <WordViewSelector />
       <View style={styles.searchBox}>
         <TextInput
@@ -321,9 +321,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           />
         ))}
       </View>
-      <Text style={styles.label}>{scope === "full" ? "90% and 95% refer to the Hong Kong texts analysed in the study." : `${viewCounts()[scope === "core95" ? "95" : "90"].toLocaleString()} word families · ${scope === "core95" ? "includes all families in the 90% list" : "a more focused range"}`}</Text>
+      <Text style={styles.label}>{scope === "full" ? "90% / 95%: coverage in the study’s Hong Kong texts." : `${viewCounts()[scope === "core95" ? "95" : "90"].toLocaleString()} word families · ${scope === "core95" ? "includes all families in the 90% list" : "the 90% list"}`}</Text>
       <ProgressiveDisclosure title="What do 90% and 95% mean?">
-        <Text style={styles.label}>Each list covers at least that share of counted word occurrences in each of the four Hong Kong text collections used in the study. Your own passage may have a different percentage.</Text>
+        <Text style={[styles.label, {fontWeight:"400"}]}>These lists covered at least 90% or 95% of the words counted in each study collection. Your passage may differ.</Text>
       </ProgressiveDisclosure>
       {state.searchActive && search ? <LexicalUsesPanel word={search.submittedQuery} repository={repository} /> : null}
       <DataModeNotice mode={dataMode} />
@@ -336,7 +336,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
         />
       ) : null}
       {state.searchActive && search?.expressionLayerStatus === "UNAVAILABLE" ? (
-        <Text style={styles.label}>Connect or update Offline use to check compound words.</Text>
+        <Text style={styles.label}>Connect to the internet or update your offline download to check compounds.</Text>
       ) : null}
       <AiFilterAssistant
         scope={scope}

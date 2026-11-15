@@ -35,11 +35,11 @@ jobs:
       - name: Build controlled Web/PWA deployment
         run: pnpm run build:web
         env:
-          EXPO_PUBLIC_HKELE_ENVIRONMENT: staging
-          EXPO_PUBLIC_HKELE_AI_FILTER_URL: ${{ vars.HKELE_STAGING_AI_FILTER_URL }}
-          EXPO_PUBLIC_HKELE_TURNSTILE_SITE_KEY: ${{ vars.HKELE_STAGING_TURNSTILE_SITE_KEY }}
-          EXPO_PUBLIC_HKELE_RELEASE_CHANNEL: web-staging
-          EXPO_PUBLIC_HKELE_ENDPOINT_STATUS: CONFIGURED_BY_MANUAL_GITHUB_ACTIONS_DEPLOYMENT
+          EXPO_PUBLIC_HKELE_ENVIRONMENT: production
+          EXPO_PUBLIC_HKELE_AI_FILTER_URL: https://hkele-ai-filter.hkele-teacher-webapp.workers.dev/api/ai/interpret-filter
+          EXPO_PUBLIC_HKELE_TURNSTILE_SITE_KEY: 0x4AAAAAAFEeVTrwV_ny6k5q
+          EXPO_PUBLIC_HKELE_RELEASE_CHANNEL: web-production
+          EXPO_PUBLIC_HKELE_ENDPOINT_STATUS: CONFIGURED_BY_AUTOMATIC_PRODUCTION_PAGES_DEPLOYMENT
       - run: pnpm run validate:pwa
       - name: Test source and the freshly built offline package
         run: pnpm test

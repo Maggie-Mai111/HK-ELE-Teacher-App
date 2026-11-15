@@ -1,4 +1,5 @@
 interface BrowserOcrWorker {
+  setParameters(parameters: { tessedit_pageseg_mode: string }): Promise<unknown>;
   recognize(image: string): Promise<{ data: { text: string } }>;
   terminate(): Promise<void>;
 }
@@ -68,7 +69,8 @@ async function sizedImage(uri: string, signal?: AbortSignal): Promise<string> {
   cancelled(signal);
   if (!image.width || !image.height)
     throw new Error("This image could not be read. Choose a JPG or PNG photo.");
-  const scale = Math.min(1, 2200 / Math.max(image.width, image.height));
+  // Keep small printed letters readable; bound memory use on phones.
+  const scale = Math.min(2, 2800 / Math.max(image.width, image.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.max(1, Math.round(image.width * scale));
   canvas.height = Math.max(1, Math.round(image.height * scale));
@@ -113,6 +115,10 @@ export async function recognizeBrowserImage(
       () => {},
     );
     worker = await abortable(creatingWorker, signal);
+    cancelled(signal);
+    // Automatic page layout separates text beside/above photographs. The engine
+    // default (one uniform block) attempts to read photograph textures as text.
+    await abortable(worker.setParameters({ tessedit_pageseg_mode: "3" }), signal);
     cancelled(signal);
     const result = await abortable(worker.recognize(prepared), signal);
     cancelled(signal);

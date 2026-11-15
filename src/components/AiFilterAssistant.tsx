@@ -110,20 +110,16 @@ export function AiFilterAssistant({
     const controller = new AbortController();
     pendingRequest.current = controller;
     try {
-      setInterpretation(
-        teacherAiResult(
-          await interpretAiFilter(
-            {
-              query: teacherAiInterpreterQuery(query),
-              locale: /[\u3400-\u9fff]/u.test(query) ? "zh-HK" : "en-HK",
-              surface: "browse",
-            },
-            { turnstileToken, anonymousSessionId },
-            { signal: controller.signal },
-          ),
-          teacherAiScope(query, latestScope.current),
-        ),
+      const raw = await interpretAiFilter(
+        {
+          query: teacherAiInterpreterQuery(query),
+          locale: /[\u3400-\u9fff]/u.test(query) ? "zh-HK" : "en-HK",
+          surface: "browse",
+        },
+        { turnstileToken, anonymousSessionId },
+        { signal: controller.signal },
       );
+      setInterpretation(teacherAiResult(raw, teacherAiScope(query, latestScope.current, raw)));
     } catch (reason) {
       if (controller.signal.aborted) return;
       setError(
@@ -144,19 +140,21 @@ export function AiFilterAssistant({
     setBusy(true);
     setError("");
     try {
-      const reviewedScope = teacherAiScope(query, latestScope.current);
-      const context = await prepareAiFilterContext(
-        repository,
-        reviewedScope,
-      );
+      const reviewedScope = teacherAiScope(query, latestScope.current, interpretation);
+      const context = await prepareAiFilterContext(repository, reviewedScope);
       if (hasAiWordConditions(interpretation.filters)) {
         const evidence = await loadAiFormEvidence(await repository.getDataVersion!());
-        onApply(
-          {...filterAiWordEvidence(context, interpretation.filters, (key) =>
+        onApply({
+          ...filterAiWordEvidence(context, interpretation.filters, (key) =>
             aiEvidenceForms(evidence, key),
-          ),browseScope:reviewedScope},
-        );
-      } else onApply({...executeAiFilter(context, interpretation.filters),browseScope:reviewedScope});
+          ),
+          browseScope: reviewedScope,
+        });
+      } else
+        onApply({
+          ...executeAiFilter(context, interpretation.filters),
+          browseScope: reviewedScope,
+        });
       setExpanded(false);
     } catch {
       setError(
@@ -185,9 +183,7 @@ export function AiFilterAssistant({
           <Text accessibilityRole="header" aria-level={2} style={styles.title}>
             Find words with AI
           </Text>
-          <Text style={styles.compactDescription}>
-            Find words for your lesson in the selected list.
-          </Text>
+          <Text style={styles.compactDescription}>Describe the words you need.</Text>
         </View>
         <Text aria-hidden style={styles.chevron}>
           {expanded ? "Close −" : "Open +"}
@@ -207,11 +203,9 @@ export function AiFilterAssistant({
             </Text>
           ) : null}
           <Text style={styles.description}>
-            Describe the words you need from the {scope === "core" ? "90% list" : scope === "core95" ? "95% list" : "Full database"}.
-          </Text>
-          <Text style={styles.description}>
-            Word details apply to the spelling; ranks compare families. Review the search before
-            showing results.
+            Search the{" "}
+            {scope === "core" ? "90% list" : scope === "core95" ? "95% list" : "Full database"} in
+            your own words.
           </Text>
           <TextInput
             accessibilityLabel="Describe the words to find"
@@ -287,7 +281,10 @@ export function AiFilterAssistant({
                     : "Try a different search."}
               </Text>
               {interpretation.filters
-                ? describeAiFilterConditions(interpretation.filters).map((condition) => (
+                ? describeAiFilterConditions(
+                    interpretation.filters,
+                    teacherAiScope(query, scope, interpretation),
+                  ).map((condition) => (
                     <Text key={condition} style={styles.condition}>
                       • {condition}
                     </Text>
@@ -299,13 +296,14 @@ export function AiFilterAssistant({
               {interpretation.warnings
                 .filter((warning) => !/^No filters? (?:was|were) applied\.?$/i.test(warning))
                 .map((warning) => (
-                <Text key={warning} style={styles.warning}>
-                  • {warning}
-                </Text>
-              ))}
+                  <Text key={warning} style={styles.warning}>
+                    • {warning}
+                  </Text>
+                ))}
               {interpretation.status === "unsupported" ? (
                 <Text style={styles.error}>
-                  We can't search for that information yet. Try one of the examples or search for a word above.
+                  We can't search for that information yet. Try one of the examples or search for a
+                  word above.
                 </Text>
               ) : null}
               {interpretation.status === "ready" ? (

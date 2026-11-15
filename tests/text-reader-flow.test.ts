@@ -133,7 +133,7 @@ test("teacher workflow copy omits internal disclaimers while retaining privacy a
     /An intention for this lesson, not a test|Source this session:|cannot accurately distinguish|Vocabulary coverage is not the same/,
   );
   assert.match(knowledge, /Sample of/);
-  assert.match(knowledge, /Marks clear when you check another text or close HK-ELE/);
+  assert.match(knowledge, /Marks last until you check another text or close HK-ELE/);
   assert.match(
     readFileSync("src/components/PrivacyPanel.tsx", "utf8"),
     /Click and feature-use records\s+are\s+not currently collected/,

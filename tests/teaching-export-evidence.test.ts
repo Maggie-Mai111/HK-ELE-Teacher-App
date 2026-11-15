@@ -14,7 +14,7 @@ function savedItem(): TeachingListItem {
     basewordKey:"stress",displayFamily:"stress",status:"Notice",teachingFocus:"focus",
     notes:'Target meaning: under pressure, then "explain".',connections:"Compare stress and stressed.",
     selectedForms:["stressed"],customOrder:2,addedAt:"2026-10-29",updatedAt:"2026-10-29",
-    sourceLabels:["Check a text"],dataVersion:"2026-11-10-all-members1663-v1",
+    sourceLabels:["Check a text"],dataVersion:"2026-11-13-s4s6-all1676-v1",
     derived:{set_membership:"Candidate",overall_frequency_order:1025,current_hk_frequency_rank:1330,
       current_hk_frequency_band:"HK Top 2k",textbook_first_seen_level:"P5",external_level_reference_display:"Grade 6; Grades 6�C7; Grades 8�C9"},
   };
@@ -50,7 +50,7 @@ test("multiple selected forms keep individual grades, textbook levels, spelling 
   const old={...savedItem(),selectedForms:["stressful","stressed","stressors","unregistered-form"]};
   const [item]=await prepareTeachingExportItems([old],repository);
   assert.equal(item!.derived.external_level_reference_display,"stressful: Grades 8–9 | stressed: Grade 6 | stressors: Grades 6–7 | unregistered-form: —");
-  assert.equal(item!.derived.textbook_first_seen_level,"stressful: P6 | stressed: P5 | stressors: — | unregistered-form: —");
+  assert.equal(item!.derived.textbook_first_seen_level,"stressful: P6 | stressed: P5 | stressors: S6 | unregistered-form: —");
   assert.equal(item!.dataReviewStatus,"Word form needs review");
   assert.deepEqual(item!.selectedForms,old.selectedForms);
 }));

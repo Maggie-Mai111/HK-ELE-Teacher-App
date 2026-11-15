@@ -84,7 +84,7 @@ function FormTier({ title, description, forms, family, teaching, sourceLabel }: 
   const shown = visibleForms(forms, limit);
   return (
     <ProgressiveDisclosure
-      summary={`${forms.length.toLocaleString("en")} word forms · ${description}`}
+      summary={description}
       title={`${title} (${forms.length.toLocaleString("en")})`}
     >
       {forms.length ? (
@@ -205,20 +205,20 @@ export function WordDetailScreen({
     return [
       {
         key: "textbook",
-        title: "Observed in sampled HK textbooks",
-        description: "Forms observed in the sampled textbooks.",
+        title: "HK textbook records",
+        description: "First appearance shown for each spelling.",
         forms: textbook,
       },
       {
         key: "external",
         title: "Other forms with US grade references",
-        description: "Forms with a recorded US grade reference.",
+        description: "",
         forms: external,
       },
       {
         key: "remaining",
         title: "Other word forms",
-        description: "Additional forms in this word family.",
+        description: "",
         forms: remaining,
       },
     ];
@@ -274,7 +274,7 @@ export function WordDetailScreen({
               <EvidenceBadge
                 label={
                   activeForm
-                    ? "Word · first seen in HK textbooks"
+                    ? "First seen in HK textbooks"
                     : "Family · first seen in HK textbooks"
                 }
                 value={
@@ -359,7 +359,7 @@ export function WordDetailScreen({
             </AppCard>
           ) : null}
           <ProgressiveDisclosure
-            summary="Frequency, textbook levels and subject links."
+            summary="Frequency, textbook stages and subject lists."
             title="Word information"
           >
             <DetailRow label="Word list" value={familySetLabel(detail.family)} />
@@ -392,7 +392,7 @@ export function WordDetailScreen({
               Word forms ({detail.forms.length.toLocaleString("en")})
             </Text>
             <Text style={styles.caution}>
-              Open a group to explore its word forms and add the ones you want to teach.
+              Open a group to see related forms.
             </Text>
           </View>
           {formTiers.filter((tier) => tier.forms.length > 0).map((tier) => (

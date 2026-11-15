@@ -17,9 +17,9 @@ export function PassageCoverage({results,target,onTarget,onOutside}: {
     <Text style={styles.text}>{counts.included} of {counts.total} word occurrences · this text</Text>
     {counts.outside>0?<ActionButton kind="secondary" label={`View words outside this list (${counts.outside})`} onPress={onOutside}/>:null}
     <ProgressiveDisclosure title="How is this counted?">
-      <Text style={styles.text}>Every occurrence counts, including repeated words. Compounds and unmatched words stay in the total. Highlighting does not change the count.</Text>
-      <Text style={styles.text}>Only forms included in the selected list count towards the percentage. All word results also shows separate counts with short forms and spelling variants expanded.</Text>
-      <Text style={styles.text}>The 90% and 95% list names come from the study’s four Hong Kong text collections. The percentage above is for your text, not what students know.</Text>
+      <Text style={styles.text}>Each word counts every time it appears. Compounds and unmatched words stay in the total.</Text>
+      <Text style={styles.text}>Only spellings in your selected list count towards its percentage. Highlighting does not change it.</Text>
+      <Text style={styles.text}>The 90% and 95% names refer to the study’s Hong Kong texts. This percentage is for your text, not what students know.</Text>
     </ProgressiveDisclosure>
   </View>;
 }

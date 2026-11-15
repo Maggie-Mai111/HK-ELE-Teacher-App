@@ -152,8 +152,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange, onReview
   return (
     <View style={styles.box}>
       <Text style={styles.note}>
-        Take a photo or choose an image. Recognition happens on this device; your photo is not
-        uploaded.
+        Scan a clear photo of printed English. Your photo is not uploaded.
       </Text>
       <View style={styles.actions}>
         <ActionButton
@@ -171,8 +170,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange, onReview
       </View>
       {Platform.OS === "web" ? (
         <Text style={styles.note}>
-          If your browser does not open the camera, take a photo first and choose it from your
-          library.
+          If the camera won’t open, take a photo first, then tap Choose image.
         </Text>
       ) : null}
       {!supported ? (

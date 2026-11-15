@@ -77,20 +77,17 @@ export function KnowledgeTestPanel({
   return (
     <View style={styles.box}>
       <Text style={styles.intro}>
-        Mark whether students know each word in the sentence shown. You can also tap words
-        in the passage. Marks clear when you check another text or close HK-ELE.
+        Read each sentence and mark whether your class knows this use. Marks last until you check another text or close HK-ELE.
       </Text>
       <ProgressiveDisclosure title="How this check works">
         <Text style={styles.note}>
-          Choose 10, 20 or all matched families. The check shows one word from each family.
-          The same text gives the same quick-check selection.
+          Choose 10, 20 or all matched families. You’ll see one example per family. The same text gives the same selection.
         </Text>
         <Text style={styles.note}>
-          Results describe only the examples shown. Other uses of the same spelling are separate. Unmatched words,
-          words with more than one possible family and separate compounds are left out.
+          The check leaves out unmatched words, unclear family matches and separate compounds. Results count only the examples you answer.
         </Text>
         <Text style={styles.note}>
-          May need explaining keeps this example in Words to explain. Known applies only to this occurrence; it does not mark other uses or the whole family as known.
+          May need explaining adds this example to Words to explain. Each mark applies only to this use.
         </Text>
       </ProgressiveDisclosure>
       <View style={styles.actions}>

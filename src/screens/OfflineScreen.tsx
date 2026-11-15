@@ -119,8 +119,7 @@ export function OfflineScreen({
         Offline use
       </Text>
       <Text style={styles.intro}>
-        Download once while online, then check texts and plan lessons without an internet
-        connection.
+        Download once to use HK-ELE without internet.
       </Text>
       {Platform.OS !== "web" ? (
         <DataUpdatePanel />

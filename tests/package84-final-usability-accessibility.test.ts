@@ -164,7 +164,7 @@ test("photo OCR and advanced text evidence stay behind collapsed disclosures", (
   const disclosure = source("src/components/ProgressiveDisclosure.tsx");
   assert.match(disclosure, /defaultOpen = false/);
   const about = source("src/screens/DataVersionScreen.tsx");
-  assert.match(about, /Photo\s+recognition\s+runs\s+on\s+this\s+device/);
+  assert.match(about, /Text checking and photo recognition happen on your device/);
 });
 
 test("typography, touch targets, names, headings and expanded state meet source-level floors", () => {

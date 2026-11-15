@@ -13,7 +13,7 @@ const tasks = [
   {
     route: "browse",
     title: "Find words",
-    description: "Explore word families, frequency and textbook observations for your lesson.",
+    description: "Search a word and compare its related forms.",
   },
   {
     route: "list",
@@ -41,8 +41,7 @@ export function HomeScreen({ onNavigate, selectedWordCount = 0 }: { onNavigate: 
             Find the words your lesson needs.
           </Text>
           <Text style={styles.description}>
-            Check a lesson text, explore related words, and choose what your class needs,
-            with frequency and Hong Kong textbook records.
+            Check lesson texts and choose words to teach, with frequency and Hong Kong textbook records.
           </Text>
         </View>
         <View style={[styles.illustration, wide && styles.half]}>

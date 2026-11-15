@@ -243,7 +243,7 @@ export function CheckTextScreen({
   };
   return (
     <View style={styles.content}>
-      <ScreenHeader title="Check a text" intro="Paste text or scan a photo, then choose Check text." />
+      <ScreenHeader title="Check a text" intro="Paste a passage or scan a photo." />
       <WordViewSelector />
       {editing || !current || !results.length ? (
         <>
@@ -289,7 +289,7 @@ export function CheckTextScreen({
         </Text>
       ) : null}
       {showResults && results.some((item) => item.expressionLayerStatus === "UNAVAILABLE") ? (
-        <Text style={styles.meta}>Connect or update Offline use to check compound words.</Text>
+        <Text style={styles.meta}>Connect to the internet or update your offline download to check compounds.</Text>
       ) : null}
       {loading ? (
         <ActivityIndicator accessibilityLabel="Checking text" color={colors.primary} size="large" />
@@ -316,7 +316,7 @@ export function CheckTextScreen({
                 {uniqueFamilies === 1 ? "family" : "families"}
               </Text>
             </View>
-            <Text style={styles.meta}>Tap a word to view it; choose Add to keep it.</Text>
+            <Text style={styles.meta}>Tap a word for details or to mark May need explaining.</Text>
             {results.length > 80 ? (
               <ActionButton
                 kind="secondary"
@@ -442,12 +442,16 @@ export function CheckTextScreen({
               onHasResponsesChange={setKnowledgeWork}
             />
           </ProgressiveDisclosure>
-            {results.some(item=>item.normalizedAnalysis?.applied) ? <Text style={styles.meta}>Original text: {results.length} words. With short forms and spelling variants expanded: {normalizedCounts(results).tokens} words, {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the HK-ELE Word List.</Text> : null}
             <ProgressiveDisclosure title="Readability estimates">
               <ComplexityPanel text={checkedText!} results={results} />
             </ProgressiveDisclosure>
             <View ref={allResultsRef}><ProgressiveDisclosure title="All word results" keepMounted open={allResultsOpen} onOpenChange={setAllResultsOpen}>
               <Text style={styles.meta}>Choose a word to see every occurrence in your text.</Text>
+              {results.some(item=>item.normalizedAnalysis?.applied) ? <ProgressiveDisclosure title="Short forms and spelling variants">
+                <Text style={styles.meta}>Original text: {results.length} words.</Text>
+                <Text style={styles.meta}>With short forms and spelling variants expanded: {normalizedCounts(results).tokens} words; {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the 90% list.</Text>
+                <Text style={styles.meta}>These extra counts do not change the percentage shown for your original text.</Text>
+              </ProgressiveDisclosure> : null}
             <ProgressiveDisclosure title="Choose several words" keepMounted>
             <LessonWordPicker
               key={`${checkedText}:${teaching.activeLessonId}`}

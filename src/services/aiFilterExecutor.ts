@@ -1,6 +1,8 @@
 import { CPB_ITEMS } from "./cpbService";
+import { describeUsReference, matchesUsReference } from "../domain/educationFilters";
 import {
   AI_FILTER_GRADES,
+  AI_RECORD_GRADES,
   validateAiFilterConditions,
   type AiFilterConditions,
 } from "../domain/aiFilterSchema";
@@ -29,13 +31,20 @@ const contextCache = new WeakMap<
   Map<BrowseScope, Promise<AiFilterExecutionContext>>
 >();
 
-export function describeAiFilterConditions(filters: AiFilterConditions): string[] {
+export function describeAiFilterConditions(
+  filters: AiFilterConditions,
+  scope?: BrowseScope,
+): string[] {
   const descriptions = [
-    filters.scope === "full"
-      ? "Search in: Full database"
-      : filters.scope === "candidate"
-        ? "Search in: HK-ELE Word List"
-        : "Search in: saved words",
+    scope === "core95"
+      ? "Search in: 95% list"
+      : scope === "core"
+        ? "Search in: 90% list"
+        : filters.scope === "full"
+          ? "Search in: Full database"
+          : filters.scope === "candidate"
+            ? "Search in: HK-ELE Word List"
+            : "Search in: saved words",
   ];
   if (filters.earliestObservedFrom || filters.earliestObservedTo) {
     descriptions.push(
@@ -71,8 +80,8 @@ export function describeAiFilterConditions(filters: AiFilterConditions): string[
   if (filters.msvlSubjects) descriptions.push(`MSVL subject: ${filters.msvlSubjects.join(", ")}`);
   if (filters.cpb100 !== undefined)
     descriptions.push(`Common words: ${filters.cpb100 ? "yes" : "no"}`);
-  if (filters.externalLevels)
-    descriptions.push(`US grade reference: ${filters.externalLevels.join(", ")}`);
+  const usDescription = describeUsReference(filters);
+  if (usDescription) descriptions.push(usDescription);
   const sortLabel = { overall: "Overall family rank", hk: "HK family rank", az: "A–Z" };
   descriptions.push(`Sort: ${sortLabel[filters.sort]}`, `Show up to: ${filters.limit}`);
   return descriptions;
@@ -99,7 +108,7 @@ function includesControlledValue(value: unknown, requested: string): boolean {
 }
 
 function gradeIndex(value: string | null): number {
-  return AI_FILTER_GRADES.indexOf(value as (typeof AI_FILTER_GRADES)[number]);
+  return AI_RECORD_GRADES.indexOf(value as (typeof AI_RECORD_GRADES)[number]);
 }
 
 function inNullableRange(value: number | null, minimum?: number, maximum?: number): boolean {
@@ -170,11 +179,7 @@ export function executeAiFilter(
       return false;
     const external =
       family.browse_external_level_reference ?? family.external_level_reference_display;
-    if (
-      filters.externalLevels &&
-      !filters.externalLevels.some((level) => includesControlledValue(external, level))
-    )
-      return false;
+    if (!matchesUsReference(external, filters)) return false;
     if (
       filters.cpb100 !== undefined &&
       context.cpbFamilyKeys.has(family.baseword_key) !== filters.cpb100

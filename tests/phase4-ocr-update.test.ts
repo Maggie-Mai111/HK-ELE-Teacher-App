@@ -319,7 +319,7 @@ test("published update manifest matches the frozen static inventory", async () =
   assert.equal(checked.fileCount, 1487);
   assert.equal(
     checked.sourceManifestSha256,
-    "3513895fa9b3fd01eadaf2a15c026416d18ad9be82649f5d1fa3a788d21805b6",
+    "4dc1d25eefb326cf3213a915ab25622f5ebd0d4845cb461e99c9447ed455f829",
   );
   assert.equal(checked.counts.totalFamilies, 167_780);
   assert.equal(checked.counts.forms, 329_202);
