@@ -33,8 +33,10 @@ const context = { families, cpbFamilyKeys: new Set<string>() };
 test("the App verifies AI form evidence, retries a damaged download, and refuses a different wordlist version", async () => {
   const originalFetch = globalThis.fetch;
   let corrupt = true;
-  globalThis.fetch = async (url) => {
-    assert.equal(String(url), "/HK-ELE-Teacher-App/assets/ai-form-evidence/20261103-wordlist1764-v1.json.gz");
+  globalThis.fetch = async (url, options) => {
+    const release = JSON.parse(readFileSync("src/config/aiFormEvidence.json", "utf8")) as { sha256: string };
+    assert.equal(String(url), "/HK-ELE-Teacher-App/assets/ai-form-evidence/20261103-wordlist1764-v1.json.gz?v=" + release.sha256.slice(0, 16));
+    assert.equal(options?.cache, "no-store", "online AI evidence must bypass an older installed service-worker attachment");
     const bytes = new Uint8Array(
       readFileSync("public/assets/ai-form-evidence/20261103-wordlist1764-v1.json.gz"),
     );
@@ -46,8 +48,8 @@ test("the App verifies AI form evidence, retries a damaged download, and refuses
   };
   try {
     await assert.rejects(loadAiFormEvidence("other-version"), /current wordlist/);
-    await assert.rejects(loadAiFormEvidence("2026-11-13-s4s6-all1676-v1"), /changed/);
-    const loaded = await loadAiFormEvidence("2026-11-13-s4s6-all1676-v1");
+    await assert.rejects(loadAiFormEvidence("2026-11-15-general-as-all1677-v1"), /changed/);
+    const loaded = await loadAiFormEvidence("2026-11-15-general-as-all1677-v1");
     assert.equal(loaded.formCount, 329202);
     assert.ok(aiEvidenceForms(loaded, "agent").some((form) => form.form === "agency"));
   } finally {

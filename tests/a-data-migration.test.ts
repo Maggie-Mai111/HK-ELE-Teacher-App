@@ -67,7 +67,7 @@ test("A refresh retains the teacher's exact form, plan, order, notes and origina
     "updatedAt",
   ] as const)
     assert.deepEqual(next[field], old[field]);
-  assert.equal(next.dataVersion, "2026-11-13-s4s6-all1676-v1");
+  assert.equal(next.dataVersion, "2026-11-15-general-as-all1677-v1");
   assert.equal(next.derived.overall_frequency_order, detail("use").family.overall_frequency_order);
   assert.equal(next.previousEvidence?.dataVersion, old.dataVersion);
   assert.equal(JSON.stringify(old), before);

@@ -122,5 +122,19 @@
       "unranked": 29063,
       "teachingScopeExcluded": 0
     }
+  },
+  "2026-11-15-general-as-all1677-v1": {
+    "dataInventorySha256": "4e1a8b31ec74d67da041ab6c2507ca0b12d720f86ef877fd9558a629e0ba4a35",
+    "sourceManifestSha256": "83b4a16c6007aec69947dbf232db6d8d855d042df83b57bd56ee9651eb7c1ec0",
+    "counts": {
+      "candidate": 1677,
+      "inclusiveReference": 1677,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    }
   }
 }

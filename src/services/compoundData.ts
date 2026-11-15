@@ -22,7 +22,7 @@ let descriptor: Promise<Descriptor> | null = null;
 const shards = new Map<string, Promise<Record<string, SupplementaryExpression>>>();
 async function bytes(path: string): Promise<Uint8Array> {
   const response =
-    (await readInstalledData(root + path)) ?? (await fetch(root + path, { cache: "force-cache" }));
+    (await readInstalledData(root + path)) ?? (await fetch(root + path + "?v=" + release.manifestSha256.slice(0, 16), { cache: "force-cache" }));
   if (!response.ok) throw new Error("Compound words need downloading.");
   return new Uint8Array(await response.arrayBuffer());
 }

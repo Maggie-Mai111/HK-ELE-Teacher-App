@@ -42,7 +42,7 @@ export function loadAiFormEvidence(dataVersion: string): Promise<AiFormEvidence>
     return Promise.reject(new Error("Word filters need the current wordlist."));
   loading ??= (async () => {
     const url = "/HK-ELE-Teacher-App/assets/" + release.path;
-    const response = (await readInstalledData(url)) ?? (await fetch(url, { cache: "force-cache" }));
+    const response = (await readInstalledData(url)) ?? (await fetch(url + "?v=" + release.sha256.slice(0, 16), { cache: "no-store" }));
     if (!response.ok) throw new Error("Word filters need downloading.");
     const bytes = new Uint8Array(await response.arrayBuffer());
     const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)), (n) =>

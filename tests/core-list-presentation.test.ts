@@ -125,10 +125,10 @@ test("teacher Excel removes the lesson column while retaining notes, forms and b
   assert.equal(JSON.stringify(item), before);
 });
 
-test("the A-main compact data contains 1676 Core families and four related-owner records", () => {
+test("the A-main compact data contains 1677 Core families and four related-owner records", () => {
   const packed = JSON.parse(
     gunzipSync(
-      readFileSync("data/releases/2026-11-13-s4s6-all1676-v1/reference/families.json.gz"),
+      readFileSync("data/releases/2026-11-15-general-as-all1677-v1/reference/families.json.gz"),
     ).toString(),
   ) as { fields: string[]; rows: unknown[][] };
   const families = packed.rows.map(
@@ -137,8 +137,8 @@ test("the A-main compact data contains 1676 Core families and four related-owner
         packed.fields.map((field, index) => [field, row[index]]),
       ) as unknown as FamilyRecord,
   );
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 1676);
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 3602);
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 1677);
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 3603);
   const fabric = families.find((family) => !family.candidate_member)!;
   assert.equal(familySetLabel(fabric), "Full database");
   assert.equal(inTeacherWordScope(fabric, "core"), false);
