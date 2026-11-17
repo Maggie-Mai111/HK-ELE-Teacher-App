@@ -1,11 +1,11 @@
 {
-  "dataVersion": "2026-11-15-general-as-all1677-v1",
+  "dataVersion": "2026-11-17-current-rules-final-v2",
   "wordOriginsVersion": "2026-11-05-word-origins-v1",
-  "workbookVersion": "2026-11-15-general-as-all1677-v1-familiar",
+  "workbookVersion": "2026-11-17-education-familiar",
   "filename": "HK_ELE_Familiar_Words_20261115.xlsx",
-  "assetPath": "assets/downloads/2026-11-15-general-as-all1677-v1-familiar/HK_ELE_Familiar_Words_20261115.xlsx",
-  "byteSize": 2290650,
-  "sha256": "fed71d54c6c6b5f3d18e03d1f14f8bb5a465701a4c21401128079c5910ca5060",
+  "assetPath": "assets/downloads/2026-11-17-current-rules-final-v2-familiar/HK_ELE_Familiar_Words_20261115.xlsx",
+  "byteSize": 2623664,
+  "sha256": "2a479bf7a8cb84be71e3da333a259095747da1c35a906c3790be9af2199963fd",
   "counts": {
     "wordForms": 49305,
     "fullFamilies": 14253,

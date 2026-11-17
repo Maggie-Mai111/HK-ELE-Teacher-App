@@ -42,15 +42,15 @@
     },
     {
       "path": "manifest.json",
-      "byteSize": 2916,
-      "sha256": "11ea35f97ab3d168c529c4e24968c9b277caf682c5d66456ca66c4eef6ce98d2",
+      "byteSize": 2914,
+      "sha256": "ce08af67d52bcd72774906ca1f6fe2288c2f17c168ebcc3434bfcd9176fee44e",
       "compressionFormat": "none",
       "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
     },
     {
       "path": "reference/families.json.gz",
-      "byteSize": 219204,
-      "sha256": "c1b1e4388c19c45149af14903ae980b3e797c3ad03a2dbe6c93fe846f7a28386",
+      "byteSize": 214530,
+      "sha256": "2c4a31e00edd958457636aec604e0222e472652812561288ca82a5c160ce465a",
       "compressionFormat": "gzip",
       "role": "A_MAIN_COMPACT_OR_AUXILIARY_CONTRACT"
     },

@@ -6,9 +6,11 @@ export const ocrAdapter: OcrAdapter = {
   processedOnDevice: true,
   isSupported: () => typeof document !== "undefined" && typeof Worker !== "undefined",
   async recognizeImage(uri, options) {
-    const text = await recognizeBrowserImage(uri, options);
+    let originalText: string | undefined;
+    const text = await recognizeBrowserImage(uri, {...options, onOriginalText: value => { originalText = value; }});
     return {
       text,
+      originalText: originalText ?? text,
       lineCount: text.split(/\r?\n/).filter((line) => line.trim()).length,
       provider: this.provider,
       processedOnDevice: true,

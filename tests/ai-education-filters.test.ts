@@ -23,8 +23,8 @@ import { SYSTEM_PROMPT } from "../worker/src/prompt.js";
 const base = { scope: "full", limit: 100, sort: "overall" } as const;
 const parse = (bounds: object) => validateAiFilterConditions({ ...base, ...bounds });
 
-test("US source categories retain all 25 labels, accept aliases and reject invented levels", () => {
-  assert.equal(US_REFERENCE_LABELS.length, 25);
+test("US source categories retain all 26 labels, accept aliases and reject invented levels", () => {
+  assert.equal(US_REFERENCE_LABELS.length, 26);
   assert.deepEqual(parse({ externalLevels: [...US_REFERENCE_LABELS] }).externalLevels, [
     ...US_REFERENCE_LABELS,
   ]);
@@ -54,7 +54,7 @@ test("US overlap, whole-range ceilings and college choices have distinct boundar
     US_REFERENCE_LABELS.filter((label) =>
       matchesUsReference(label, parse({ usGradeFrom: 10, usGradeTo: 10 })),
     ),
-    ["Grades 9–10", "Grade 10", "Grades 10–11"],
+    ["Grades 8–10", "Grades 9–10", "Grade 10", "Grades 10–11"],
   );
   const ceiling = parse({ usGradeTo: 10, usGradeMatch: "within" });
   assert.equal(matchesUsReference("Grades 9–10", ceiling), true);
@@ -263,6 +263,6 @@ test("client and real Worker handlers accept US conditions and clarification wit
       );
       assert.deepEqual(result, response);
     }
-  assert.match(SYSTEM_PROMPT, /25 choices/);
+  assert.match(SYSTEM_PROMPT, /26 choices/);
   assert.match(SYSTEM_PROMPT, /S1=7, S4=10, S6=12/);
 });

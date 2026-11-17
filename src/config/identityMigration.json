@@ -1,7 +1,7 @@
 {
   "schemaVersion": "HK_ELE_IDENTITY_MIGRATION_V1",
   "fromDataVersion": "2026-10-20-a-main-v1",
-  "dataVersion": "2026-11-15-general-as-all1677-v1",
+  "dataVersion": "2026-11-17-current-rules-final-v2",
   "transitions": {
     "a": {
       "a": [
@@ -284863,6 +284863,10 @@
     "2026-11-05-familiar1764-v1": {},
     "2026-11-13-s4s6-all1676-v1": {},
     "2026-11-10-all-members1663-v1": {},
-    "2026-11-15-general-as-all1677-v1": {}
+    "2026-11-16-textbook-stages-v1": {},
+    "2026-11-15-general-as-all1677-v1": {},
+    "2026-11-17-education-v1": {},
+    "2026-11-17-current-rules-final-v1": {},
+    "2026-11-17-current-rules-final-v2": {}
   }
 }

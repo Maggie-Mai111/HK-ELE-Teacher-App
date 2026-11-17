@@ -169,9 +169,14 @@ function sheetXml(items: TeachingListItem[], lessonTitle = "", teacherFacing = f
     ),
   ];
   if (teacherFacing) {
-    const keep = values[0]!.map((_, index) => index > 0 && (index < 15 && index !== 8 || index === 17) ? index : -1).filter(index => index >= 0);
+    const teacherColumns = new Set([
+      "Order", "Selected words", "Teaching notes", "Word family", "Word list",
+      "Overall family rank", "HK family rank", "HK family frequency band",
+      "First seen in HK textbooks", "US grade reference",
+    ]);
+    if (items.some(item => item.connections.trim())) teacherColumns.add("Related words or example");
+    const keep = values[0]!.map((label, index) => teacherColumns.has(String(label)) ? index : -1).filter(index => index >= 0);
     for (let index = 0; index < values.length; index += 1) values[index] = keep.map(column => values[index]![column]!);
-    values[0] = values[0]!.map(label => label === "Saved selection status" ? "Selection note" : label);
   }
   const rows = values
     .map((valuesRow, rowIndex) => {

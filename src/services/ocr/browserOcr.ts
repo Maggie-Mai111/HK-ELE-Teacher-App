@@ -1,6 +1,8 @@
+import { removeOcrMarginNumbers, type OcrPageBlock } from "./ocrMarginNumbers";
+
 interface BrowserOcrWorker {
   setParameters(parameters: { tessedit_pageseg_mode: string }): Promise<unknown>;
-  recognize(image: string): Promise<{ data: { text: string } }>;
+  recognize(image: string, options: Record<string, never>, output: {text: boolean; blocks: boolean}): Promise<{ data: { text: string; blocks?: OcrPageBlock[] | null } }>;
   terminate(): Promise<void>;
 }
 interface BrowserOcrEngine {
@@ -83,7 +85,7 @@ async function sizedImage(uri: string, signal?: AbortSignal): Promise<string> {
 }
 export async function recognizeBrowserImage(
   uri: string,
-  options?: { signal?: AbortSignal; onProgress?: (message: string) => void },
+  options?: { signal?: AbortSignal; onProgress?: (message: string) => void; onOriginalText?: (text: string) => void },
 ): Promise<string> {
   if (!localImageUri(uri)) throw new Error("Choose an image from this device.");
   const signal = options?.signal;
@@ -120,9 +122,10 @@ export async function recognizeBrowserImage(
     // default (one uniform block) attempts to read photograph textures as text.
     await abortable(worker.setParameters({ tessedit_pageseg_mode: "3" }), signal);
     cancelled(signal);
-    const result = await abortable(worker.recognize(prepared), signal);
+    const result = await abortable(worker.recognize(prepared, {}, {text: true, blocks: true}), signal);
     cancelled(signal);
-    return result.data.text;
+    options?.onOriginalText?.(result.data.text);
+    return removeOcrMarginNumbers(result.data.text, result.data.blocks);
   } finally {
     if (worker) await worker.terminate().catch(() => {});
   }

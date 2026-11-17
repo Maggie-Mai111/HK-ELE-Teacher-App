@@ -1,3 +1,4 @@
+import { CURRENT_RELEASE_VERSION } from "./current-release";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
@@ -48,8 +49,8 @@ test("the App verifies AI form evidence, retries a damaged download, and refuses
   };
   try {
     await assert.rejects(loadAiFormEvidence("other-version"), /current wordlist/);
-    await assert.rejects(loadAiFormEvidence("2026-11-15-general-as-all1677-v1"), /changed/);
-    const loaded = await loadAiFormEvidence("2026-11-15-general-as-all1677-v1");
+    await assert.rejects(loadAiFormEvidence(CURRENT_RELEASE_VERSION), /changed/);
+    const loaded = await loadAiFormEvidence(CURRENT_RELEASE_VERSION);
     assert.equal(loaded.formCount, 329202);
     assert.ok(aiEvidenceForms(loaded, "agent").some((form) => form.form === "agency"));
   } finally {
@@ -112,9 +113,9 @@ test("AI root act verifies actual forms: age/aged are excluded, agency keeps its
   assert.equal(result.families[0]!.baseword_key, "agent");
   assert.equal(
     (result.families[0]!.ai_source_family as FamilyRecord).textbook_first_seen_level,
-    "S4",
+    "S2",
   );
-  assert.equal(result.families[0]!.textbook_first_seen_level, "S4");
+  assert.equal(result.families[0]!.textbook_first_seen_level, "S2");
   const full = filterAiWordEvidence(
     context,
     { scope: "full", root: "act", sort: "az", limit: 100 },

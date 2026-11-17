@@ -26,7 +26,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange, onReview
   const [image, setImage] = useState<string | null>(null);
   const [recognizedText, setRecognizedText] = useState("");
   const [originalText, setOriginalText] = useState<string|null>(null);
-  const flowedText=originalText===null?"":joinOcrWrappedLines(originalText);
+  const [flowedText, setFlowedText] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [progress, setProgress] = useState("");
@@ -112,7 +112,8 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange, onReview
         },
       });
       if (mounted.current && !job.signal.aborted) {
-        setOriginalText(result.text);
+        setOriginalText(result.originalText ?? result.text);
+        setFlowedText(joinOcrWrappedLines(result.text));
         setRecognizedText(joinOcrWrappedLines(result.text));
         setReplaceConfirmed(false);
         setMessage("Check the wording against your photo.");
@@ -230,7 +231,7 @@ export function OcrInputPanel({ currentText, onApplyText, onWorkChange, onReview
           />
           {originalText!==flowedText && (recognizedText===flowedText || recognizedText===originalText) ? (
             <ActionButton kind="secondary" disabled={busy}
-              label={recognizedText===flowedText?"Keep photo line breaks":"Join wrapped lines"}
+              label={recognizedText===flowedText?"Show original text":"Use joined text"}
               onPress={()=>{setRecognizedText(recognizedText===flowedText?originalText:flowedText);setReplaceConfirmed(false);}}/>
           ):null}
           <View style={styles.actions}>

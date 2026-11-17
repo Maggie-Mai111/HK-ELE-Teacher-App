@@ -1,3 +1,4 @@
+import { CURRENT_RELEASE_VERSION } from "./current-release";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -13,7 +14,7 @@ interface CompactTable {
   rows: unknown[][];
 }
 
-const release = join(process.cwd(), "data", "releases", "2026-11-15-general-as-all1677-v1");
+const release = join(process.cwd(), "data", "releases", CURRENT_RELEASE_VERSION);
 const publicData = join(process.cwd(), "public", "hkele-data");
 
 async function readGzipJson<T>(path: string): Promise<T> {

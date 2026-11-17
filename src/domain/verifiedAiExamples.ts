@@ -12,8 +12,8 @@ export const VERIFIED_AI_QUICK_EXAMPLES: readonly VerifiedAiQuickExample[] = Obj
     id: "grade",
     label: "Textbooks: by P2",
     query: "Find 10 words first observed by P2 or earlier, sorted by overall rank",
-    verifiedMatchCount: 1160,
-    verifiedCoreMatchCount: 498,
+    verifiedMatchCount: 1368,
+    verifiedCoreMatchCount: 806,
   },
   {
     id: "hk_band",

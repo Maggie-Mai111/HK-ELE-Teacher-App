@@ -1,5 +1,7 @@
 /** Local user-selected text only: no lookup, family substitution or metadata export. */
 export interface CopyItem {
+  basewordKey?: string;
+  baseword_key?: string;
   selectedForms?: readonly string[];
   selected_forms?: readonly string[];
   notes?: string;
@@ -33,4 +35,19 @@ export async function copyPlainText(text: string, writer?: (text: string) => Pro
     ? (value:string) => navigator.clipboard.writeText(value) : undefined);
   if(!write)return false;
   try {await write(text);return true;}catch{return false;}
+}
+
+/** A copy view only; the complete saved list and its notes stay in storage. */
+export function reviewSelections<T extends CopyItem>(
+  items: readonly T[],
+  choices: readonly { familyKey: string; form: string }[],
+): T[] {
+  const normalized = (value: string) => value.normalize("NFKC").toLocaleLowerCase();
+  const keys = new Set(choices.map(choice => JSON.stringify([choice.familyKey, normalized(choice.form)])));
+  return items.map(item => ({
+    ...item,
+    selectedForms: (item.selectedForms ?? item.selected_forms ?? []).filter(form =>
+      keys.has(JSON.stringify([item.basewordKey ?? item.baseword_key, normalized(form)])),
+    ),
+  })).filter(item => item.selectedForms.length > 0);
 }

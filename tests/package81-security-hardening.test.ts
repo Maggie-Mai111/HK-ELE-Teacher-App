@@ -1,3 +1,4 @@
+import { CURRENT_RELEASE_VERSION } from "./current-release";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -29,7 +30,7 @@ function record(table: CompactTable, row: unknown[]): Record<string, unknown> {
 }
 
 async function table(name: string): Promise<CompactTable> {
-  const path = resolve(process.cwd(), "data/releases/2026-11-15-general-as-all1677-v1/reference", name);
+  const path = resolve(process.cwd(), `data/releases/${CURRENT_RELEASE_VERSION}/reference`, name);
   return JSON.parse(gunzipSync(await readFile(path)).toString("utf8")) as CompactTable;
 }
 

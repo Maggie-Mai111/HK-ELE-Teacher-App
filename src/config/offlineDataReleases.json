@@ -136,5 +136,61 @@
       "unranked": 29061,
       "teachingScopeExcluded": 0
     }
+  },
+  "2026-11-16-textbook-stages-v1": {
+    "dataInventorySha256": "33f370fc96ff5409364d053ee7ae00a45f667eb998e6246e2337080073e8d685",
+    "sourceManifestSha256": "456bac8c76ee18b841b904a49ea47d8a524bfa7578a5d65bbf33378d225e39ea",
+    "counts": {
+      "candidate": 1677,
+      "inclusiveReference": 1677,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    }
+  },
+  "2026-11-17-education-v1": {
+    "dataInventorySha256": "a6eb7bb6dc10f916dd6c13a1435f89334abfa5a141e2de8daf4f107518434c36",
+    "sourceManifestSha256": "ac1bad0ba6730257d4e3c24abcac7382c14a012cff2db9e01aadfd62728ff435",
+    "counts": {
+      "candidate": 1677,
+      "inclusiveReference": 1677,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    }
+  },
+  "2026-11-17-current-rules-final-v1": {
+    "dataInventorySha256": "e78dde7015e999eb02edcadd81b7a95a666654d7b10b6f5dc5a73bd8a2d56a43",
+    "sourceManifestSha256": "a9d45bd8aefe92a51d52c913b94fd680f759bb0c533d648875316744e0459b11",
+    "counts": {
+      "candidate": 1677,
+      "inclusiveReference": 1677,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    }
+  },
+  "2026-11-17-current-rules-final-v2": {
+    "sourceManifestSha256": "3a569436267f2100874b6c89590bfb0f6fcf10fbda8f77166ec97ffff1d0a752",
+    "dataInventorySha256": "54eb5d99d72f69158821dbe60da7df1677f0bcdd78b85f2cfc42537f4b0b88a4",
+    "counts": {
+      "candidate": 1677,
+      "inclusiveReference": 1677,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    }
   }
 }

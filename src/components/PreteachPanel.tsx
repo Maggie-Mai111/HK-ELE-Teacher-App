@@ -1,3 +1,4 @@
+import { reviewSelections } from "../services/selectedWordsCopy";
 import { CopySelectedWords } from "./CopySelectedWords";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -39,6 +40,12 @@ export function PreteachPanel({
   useEffect(() => { setFilter("marked"); setClassLevel(null); }, [results]);
   useEffect(() => setLimit(4), [results]);
   const entries = generated;
+  const copyItems = reviewSelections(teaching.items, [
+    ...entries.map(item => ({familyKey: item.basewordKey, form: item.actualForm})),
+    ...otherMarked.filter(item => item.expression).map(item => ({
+      familyKey: "expression:" + item.expression!.expressionId, form: item.surface,
+    })),
+  ]);
   const families = groupPreteachSuggestions(entries);
   const reviewCards = [...families.map(group => ({...group, other: null as ResolvedOccurrence | null})),
     ...otherMarked.map(item => ({key:item.occurrenceId, family:"", forms:[] as typeof entries, other:item}))]
@@ -196,11 +203,12 @@ export function PreteachPanel({
           onPress={() => setLimit((value) => Math.min(cards.length, value + 20))}
         />
       ) : null}
-      {teaching.items.length ? (
+      {copyItems.length ? (
         <CopySelectedWords
           key={teaching.activeLessonId}
-          items={teaching.items}
+          items={copyItems}
           onReview={onOpenList}
+          reviewLabel="Open selected words"
         />
       ) : null}
     </View>

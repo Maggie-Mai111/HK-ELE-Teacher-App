@@ -1,3 +1,4 @@
+import { CURRENT_RELEASE_VERSION } from "./current-release";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
@@ -128,7 +129,7 @@ test("teacher Excel removes the lesson column while retaining notes, forms and b
 test("the A-main compact data contains 1677 Core families and four related-owner records", () => {
   const packed = JSON.parse(
     gunzipSync(
-      readFileSync("data/releases/2026-11-15-general-as-all1677-v1/reference/families.json.gz"),
+      readFileSync(`data/releases/${CURRENT_RELEASE_VERSION}/reference/families.json.gz`),
     ).toString(),
   ) as { fields: string[]; rows: unknown[][] };
   const families = packed.rows.map(

@@ -100,6 +100,26 @@
       "ranked": 138719,
       "unranked": 29061,
       "teachingScopeExcluded": 0
+    },
+    "2026-11-17-current-rules-final-v1": {
+      "candidate": 1677,
+      "inclusiveReference": 1677,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    },
+    "2026-11-17-current-rules-final-v2": {
+      "candidate": 1677,
+      "inclusiveReference": 1677,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
     }
   }
 }

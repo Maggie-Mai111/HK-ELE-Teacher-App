@@ -5,7 +5,7 @@ import { copyPlainText, selectedWordsText } from "../services/selectedWordsCopy"
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
 
-export function CopySelectedWords({items,onReview}: {items: TeachingListItem[];onReview?:()=>void}) {
+export function CopySelectedWords({items,onReview,reviewLabel}: {items: TeachingListItem[];onReview?:()=>void;reviewLabel?:string}) {
   const [message,setMessage]=useState("");
   const [manual,setManual]=useState("");
   const request=useRef(0);
@@ -24,7 +24,7 @@ export function CopySelectedWords({items,onReview}: {items: TeachingListItem[];o
     <View style={styles.actions}>
       <ActionButton label={`Copy words (${count})`} disabled={!count} onPress={()=>void copy(false)} />
       <ActionButton kind="secondary" label="Copy with notes" disabled={!count} onPress={()=>void copy(true)} />
-      {onReview ? <ActionButton kind="secondary" label={`Review selected words (${count})`} onPress={onReview} /> : null}
+      {onReview ? <ActionButton kind="secondary" label={reviewLabel ?? `Review selected words (${count})`} onPress={onReview} /> : null}
     </View>
     {message ? <Text accessibilityLiveRegion="polite" style={styles.note}>{message}</Text> : null}
     {manual ? <TextInput accessibilityLabel="Text to copy" multiline readOnly selectTextOnFocus value={manual} style={styles.manual} /> : null}

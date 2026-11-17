@@ -57,9 +57,9 @@ test("actual S4, S5 and S6 form records are filtered independently within a fami
   setWordView("all");
   try {
     for (const [key, spelling, stage] of [
-      ["able", "ability", "S4"],
-      ["able", "disability", "S5"],
-      ["abuse", "abusing", "S6"],
+      ["cover", "coverage", "S4"],
+      ["cover", "uncover", "S5"],
+      ["suit", "suitability", "S6"],
     ]) {
       const forms = aiEvidenceForms(evidence, key!);
       assert.equal(forms.find((form) => form.form === spelling)?.first_seen_hk_textbooks, stage);
@@ -118,7 +118,7 @@ test("actual AI evidence retains navigation-only flags and excludes those forms 
       }
     }
   }
-  assert.equal(checked, 19);
+  assert.equal(checked, 21);
 });
 
 test("client and both Worker environments retain S4–S6 requests and responses end to end", async () => {

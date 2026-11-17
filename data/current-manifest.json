@@ -18,7 +18,7 @@
     "unranked": 29061,
     "teachingScopeExcluded": 0
   },
-  "dataVersion": "2026-11-15-general-as-all1677-v1",
+  "dataVersion": "2026-11-17-current-rules-final-v2",
   "files": [
     {
       "path": "cpb/cpb-sight-words-100.json",
@@ -43,15 +43,15 @@
     },
     {
       "path": "reference/families.json.gz",
-      "byteSize": 207751,
-      "sha256": "eb5bc8dfd316a266af07d3bf3c8a483e154f5a138cbb46d6188b60200b77eb01",
+      "byteSize": 211520,
+      "sha256": "a9c1d3e1a40f2bc222d15950e7487de1c3770ff4bf6d0c94ab9c02fabee9a968",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
     {
       "path": "reference/forms.json.gz",
-      "byteSize": 3122568,
-      "sha256": "2510f12ad619a42bdd80dea9f866809cc1864d7f95fd04676d05075c80bb5670",
+      "byteSize": 3157826,
+      "sha256": "9acec5df6567f837cb1cf0ab1feb34de029d7ef059f5c1f4dfccd4eab8821b9e",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
@@ -64,7 +64,7 @@
     }
   ],
   "minimumAppVersion": "0.5.0",
-  "releaseDate": "2026-11-15",
+  "releaseDate": "2026-11-17",
   "schemaVersion": "1.0.0",
   "sourcePackages": [
     {

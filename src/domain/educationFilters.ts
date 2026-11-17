@@ -1,4 +1,4 @@
-/** The source's 25 categories. Keep source labels and HK/US evidence separate. */
+/** Source categories and ranges covering duplicate estimates. Keep source labels and HK/US evidence separate. */
 export const US_REFERENCE_LABELS = Object.freeze([
   "Kindergarten–Grade 1",
   "Grade 1",
@@ -17,6 +17,7 @@ export const US_REFERENCE_LABELS = Object.freeze([
   "Grades 7–8",
   "Grade 8",
   "Grades 8–9",
+    "Grades 8–10",
   "Grade 9",
   "Grades 9–10",
   "Grade 10",

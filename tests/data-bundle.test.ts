@@ -1,10 +1,11 @@
+import { CURRENT_RELEASE_VERSION } from "./current-release";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import test from "node:test";
 import { gunzipSync } from "node:zlib";
 
-const release = join(process.cwd(), "data", "releases", "2026-11-15-general-as-all1677-v1");
+const release = join(process.cwd(), "data", "releases", CURRENT_RELEASE_VERSION);
 
 async function readJson(path: string, gzip = false): Promise<unknown> {
   const bytes = await readFile(join(release, path));

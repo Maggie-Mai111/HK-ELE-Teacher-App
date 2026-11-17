@@ -1,3 +1,4 @@
+import { CURRENT_RELEASE_VERSION } from "./current-release";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
@@ -7,14 +8,14 @@ import { validateUpdateManifest, type DataUpdateManifest } from "../src/services
 import { aiEvidenceForms, type AiFormEvidence } from "../src/services/aiFormEvidence";
 import release from "../src/config/aiFormEvidence.json";
 
-const version = "2026-11-15-general-as-all1677-v1";
+const version = CURRENT_RELEASE_VERSION;
 test("old same-spelled agency cannot retain age evidence after its registered move to agent", () => {
-  assert.equal(savedIdentityStillApplies("age", ["agency"], "2026-10-20-a-main-v1", version), false);
-  assert.equal(savedIdentityStillApplies("use", ["reusable"], "2026-10-20-a-main-v1", version), true);
+  assert.equal(savedIdentityStillApplies("age", ["agency"], "unregistered-legacy-fixture", version), false);
+  assert.equal(savedIdentityStillApplies("use", ["reusable"], "unregistered-legacy-fixture", version), true);
   assert.equal(savedIdentityStillApplies("agent", ["agency"], version, version), true);
 });
 test("mixed saved forms require review as a whole instead of silently dropping the moved form", () => {
-  assert.equal(savedIdentityStillApplies("age", ["age", "agency"], "2026-10-20-a-main-v1", version), false);
+  assert.equal(savedIdentityStillApplies("age", ["age", "agency"], "unregistered-legacy-fixture", version), false);
 });
 test("six screened identities remain in Full while ranked and unavailable populations stay distinct", () => {
   const manifest = JSON.parse(readFileSync("public/hkele-data/update-manifest.json", "utf8")) as DataUpdateManifest;

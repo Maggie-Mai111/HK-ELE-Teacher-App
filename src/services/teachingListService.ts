@@ -244,7 +244,7 @@ export function useTeachingList(repository: HkeleRepository) {
       .catch(() => {
         if (active)
           setSaveError(
-            "We couldn't open your saved lessons. Please reload; your saved data has not been replaced.",
+            "We couldn't open your saved words. Please reload; your saved data has not been replaced.",
           );
       });
     return () => {

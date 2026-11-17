@@ -1,5 +1,6 @@
 export interface OcrRecognitionResult {
   text: string;
+  originalText?: string;
   lineCount: number;
   provider: string;
   processedOnDevice: boolean;

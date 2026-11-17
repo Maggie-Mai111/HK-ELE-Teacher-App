@@ -1,3 +1,4 @@
+import { CURRENT_RELEASE_VERSION } from "./current-release";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -81,7 +82,7 @@ test("displayed word uses its own grade, including a higher grade and an absent 
   const data = JSON.parse(
     gunzipSync(
       readFileSync(
-        join(process.cwd(), "data/releases/2026-11-15-general-as-all1677-v1/reference/forms.json.gz"),
+        join(process.cwd(), `data/releases/${CURRENT_RELEASE_VERSION}/reference/forms.json.gz`),
       ),
     ).toString("utf8"),
   );
@@ -201,7 +202,7 @@ test("all compact family and form VXGL values use the registered source labels w
     const table = JSON.parse(
       gunzipSync(
         readFileSync(
-          join(process.cwd(), `data/releases/2026-11-15-general-as-all1677-v1/reference/${kind}.json.gz`),
+          join(process.cwd(), `data/releases/${CURRENT_RELEASE_VERSION}/reference/${kind}.json.gz`),
         ),
       ).toString("utf8"),
     ) as { fields: string[]; rows: unknown[][] };
