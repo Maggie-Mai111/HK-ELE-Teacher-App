@@ -9,16 +9,16 @@
     "stableFormKey": "form_key"
   },
   "counts": {
-    "candidate": 1677,
-    "inclusiveReference": 1677,
+    "candidate": 1669,
+    "inclusiveReference": 1669,
     "referenceOnly": 0,
     "totalFamilies": 167780,
     "forms": 329202,
-    "ranked": 138719,
-    "unranked": 29061,
+    "ranked": 138518,
+    "unranked": 29262,
     "teachingScopeExcluded": 0
   },
-  "dataVersion": "2026-11-17-current-rules-final-v2",
+  "dataVersion": "2026-11-23-author-closeout-v1",
   "files": [
     {
       "path": "cpb/cpb-sight-words-100.json",
@@ -43,15 +43,15 @@
     },
     {
       "path": "reference/families.json.gz",
-      "byteSize": 211520,
-      "sha256": "a9c1d3e1a40f2bc222d15950e7487de1c3770ff4bf6d0c94ab9c02fabee9a968",
+      "byteSize": 210459,
+      "sha256": "037bfe70c274f6d28be9e644835f428b4527f97c78726da9c74610e31d20704e",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
     {
       "path": "reference/forms.json.gz",
-      "byteSize": 3157826,
-      "sha256": "9acec5df6567f837cb1cf0ab1feb34de029d7ef059f5c1f4dfccd4eab8821b9e",
+      "byteSize": 3157828,
+      "sha256": "9956e0eee0b2f4ef792715fbb5cebd8eb0d52b2de4c2bfcd091ac52ec520e486",
       "compressionFormat": "gzip",
       "role": "SEALED_PRODUCT_PROJECTION"
     },
@@ -64,7 +64,7 @@
     }
   ],
   "minimumAppVersion": "0.5.0",
-  "releaseDate": "2026-11-17",
+  "releaseDate": "2026-11-23",
   "schemaVersion": "1.0.0",
   "sourcePackages": [
     {

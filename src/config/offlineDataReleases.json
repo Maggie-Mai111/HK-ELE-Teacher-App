@@ -192,5 +192,47 @@
       "unranked": 29061,
       "teachingScopeExcluded": 0
     }
+  },
+  "2026-11-22-ice-scope-corrected-v1": {
+    "dataInventorySha256": "5f89a95c67146107716955ff2bb21453a28ae56a53e75a4b697d5d1edc0c66d1",
+    "sourceManifestSha256": "dd8833d3338ba7a64a8f9561c9d216c75557fed68880edcd878f0a0153c71813",
+    "counts": {
+      "candidate": 1673,
+      "inclusiveReference": 1673,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    }
+  },
+  "2026-11-22-eligibility-evidence-v1": {
+    "dataInventorySha256": "10d19aec2886906b005631831ce9f7624732e232a812e31ed3e22547b03783d4",
+    "sourceManifestSha256": "a19fe90f1387efeb5143523a119609644228aefcb8be82ebf862ca32e518c2e6",
+    "counts": {
+      "candidate": 1673,
+      "inclusiveReference": 1673,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138525,
+      "unranked": 29255,
+      "teachingScopeExcluded": 0
+    }
+  },
+  "2026-11-23-author-closeout-v1": {
+    "dataInventorySha256": "a34ab53a588123e6c3a53ce71520274205775c962b4ce7f066402407d4d88407",
+    "sourceManifestSha256": "0a1849affdc27f113dc84833e5aa6055a085412f1ed240c118efbd13a0533ba2",
+    "counts": {
+      "candidate": 1669,
+      "inclusiveReference": 1669,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138518,
+      "unranked": 29262,
+      "teachingScopeExcluded": 0
+    }
   }
 }

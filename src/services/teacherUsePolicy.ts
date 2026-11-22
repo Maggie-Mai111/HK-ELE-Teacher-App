@@ -13,7 +13,8 @@ export function teacherUseKeys(surface:string,keys:readonly string[],ctx?:MatchC
     const historical=/\b(?:archaic|obsolete|dialect|pronounced|spelled|spelt)\s*$/i.test(before);
     const nounHas=key==="has"&&(/\b(?:the|these|those|several|many|two|three)\s*$/i.test(before)||/^\s+(?:are|were)\b/i.test(after));
     const interjection=key==="wall"&&/(?:^|[.!?][\s"“]*)$/.test(before)&&/^\s*,/.test(after);
-    if(quoted||letter||historical||nounHas||interjection)return [...keys];
+    const currencyAt=key==="at"&&(/(?:\b\d+(?:[.,]\d+)?|\b(?:one|two|three|four|five|ten|hundred))\s*$/i.test(before)||/\b(?:Lao|Laos|kip|currency|coin|att)\b/i.test(before.slice(-60).split(/[.!?;\n]/).slice(-1).join("")+after.slice(0,60).split(/[.!?;\n]/).slice(0,1).join("")));
+    if(quoted||letter||historical||nounHas||interjection||currencyAt)return [...keys];
   }else if(key.length===1&&surface!==surface.toLowerCase())return [...keys];
   const preferred=keys.filter(k=>!rule.secondary.includes(k));
   return preferred.length ? preferred : [...keys];

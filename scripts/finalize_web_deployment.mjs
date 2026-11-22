@@ -75,7 +75,7 @@ const compactAssets = allFiles
     relative(root, path)
       .split(sep)
       .join("/")
-      .match(/^assets\/data\/releases\/2026-11-17-current-rules-final-v2\/reference\/.+\.gz$/),
+      .match(/^assets\/data\/releases\/2026-11-23-author-closeout-v1\/reference\/.+\.gz$/),
   )
   .map(toUrl)
   .sort();

@@ -39,8 +39,8 @@ test("teacher membership unifies Reference-only and other records without mutati
 test("list labels follow the ranking view of the record, including saved full records", () => {
   try {
     for (const [view, limit] of [
-      ["all", 2910],
-      ["familiar", 3685],
+      ["all", 2880],
+      ["familiar", 3558],
     ] as const) {
       const record = (rank: number | null) =>
         ({
@@ -79,7 +79,7 @@ test("every full-database label agrees with the sealed 2907-family list", () => 
   const manifest = read("public/hkele-data/manifest.json.gz") as { browse_fields: string[] };
   const list = read("public/hkele-data/" + config.files[0]!.path) as unknown[][];
   const expected = new Set(list.map((row) => row[manifest.browse_fields.indexOf("baseword_key")]));
-  assert.equal(expected.size, 2910);
+  assert.equal(expected.size, 2880);
   let included = 0;
   setWordView("familiar");
   try {
@@ -94,7 +94,7 @@ test("every full-database label agrees with the sealed 2907-family list", () => 
   } finally {
     setWordView("all");
   }
-  assert.equal(included, 2910);
+  assert.equal(included, 2880);
 });
 
 test("teacher Excel removes the lesson column while retaining notes, forms and backup data", () => {
@@ -126,7 +126,7 @@ test("teacher Excel removes the lesson column while retaining notes, forms and b
   assert.equal(JSON.stringify(item), before);
 });
 
-test("the A-main compact data contains 1677 Core families and four related-owner records", () => {
+test("the A-main compact data contains 1669 Core families and four related-owner records", () => {
   const packed = JSON.parse(
     gunzipSync(
       readFileSync(`data/releases/${CURRENT_RELEASE_VERSION}/reference/families.json.gz`),
@@ -138,7 +138,7 @@ test("the A-main compact data contains 1677 Core families and four related-owner
         packed.fields.map((field, index) => [field, row[index]]),
       ) as unknown as FamilyRecord,
   );
-  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 1677);
+  assert.equal(families.filter((family) => inTeacherWordScope(family, "core")).length, 1669);
   assert.equal(families.filter((family) => inTeacherWordScope(family, "full")).length, 3603);
   const fabric = families.find((family) => !family.candidate_member)!;
   assert.equal(familySetLabel(fabric), "Full database");

@@ -41,7 +41,7 @@ export function describeAiFilterConditions(
       : scope === "core"
         ? "Search in: 90% list"
         : filters.scope === "full"
-          ? "Search in: Full database"
+          ? "Search in: All entries"
           : filters.scope === "candidate"
             ? "Search in: HK-ELE Word List"
             : "Search in: saved words",

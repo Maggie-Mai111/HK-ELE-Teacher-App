@@ -11,8 +11,8 @@ const manifestPath = join(process.cwd(), "data", "current-manifest.json");
 test("current manifest accepts the compatible App and frozen controls", async () => {
   const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as DataManifest;
   assert.doesNotThrow(() => assertCompatibleManifest(manifest, "0.5.0"));
-  assert.equal(manifest.counts.candidate, 1677);
-  assert.equal(manifest.counts.inclusiveReference, 1677);
+  assert.equal(manifest.counts.candidate, 1669);
+  assert.equal(manifest.counts.inclusiveReference, 1669);
   assert.equal(manifest.counts.totalFamilies, 167780);
   assert.equal(manifest.counts.forms, 329202);
 });

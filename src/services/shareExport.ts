@@ -42,7 +42,7 @@ export async function exportTeachingList(
     throw new Error("Sharing is unavailable on this device.");
   await Sharing.shareAsync(nativeFile.uri, {
     mimeType: output.mimeType,
-    dialogTitle: "Save teaching list",
+    dialogTitle: "Save selected words",
   });
   return output.filename;
 }

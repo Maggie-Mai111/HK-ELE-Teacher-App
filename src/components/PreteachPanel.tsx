@@ -56,7 +56,7 @@ export function PreteachPanel({
       <Text accessibilityRole="header" aria-level={2} style={styles.title}>
         Words to explain
       </Text>
-      <Text style={styles.note}>Tap a word and choose May need explaining to list it here.</Text>
+      <Text style={styles.note}>For this passage only. Use Add to save a word in Selected words.</Text>
       <ProgressiveDisclosure title="How to choose">
         <Text style={styles.note}>Choose uses your class may need help with to follow the text or complete the task.</Text>
         <Text style={styles.note}>Your marks appear in text order, grouped by family. Use the word records to help you choose.</Text>
@@ -71,20 +71,20 @@ export function PreteachPanel({
         {filter === "later" ? <>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={classLevel ? `Class level: ${classLevel}` : "Class level (optional)"}
+        accessibilityLabel={classLevel ? `Class level: ${classLevel}` : "Choose class level"}
         accessibilityState={{ expanded: chooseLevel }}
         aria-expanded={chooseLevel}
         onPress={() => setChooseLevel(!chooseLevel)}
         style={styles.levelButton}
       >
         <Text style={styles.levelText}>
-          {classLevel ? `Class level: ${classLevel}` : "Class level (optional)"} ▾
+          {classLevel ? `Class level: ${classLevel}` : "Choose class level"} ▾
         </Text>
       </Pressable>
       {chooseLevel ? (
         <View style={styles.actions}>
           <ChoiceChip
-            label="Any level"
+            label="Clear level"
             selected={classLevel === null}
             onPress={() => {
               setClassLevel(null);
@@ -109,7 +109,7 @@ export function PreteachPanel({
         </> : null}
       </ProgressiveDisclosure>
       {filter === "later" && !classLevel ? <Text style={styles.note}>Choose your class level to find words first seen in later textbooks.</Text> : null}
-      {!entries.length && !otherMarked.length ? <Text style={styles.note}>{filter === "marked" ? "No marks yet. Tap a word in your text to get started." : "No words match this filter. You can still choose words from the text."}</Text> : null}
+      {!entries.length && !otherMarked.length && !(filter === "later" && !classLevel) ? <Text style={styles.note}>{filter === "marked" ? "No marks yet. Tap a word in your text to get started." : "No words match this filter. You can still choose words from the text."}</Text> : null}
       {cards.slice(0, limit).map(group => group.other ? (
         <View key={group.key} style={styles.item}>
           <Pressable accessibilityRole="button" onPress={() => onOpenWord(group.other!)} style={styles.wordButton}><Text style={styles.word}>{group.other.surface}</Text></Pressable>

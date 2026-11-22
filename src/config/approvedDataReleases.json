@@ -120,6 +120,36 @@
       "ranked": 138719,
       "unranked": 29061,
       "teachingScopeExcluded": 0
+    },
+    "2026-11-22-ice-scope-corrected-v1": {
+      "candidate": 1673,
+      "inclusiveReference": 1673,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138719,
+      "unranked": 29061,
+      "teachingScopeExcluded": 0
+    },
+    "2026-11-22-eligibility-evidence-v1": {
+      "candidate": 1673,
+      "inclusiveReference": 1673,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138525,
+      "unranked": 29255,
+      "teachingScopeExcluded": 0
+    },
+    "2026-11-23-author-closeout-v1": {
+      "candidate": 1669,
+      "inclusiveReference": 1669,
+      "referenceOnly": 0,
+      "totalFamilies": 167780,
+      "forms": 329202,
+      "ranked": 138518,
+      "unranked": 29262,
+      "teachingScopeExcluded": 0
     }
   }
 }

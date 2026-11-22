@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 import type { SupplementaryExpression } from "../domain/supplementaryExpressions";
 import type { TeachingListStore } from "../services/teachingListService";
 import { expressionItemKey } from "../services/compoundTeaching";
-import { COMPOUND_RELEASE } from "../services/compoundData";
 import { compoundDisplayParts } from "../services/compoundPresentation";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
@@ -28,8 +27,6 @@ export function CompoundCard({
     word: expression.displayExpression,
     registeredForms: [expression.displayExpression],
     expressionId: expression.expressionId,
-    expressionVersion: expression.sourceVersion,
-    dataVersion: COMPOUND_RELEASE.dataVersion,
   };
   return (
     <View style={styles.card}>

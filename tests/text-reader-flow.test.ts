@@ -99,7 +99,7 @@ test("main passage flow starts with reading and pre-teaching, with extra tools o
   const reader = source.indexOf('accessibilityLabel="Checked text"');
   const suggestions = source.indexOf("<PreteachPanel", reader);
   const tools = source.indexOf('title="More text tools" keepMounted', suggestions);
-  const knowledge = source.indexOf('title="Check word familiarity"', tools);
+  const knowledge = source.indexOf('title="Review words for your class"', tools);
   const details = source.indexOf('title="All word results" keepMounted', knowledge);
   const picker = source.indexOf("<LessonWordPicker", details);
   assert.ok(

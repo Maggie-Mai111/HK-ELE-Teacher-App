@@ -1,5 +1,6 @@
 import data from "../config/wordViews.json";
 export type WordView = "all" | "familiar";
+export const wordViewLabels = { all: "All word forms", familiar: "Generally familiar forms" } as const;
 let current: WordView = "all";
 const listeners = new Set<() => void>();
 export const getWordView = () => current;

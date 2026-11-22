@@ -134,7 +134,7 @@ test("knowledge UI reports only answers to the examples shown, without extrapola
 test("knowledge check remains optional after the reader and pre-teach suggestions", () => {
   const check = source("src/screens/CheckTextScreen.tsx");
   const summary = check.indexOf('accessibilityLabel="Checked text"');
-  const entry = check.indexOf("Check word familiarity", summary);
+  const entry = check.indexOf("Review words for your class", summary);
   const preteach = check.indexOf("<PreteachPanel", summary);
   assert.ok(summary >= 0 && preteach > summary && entry > preteach);
   assert.doesNotMatch(check, /title="Knowledge check"/);

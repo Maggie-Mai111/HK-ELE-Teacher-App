@@ -38,17 +38,17 @@ test("the classroom example preserves 99 tokens and data gaps while ordinary rea
       "https://fixture.invalid/hkele-data",
     ).resolveOccurrences(paragraph, scan(paragraph).occurrences);
     assert.equal(results.length, 99);
-    assert.equal(results.filter((item) => item.status === "RESOLVED").length, 86);
+    assert.equal(results.filter((item) => item.status === "RESOLVED").length, 87);
     assert.deepEqual(knowledgeCheckScope(results), {
       totalOccurrences: 99,
-      eligibleOccurrences: 86,
-      excludedOccurrences: 13,
+      eligibleOccurrences: 87,
+      excludedOccurrences: 12,
     });
     assert.ok(groupUnmatchedWords(results).every(item => item.displayForm.trim()));
     const context = groupContextReviews(results);
     assert.ok(context.some(item => item.displayForm === "does"));
     for (const item of results) assert.equal(paragraph.slice(item.startOffset,item.endOffset),item.surface);
-    assert.equal(results.filter(item => item.status === "AMBIGUOUS").length,8);
+    assert.equal(results.filter(item => item.status === "AMBIGUOUS").length,7);
 
   } finally {
     globalThis.fetch = originalFetch;

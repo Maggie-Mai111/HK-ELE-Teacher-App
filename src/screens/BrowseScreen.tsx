@@ -47,7 +47,7 @@ interface Props {
 }
 
 const scopes: Array<[BrowseScope, string]> = [
-  ["full", "Full database"],
+  ["full", "All entries"],
   ["core", "90% list"],
   ["core95", "95% list"],
 ];
@@ -60,7 +60,7 @@ const sorts: Array<[BrowseSort, string]> = [
 function searchStatus(result: SurfaceSearchResult): string {
   if (result.status === "REGISTERED_EXPRESSION") return "Compound found";
   if (result.status === "FULL_DATABASE_CHECK_UNAVAILABLE") return "Connect to check more words";
-  if (result.status === "UNMATCHED") return getWordView() === "familiar" ? "No match in Familiar words. Try All words." : "No automatic match for this spelling.";
+  if (result.status === "UNMATCHED") return getWordView() === "familiar" ? "No match in Generally familiar forms." : "No automatic match for this spelling.";
   if (result.status === "RESOLVED") return "Family found";
   if (result.status === "AMBIGUOUS") return "Choose a word family";
   if (result.status === "REGISTERED_GRAMMATICAL_RELATION") return "Grammar word";
@@ -311,7 +311,8 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           onPress={() => void searchNow()}
         />
       </View>
-      <View accessibilityLabel="Word list scope" style={styles.chips}>
+      <Text style={styles.label}>Word list</Text>
+      <View accessibilityLabel="Word list" style={styles.chips}>
         {scopes.map(([value, label]) => (
           <ChoiceChip
             key={value}
@@ -321,9 +322,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
           />
         ))}
       </View>
-      <Text style={styles.label}>{scope === "full" ? "90% / 95%: coverage in the study’s Hong Kong texts." : `${viewCounts()[scope === "core95" ? "95" : "90"].toLocaleString()} word families · ${scope === "core95" ? "includes all families in the 90% list" : "the 90% list"}`}</Text>
+      {scope !== "full" ? <Text style={styles.label}>{viewCounts()[scope === "core95" ? "95" : "90"].toLocaleString()} word families</Text> : null}
       <ProgressiveDisclosure title="What do 90% and 95% mean?">
-        <Text style={[styles.label, {fontWeight:"400"}]}>These lists covered at least 90% or 95% of the words counted in each study collection. Your passage may differ.</Text>
+        <Text style={[styles.label, {fontWeight:"400"}]}>In each of the study’s four Hong Kong text collections, the lists matched at least 90% or 95% of the words, counting repeats. The 95% list includes the 90% list. Your text may have a different percentage.</Text>
       </ProgressiveDisclosure>
       {state.searchActive && search ? <LexicalUsesPanel word={search.submittedQuery} repository={repository} /> : null}
       <DataModeNotice mode={dataMode} />
@@ -418,12 +419,9 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
             </Text>
             {outsideCore ? (
               <>
-                <Text style={styles.muted}>
-                  This word is recorded in the full database. It is outside the selected list.
-                </Text>
                 <ActionButton
                   kind="secondary"
-                  label="View in Full database"
+                  label="View in All entries"
                   onPress={() => setScope("full")}
                 />
               </>
@@ -436,7 +434,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
                 {search.status === "FULL_DATABASE_CHECK_UNAVAILABLE"
                   ? "This word isn't in the saved wordlist. Connect to the internet and search again."
                   : search.status === "UNMATCHED"
-                    ? getWordView() === "familiar" ? "Switch to All words for a wider search, or try another spelling." : "Try another spelling or word form."
+                    ? getWordView() === "familiar" ? "Switch to All word forms for a wider search, or try another spelling." : "Try another spelling or word form."
                     : "Read the word in context before choosing a family."}
               </Text>
             ) : null}
@@ -450,7 +448,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
               first {aiSelection.families.length.toLocaleString("en")}
             </Text>
             <Text style={styles.aiConditions}>
-              {describeAiFilterConditions(aiSelection.filters).join(" · ")}
+              {describeAiFilterConditions(aiSelection.filters, aiSelection.browseScope).join(" · ")}
             </Text>
             <View style={styles.actions}>
               <ActionButton

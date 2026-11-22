@@ -202,6 +202,7 @@ function sheetXml(items: TeachingListItem[], lessonTitle = "", teacherFacing = f
 }
 
 export function teachingListToXlsx(items: TeachingListItem[], lessonTitle = "", teacherFacing = false): Uint8Array {
+  const sheetName = teacherFacing ? "Selected words" : "Teaching list";
   const now = new Date().toISOString();
   const files: Record<string, Uint8Array> = {
     "[Content_Types].xml": strToU8(
@@ -214,10 +215,10 @@ export function teachingListToXlsx(items: TeachingListItem[], lessonTitle = "", 
       `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"><Application>HK-ELE Teacher</Application></Properties>`,
     ),
     "docProps/core.xml": strToU8(
-      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>HK-ELE Teaching list</dc:title><dc:creator>HK-ELE Teacher</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${xmlEscape(now)}</dcterms:created></cp:coreProperties>`,
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>HK-ELE ${sheetName}</dc:title><dc:creator>HK-ELE Teacher</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${xmlEscape(now)}</dcterms:created></cp:coreProperties>`,
     ),
     "xl/workbook.xml": strToU8(
-      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Teaching list" sheetId="1" r:id="rId1"/></sheets></workbook>`,
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="${sheetName}" sheetId="1" r:id="rId1"/></sheets></workbook>`,
     ),
     "xl/_rels/workbook.xml.rels": strToU8(
       `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
@@ -259,7 +260,7 @@ export function buildTeachingListExport(
     };
   }
   return {
-    filename: `${filename}.xlsx`,
+    filename: teacherFacing ? "HK-ELE-Selected-Words.xlsx" : `${filename}.xlsx`,
     mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     data: teachingListToXlsx(items, lessonTitle, teacherFacing),
   };

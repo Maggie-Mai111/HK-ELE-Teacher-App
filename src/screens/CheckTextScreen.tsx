@@ -336,12 +336,12 @@ export function CheckTextScreen({
               <View style={styles.highlightOptions}>
                 <View style={styles.actions}>
                   <ChoiceChip
-                    label="CPB100 sight words"
+                    label="100 sight words (CPB100)"
                     selected={cpbEnabled}
                     onPress={() => setCpbEnabled(!cpbEnabled)}
                   />
                   <ChoiceChip
-                    label="HK family frequency"
+                    label="Colour by HK family rank"
                     selected={hkEnabled}
                     onPress={() => setHkEnabled(!hkEnabled)}
                   />
@@ -431,7 +431,7 @@ export function CheckTextScreen({
               ))}
             </ProgressiveDisclosure>
           ) : null}
-          <ProgressiveDisclosure title="Check word familiarity" keepMounted>
+          <ProgressiveDisclosure title="Review words for your class" keepMounted>
             <KnowledgeTestPanel
               key={teaching.activeLessonId}
               text={checkedText!}
@@ -446,7 +446,7 @@ export function CheckTextScreen({
               <ComplexityPanel text={checkedText!} results={results} />
             </ProgressiveDisclosure>
             <View ref={allResultsRef}><ProgressiveDisclosure title="All word results" keepMounted open={allResultsOpen} onOpenChange={setAllResultsOpen}>
-              <Text style={styles.meta}>Choose a word to see every occurrence in your text.</Text>
+              <Text style={styles.meta}>Choose a word to see where it appears in your text.</Text>
               {results.some(item=>item.normalizedAnalysis?.applied) ? <ProgressiveDisclosure title="Short forms and spelling variants">
                 <Text style={styles.meta}>Original text: {results.length} words.</Text>
                 <Text style={styles.meta}>With short forms and spelling variants expanded: {normalizedCounts(results).tokens} words; {normalizedCounts(results).families} matched families; {normalizedCounts(results).wordList} words in the 90% list.</Text>
@@ -472,7 +472,7 @@ export function CheckTextScreen({
                     ["grammar", `Short forms (${counts.grammar})`],
                     ["cpb", `CPB100 words (${counts.cpb})`],
                     ["unavailable", `Check online (${counts.unavailable})`],
-                    ["unmatched", `Not matched (${counts.unmatched})`],
+                    ["unmatched", `Not matched in this text (${counts.unmatched})`],
                     ["review", `Check in context (${counts.review})`],
                   ] as Array<[ResultFilter, string]>
                 )

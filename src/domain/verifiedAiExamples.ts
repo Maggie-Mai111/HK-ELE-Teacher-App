@@ -10,14 +10,14 @@ export interface VerifiedAiQuickExample {
 export const VERIFIED_AI_QUICK_EXAMPLES: readonly VerifiedAiQuickExample[] = Object.freeze([
   {
     id: "grade",
-    label: "Textbooks: by P2",
+    label: "In textbooks by P2",
     query: "Find 10 words first observed by P2 or earlier, sorted by overall rank",
     verifiedMatchCount: 1368,
-    verifiedCoreMatchCount: 806,
+    verifiedCoreMatchCount: 803,
   },
   {
     id: "hk_band",
-    label: "HK ranks 1–1,000",
+    label: "Top 1,000 in HK",
     query: "Find 10 words in HK Top 1k, sorted by HK rank",
     verifiedMatchCount: 1000,
     verifiedCoreMatchCount: 1000,

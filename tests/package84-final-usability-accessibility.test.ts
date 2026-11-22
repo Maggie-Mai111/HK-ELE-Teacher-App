@@ -158,7 +158,7 @@ test("photo OCR and advanced text evidence stay behind collapsed disclosures", (
   const check = source("src/screens/CheckTextScreen.tsx");
   assert.match(check, /title="Scan text from a photo"[\s\S]*<OcrInputPanel/);
   assert.ok(check.indexOf('title="Readability estimates"') > check.indexOf("<PreteachPanel"));
-  assert.ok(check.indexOf("Check word familiarity") > check.indexOf("<PreteachPanel"));
+  assert.ok(check.indexOf("Review words for your class") > check.indexOf("<PreteachPanel"));
   for (const title of ["Readability estimates", "All word results"])
     assert.match(check, new RegExp(`title="${title}"`));
   const disclosure = source("src/components/ProgressiveDisclosure.tsx");

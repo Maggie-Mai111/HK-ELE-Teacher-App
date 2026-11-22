@@ -21,7 +21,7 @@ test("limited-only lookup retains records without silently assigning the classro
 test("every newly uncertain old pair requires review, while an exact retained pair can refresh",()=>{
  const transitions=registry.transitionsBySource["2026-10-29-repaired-main-core2827-v1"];
  let count=0;for(const [key,words] of Object.entries(transitions))for(const word of Object.keys(words)){assert.equal(savedIdentityStillApplies(key,[word],"2026-10-29-repaired-main-core2827-v1",version),false);count++;}
- assert.equal(count,12644);assert.equal(savedIdentityStillApplies("use",["reusable"],"2026-10-29-repaired-main-core2827-v1",version),true);
+ assert.equal(count,12646);assert.equal(savedIdentityStillApplies("use",["reusable"],"2026-10-29-repaired-main-core2827-v1",version),true);
 });
 
 test("structured lexical scopes preserve readable meanings and region limits",async()=>{

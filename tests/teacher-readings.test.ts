@@ -14,6 +14,21 @@ async function withData(run:(repo:StaticShardRepository)=>Promise<void>){
 }
 const keys=(result:{owners:Array<{baseword_key:string}>})=>result.owners.map(o=>o.baseword_key).sort();
 
+test("ordinary at prefers the preposition but currency and quoted readings stay available",async()=>withData(async repo=>{
+ const text='At school they read. They work at home. It costs 100 at. The Lao currency is at. "at" is quoted.';
+ const wrapped=new CompoundRepository(new HybridRepository(repo,repo),async()=>null);
+ const rows=(await wrapped.resolveOccurrences(text,scan(text).occurrences)).filter(r=>r.surface.toLowerCase()==="at");
+ assert.equal(rows.length,5);
+ for(const row of rows.slice(0,2)){
+  assert.equal(row.status,"RESOLVED");assert.deepEqual(keys(row),["at"]);
+  assert.equal(row.normalizedAnalysis?.tokens[0]?.familyKey,"at");
+  assert.ok(row.alternatives.some(o=>o.baseword_key==="att"));
+ }
+ for(const row of rows.slice(2))assert.deepEqual(keys(row),["at","att"]);
+ assert.deepEqual(keys(await repo.searchSurface("at")),["at"]);
+ assert.ok((await repo.getFamily("att")).forms.some(f=>f.normalized_form==="at"));
+}));
+
 test("ordinary has/a/wall use current accepted relations; their other records remain available",async()=>withData(async repo=>{
  for(const [word,key]of [["has","have"],["a","a"],["wall","wall"]]){
   const r=await repo.searchSurface(word!);assert.equal(r.status,"RESOLVED");assert.deepEqual(keys(r),[key]);

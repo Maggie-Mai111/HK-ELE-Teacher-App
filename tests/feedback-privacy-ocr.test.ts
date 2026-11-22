@@ -14,8 +14,6 @@ import {
 import { localImageUri } from "../src/services/ocr/browserOcr.js";
 
 const config: FeedbackConfiguration = {
-  productVersion: "test-version",
-  dataVersion: "Package67-20260914",
   report: {
     url: "https://docs.google.com/forms/d/e/test-form/viewform",
     fields: {
@@ -48,7 +46,8 @@ const context = {
 test("feedback prefills only approved context and never private text or identity", () => {
   const url = new URL(buildFeedbackUrl("report", context, config)!);
   assert.equal(url.searchParams.get("entry.3"), "happily");
-  assert.equal(url.searchParams.get("entry.5"), "happy");
+  assert.equal(url.searchParams.get("entry.4"), "happy");
+  for (const entry of ["entry.5", "entry.6", "entry.7"]) assert.equal(url.searchParams.has(entry), false);
   assert.equal(url.searchParams.has("entry.8"), false);
   assert.equal(url.toString().includes("private"), false);
 });
@@ -78,7 +77,7 @@ test("App matches the captured Web feedback contract fixtures", () => {
     assert.equal(buildFeedbackUrl(kind, context, config), fixture[kind]);
 });
 
-test("one reference carries word identity and versions without private material", () => {
+test("one reference carries readable word and page context without identifiers or versions", () => {
   const referenceConfig: FeedbackConfiguration = {
     ...config,
     rating: { ...config.rating, requiredContext: "reference", fields: { reference: "entry.42" } },
@@ -95,9 +94,9 @@ test("one reference carries word identity and versions without private material"
   );
   const reference = url.searchParams.get("entry.42")!;
   assert.match(reference, /Word: happily/);
-  assert.match(reference, /Family key: happy/);
-  assert.match(reference, /Data version: Package67-20260914/);
-  assert.match(reference, /Product version: test-version/);
+  assert.match(reference, /Family: happy/);
+  assert.match(reference, /Product: App \| Page: Word detail/);
+  assert.doesNotMatch(reference, /Family key|version/i);
   assert.equal(reference.includes("private"), false);
   assert.equal([...url.searchParams.keys()].filter((key) => key.startsWith("entry.")).length, 1);
   for (const entry of ["", "entry.pending", "field.42"])

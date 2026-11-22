@@ -77,17 +77,17 @@ export function KnowledgeTestPanel({
   return (
     <View style={styles.box}>
       <Text style={styles.intro}>
-        Read each sentence and mark whether your class knows this use. Marks last until you check another text or close HK-ELE.
+        Read the examples and mark any words your class may need help with. Marks last until you check another text or close HK-ELE.
       </Text>
       <ProgressiveDisclosure title="How this check works">
         <Text style={styles.note}>
-          Choose 10, 20 or all matched families. You’ll see one example per family. The same text gives the same selection.
+          You’ll see one example per word family, such as stressed from the stress family. The same text gives the same examples.
         </Text>
         <Text style={styles.note}>
-          The check leaves out unmatched words, unclear family matches and separate compounds. Results count only the examples you answer.
+          You’ll see words that match a single family. Compound words listed separately are skipped. The results count only the examples you mark.
         </Text>
         <Text style={styles.note}>
-          May need explaining adds this example to Words to explain. Each mark applies only to this use.
+          Choose May need explaining to add this example to Words to explain. The mark applies to this use in your text.
         </Text>
       </ProgressiveDisclosure>
       <View style={styles.actions}>
@@ -125,7 +125,7 @@ export function KnowledgeTestPanel({
                 </Text>
                 <Text style={styles.context}>{item.occurrenceId && results.find(row => row.occurrenceId === item.occurrenceId) ? <MarkedContext excerpt={textOccurrenceExcerpt(text, results.find(row => row.occurrenceId === item.occurrenceId)!)} /> : item.context}</Text>
                 <Text style={styles.prompt}>
-                  Do students know this meaning in the sentence?
+                  Will your class understand how this word is used here?
                 </Text>
                 <View style={styles.actions}>
                   <ActionButton

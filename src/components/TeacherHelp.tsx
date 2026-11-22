@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import content from "../content/teacherHelp.json";
 import { colors, spacing } from "../theme/tokens";
-import { ActionButton } from "./ActionButton";
 import { ProgressiveDisclosure } from "./ProgressiveDisclosure";
 
 export function TeacherHelp({
@@ -14,7 +13,8 @@ export function TeacherHelp({
   onClose: () => void;
   returnFocusLabel: string;
 }) {
-  const [showColumns, setShowColumns] = useState(mode === "columns");
+  const [topic, setTopic] = useState(mode);
+  useEffect(() => setTopic(mode), [mode]);
   const closeRef = useRef<View>(null);
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -55,13 +55,13 @@ export function TeacherHelp({
         />
         <View
           role="dialog"
-          accessibilityLabel={mode === "guide" ? "Quick guide" : "About these columns"}
+          accessibilityLabel="Quick guide"
           accessibilityViewIsModal
           style={styles.sheet}
         >
           <View style={styles.header}>
             <Text accessibilityRole="header" aria-level={1} style={styles.title}>
-              {mode === "guide" ? "Quick guide" : "About these columns"}
+              Quick guide
             </Text>
             <Pressable
               ref={closeRef}
@@ -73,8 +73,16 @@ export function TeacherHelp({
               <Text style={styles.closeLabel}>Close</Text>
             </Pressable>
           </View>
-          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-            {mode === "guide" ? (
+          <View role="tablist" accessibilityLabel="Help topics" style={styles.topics}>
+            {([{ key: "guide", label: "Getting started" }, { key: "columns", label: "Word information" }] as const).map(item => (
+              <Pressable key={item.key} accessibilityRole="tab" accessibilityState={{ selected: topic === item.key }} aria-selected={topic === item.key}
+                onPress={() => setTopic(item.key)} style={[styles.topic, topic === item.key && styles.topicActive]}>
+                <Text style={[styles.topicLabel, topic === item.key && styles.topicLabelActive]}>{item.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+          <ScrollView key={topic} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            {topic === "guide" ? (
               <>
                 {content.steps.map((step) => (
                   <View key={step.title} style={styles.item}>
@@ -82,13 +90,14 @@ export function TeacherHelp({
                     <Text style={styles.body}>{step.body}</Text>
                   </View>
                 ))}
+                <ProgressiveDisclosure title="Try this example">
                 <View style={styles.example}>
-                  <Text style={styles.label}>Try this example</Text>
                   <Text selectable style={styles.sentence}>
                     {content.example.sentence}
                   </Text>
                   <Text style={styles.body}>{content.example.body}</Text>
                 </View>
+                </ProgressiveDisclosure>
                 <ProgressiveDisclosure title="Other features">
                   {content.features.map(([title, body]) => (
                     <ProgressiveDisclosure key={title} title={title!}>
@@ -96,14 +105,8 @@ export function TeacherHelp({
                     </ProgressiveDisclosure>
                   ))}
                 </ProgressiveDisclosure>
-                <ActionButton
-                  kind="secondary"
-                  label={showColumns ? "Hide column meanings" : "About these columns"}
-                  onPress={() => setShowColumns(!showColumns)}
-                />
               </>
-            ) : null}
-            {showColumns ? definitions : null}
+            ) : definitions}
           </ScrollView>
         </View>
       </View>
@@ -140,6 +143,11 @@ const styles = StyleSheet.create({
   close: { minHeight: 44, paddingHorizontal: spacing.sm, justifyContent: "center" },
   closeLabel: { fontSize: 18, fontWeight: "700", color: colors.primary },
   content: { padding: spacing.md, gap: spacing.lg },
+  topics: { flexDirection: "row", gap: spacing.xs, paddingHorizontal: spacing.sm, paddingTop: spacing.sm },
+  topic: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: colors.border, borderRadius: 8, alignItems: "center", justifyContent: "center", padding: spacing.xs },
+  topicActive: { backgroundColor: colors.primary, borderColor: colors.primary },
+  topicLabel: { fontSize: 16, lineHeight: 22, fontWeight: "700", color: colors.ink, textAlign: "center" },
+  topicLabelActive: { color: colors.surface },
   items: { gap: spacing.md },
   item: { gap: spacing.xs },
   label: { fontSize: 19, fontWeight: "800", lineHeight: 27, color: colors.ink },

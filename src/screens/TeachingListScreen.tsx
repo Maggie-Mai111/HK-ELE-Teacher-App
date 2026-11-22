@@ -225,7 +225,7 @@ export function TeachingListScreen({ teaching, repository, onOpenFamily, onFindW
   };
   const count=teaching.items.reduce((n,item)=>n+item.selectedForms.length,0);
   return <View style={styles.content}>
-    <ScreenHeader title="Selected words" intro="Copy your words straight into your materials." />
+    <ScreenHeader title="Selected words" intro="Keep words for your teaching materials. Add a note, then copy or download your list." />
     {teaching.saveError ? <View><Text accessibilityRole="alert" style={styles.error}>{teaching.saveError}</Text>{teaching.ready ? <ActionButton kind="secondary" label="Try saving again" onPress={teaching.retrySave} /> : null}</View> : null}
     {!teaching.ready ? <ActivityIndicator accessibilityLabel="Loading selected words" color={colors.primary} size="large" /> : <>
       {teaching.items.length ? <View style={styles.exportBox}>

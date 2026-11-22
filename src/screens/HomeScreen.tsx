@@ -27,12 +27,22 @@ export function HomeScreen({ onNavigate, selectedWordCount = 0 }: { onNavigate: 
   const wide = width >= 840;
   const contentWidth = Math.min(width, 1180) - spacing.lg * 2;
   const imageHeight = (wide ? (contentWidth - spacing.lg) / 2 : contentWidth) / 1.5;
+  const illustration = (
+    <View style={[styles.illustration, wide && styles.half]}>
+      <Image
+        accessibilityLabel="A teacher and learners reviewing English vocabulary together with books and a laptop"
+        resizeMode="contain"
+        source={classroomHero}
+        style={[styles.image, { height: imageHeight }]}
+      />
+    </View>
+  );
   return (
-    <View style={styles.content}>
+    <View style={[styles.content, !wide && styles.compactContent]}>
       <Text style={styles.brand}>HK-ELE · Hong Kong English Language Education</Text>
       <View style={[styles.hero, wide && styles.heroWide]}>
         <View style={[styles.introduction, wide && styles.half]}>
-          <Text style={styles.eyebrow}>FOR HONG KONG TEACHERS</Text>
+          {wide ? <Text style={styles.eyebrow}>FOR HONG KONG TEACHERS</Text> : null}
           <Text
             accessibilityRole="header"
             aria-level={1}
@@ -44,14 +54,7 @@ export function HomeScreen({ onNavigate, selectedWordCount = 0 }: { onNavigate: 
             Check lesson texts and choose words to teach, with frequency and Hong Kong textbook records.
           </Text>
         </View>
-        <View style={[styles.illustration, wide && styles.half]}>
-          <Image
-            accessibilityLabel="A teacher and learners reviewing English vocabulary together with books and a laptop"
-            resizeMode="contain"
-            source={classroomHero}
-            style={[styles.image, { height: imageHeight }]}
-          />
-        </View>
+        {wide ? illustration : null}
       </View>
       <Text accessibilityRole="header" aria-level={2} style={styles.sectionTitle}>
         Start with your lesson
@@ -65,16 +68,17 @@ export function HomeScreen({ onNavigate, selectedWordCount = 0 }: { onNavigate: 
             onPress={() => onNavigate(task.route)}
             style={({ pressed }) => [
               styles.task,
+              wide && styles.taskWide,
               index === 0 && styles.primaryTask,
               pressed && styles.pressed,
             ]}
           >
-            <Text style={styles.number}>0{index + 1}</Text>
             <Text style={styles.taskTitle}>{task.title} →</Text>
             <Text style={styles.taskDescription}>{task.description}</Text>
           </Pressable>
         ))}
       </View>
+      {wide ? null : illustration}
     </View>
   );
 }
@@ -86,6 +90,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     width: "100%",
   },
+  compactContent: { gap: spacing.md },
   brand: { color: colors.primary, fontSize: 18, fontWeight: "600", lineHeight: 27 },
   hero: { gap: spacing.lg, alignItems: "stretch" },
   heroWide: { flexDirection: "row", alignItems: "center" },
@@ -113,10 +118,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 16,
     padding: spacing.md,
-    minHeight: 160,
   },
+  taskWide: { minHeight: 160 },
   primaryTask: { backgroundColor: "#e7f2eb", borderColor: "#b4d2c0" },
-  number: { color: colors.primary, fontSize: 18, fontWeight: "600", lineHeight: 26 },
   taskTitle: { color: colors.ink, fontSize: 21, fontWeight: "600", lineHeight: 28 },
   taskDescription: { color: colors.muted, fontSize: 18, lineHeight: 27 },
   note: { color: colors.muted, fontSize: 17, lineHeight: 26 },

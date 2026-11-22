@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
@@ -12,20 +12,25 @@ export interface TextReviewTools {
   onShowOccurrences: () => void;
 }
 
-export function TextReviewActions({ tools }: { tools: TextReviewTools }) {
+export function TextReviewActions({ tools, saveAction }: { tools: TextReviewTools; saveAction?: ReactNode }) {
   const [answer, setAnswer] = useState(tools.getKnown);
   function mark(value: boolean | undefined) {
     setAnswer(value);
     tools.onJudge(value);
   }
+  const clearMark = answer === undefined ? null : (
+    <ActionButton label="Clear mark" kind="secondary" onPress={() => mark(undefined)} />
+  );
   return <View style={styles.box}>
     <Text style={styles.title}>Do students know this use?</Text>
     <View style={styles.actions}>
       <ActionButton label="Known" kind={answer === true ? "primary" : "secondary"} onPress={() => mark(true)} />
       <ActionButton label="May need explaining" kind={answer === false ? "primary" : "secondary"} onPress={() => mark(false)} />
-      {answer !== undefined ? <ActionButton label="Clear mark" kind="secondary" onPress={() => mark(undefined)} /> : null}
+      {saveAction ? null : clearMark}
     </View>
+    {saveAction}
     {answer !== undefined ? <Text accessibilityLiveRegion="polite" style={styles.note}>{answer ? "Marked Known in this sentence." : "Kept in Words to explain."}</Text> : null}
+    {saveAction && clearMark ? <View style={styles.actions}>{clearMark}</View> : null}
     <Text style={styles.note}>This mark applies only here. Check other uses separately.</Text>
     <ActionButton label="View all occurrences" kind="secondary" onPress={tools.onShowOccurrences} />
   </View>;

@@ -191,6 +191,16 @@ export function WordDetailScreen({
       )
     : false;
 
+  const reviewingThisUse = textTools && normalizeCpbSurface(chosenWord) === normalizeCpbSurface(textTools.surface);
+  const saveLabel = `Add ${chosenWord} to selected words`;
+  const saveAction = detail ? (
+    <ActionButton
+      disabled={inList || !teaching.ready}
+      label={inList ? "Selected" : reviewingThisUse ? "Add to selected words" : saveLabel}
+      accessibilityLabel={inList ? "Selected" : saveLabel}
+      onPress={() => teaching.add(detail.family, chosenWord, sourceLabel)}
+    />
+  ) : null;
   const morphology = useMemo(() => selectedFormEvidence(activeForm), [activeForm]);
 
   const formTiers = useMemo(() => {
@@ -243,7 +253,7 @@ export function WordDetailScreen({
       ) : null}
       {detail ? (
         <>
-          <View style={styles.hero}>
+          <View style={[styles.hero, reviewingThisUse && styles.passageHero]}>
             <Text accessibilityRole="header" aria-level={1} style={styles.heading}>
               {chosenWord}
             </Text>
@@ -254,9 +264,16 @@ export function WordDetailScreen({
               <View style={styles.contextBox}>
                 <Text style={styles.caution}>In your text</Text>
                 <Text selectable style={styles.context}>
-                  {textTools?.excerpt && normalizeCpbSurface(chosenWord) === normalizeCpbSurface(textTools.surface) ? <MarkedContext excerpt={textTools.excerpt} /> : textEvidence.context}
+                  {reviewingThisUse && textTools.excerpt ? <MarkedContext excerpt={textTools.excerpt} /> : textEvidence.context}
                 </Text>
               </View>
+            ) : null}
+            {reviewingThisUse ? (
+              <TextReviewActions
+                key={textTools.occurrenceId ?? textTools.surface}
+                tools={textTools}
+                saveAction={saveAction}
+              />
             ) : null}
             {activeForm ? <SafeMorphologyForm form={activeForm} /> : null}
             <View style={styles.badges}>
@@ -290,11 +307,10 @@ export function WordDetailScreen({
                 tone="external"
               />
             </View>
-            <ActionButton
-              disabled={inList || !teaching.ready}
-              label={inList ? "Selected" : `Add ${chosenWord} to selected words`}
-              onPress={() => teaching.add(detail.family, chosenWord, sourceLabel)}
-            />
+            {(activeForm ? activeForm.first_seen_hk_textbooks : detail.family.textbook_first_seen_level) ? (
+              <Text style={styles.caution}>First appearance {activeForm ? "of this spelling" : "for this family"} in the Hong Kong textbooks we checked.</Text>
+            ) : null}
+            {reviewingThisUse ? null : saveAction}
 
             <View style={styles.feedbackActions}>
               <ActionButton
@@ -355,7 +371,6 @@ export function WordDetailScreen({
                   .join(" · ")}
               />
               <DetailRow label="Total occurrences" value={textEvidence.count} />
-              {textTools && normalizeCpbSurface(chosenWord) === normalizeCpbSurface(textTools.surface) ? <TextReviewActions key={textTools.occurrenceId ?? textTools.surface} tools={textTools} /> : null}
             </AppCard>
           ) : null}
           <ProgressiveDisclosure
@@ -468,6 +483,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.lg,
   },
+  passageHero: { gap: spacing.sm, padding: spacing.md },
   notice: {
     backgroundColor: colors.warningSoft,
     borderRadius: 14,

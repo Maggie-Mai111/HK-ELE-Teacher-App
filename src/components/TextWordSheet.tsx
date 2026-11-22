@@ -43,6 +43,10 @@ export function TextWordSheet({
           <Text accessibilityRole="header" aria-level={2} style={styles.word}>
             {item.surface}
           </Text>
+          {reviewTools && /[A-Za-z]/.test(item.surface) ? <>
+            <Text style={styles.label}>In your text</Text>
+            <Text selectable style={styles.note}>{reviewTools.excerpt ? <MarkedContext excerpt={reviewTools.excerpt} /> : item.context}</Text>
+          </> : null}
           {action === "compound" && item.expression && teaching ? (
             <CompoundCard
               expression={item.expression}
@@ -95,10 +99,9 @@ export function TextWordSheet({
                   : "Not automatically matched in this text. You can still explore the other words."}
             </Text>
           )}
-          {reviewTools && /[A-Za-z]/.test(item.surface) ? <>
-            <Text style={styles.note}>{reviewTools.excerpt ? <MarkedContext excerpt={reviewTools.excerpt} /> : item.context}</Text>
+          {reviewTools && /[A-Za-z]/.test(item.surface) ? (
             <TextReviewActions key={item.occurrenceId} tools={reviewTools} />
-          </> : null}
+          ) : null}
           </ScrollView>
           <ActionButton kind="secondary" label="Close" onPress={onClose} />
         </View>

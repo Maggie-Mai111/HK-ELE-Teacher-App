@@ -13,13 +13,16 @@ export function PassageCoverage({results,target,onTarget,onOutside}: {
   return <View style={styles.box}>
     <Text style={styles.title}>Words in this list</Text>
     <View style={styles.actions}>{(["90","95"] as const).map(value=><ChoiceChip key={value} label={COVERAGE_LISTS[value].label} selected={target===value} onPress={()=>onTarget(value)} />)}</View>
-    <Text accessibilityLiveRegion="polite" style={styles.value}>{counts.percent===null?"—":`${Number(counts.percent.toFixed(1))}%`}</Text>
-    <Text style={styles.text}>{counts.included} of {counts.total} word occurrences · this text</Text>
-    {counts.outside>0?<ActionButton kind="secondary" label={`View words outside this list (${counts.outside})`} onPress={onOutside}/>:null}
+    <View accessibilityLiveRegion="polite">
+      {counts.percent === null ? <Text style={styles.text}>No words to count.</Text> : <>
+        <Text style={styles.value}>{Number(counts.percent.toFixed(1))}%</Text>
+        <Text style={styles.text}>{counts.included} of {counts.total} {counts.total === 1 ? "word is" : "words are"} on the {target}% list.</Text>
+      </>}
+    </View>
+    {counts.outside > 0 ? <ActionButton kind="secondary" label="Review words outside the list" onPress={onOutside} /> : null}
     <ProgressiveDisclosure title="How is this counted?">
-      <Text style={styles.text}>Each word counts every time it appears. Compounds and unmatched words stay in the total.</Text>
-      <Text style={styles.text}>Only spellings in your selected list count towards its percentage. Highlighting does not change it.</Text>
-      <Text style={styles.text}>The 90% and 95% names refer to the study’s Hong Kong texts. This percentage is for your text, not what students know.</Text>
+      <Text style={styles.text}>Every word counts each time it appears, even if it has no match. Switching between all and familiar forms can change how many match, while the total stays the same.</Text>
+      <Text style={styles.text}>The list names come from the study’s Hong Kong texts. The result above shows how many words on the list appear in your passage.</Text>
     </ProgressiveDisclosure>
   </View>;
 }

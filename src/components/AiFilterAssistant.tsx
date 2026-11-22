@@ -29,6 +29,7 @@ import {
   prepareAiFilterContext,
   type AiFilterExecution,
 } from "../services/aiFilterExecutor";
+import { getWordView, wordViewLabels } from "../services/wordView";
 import { colors, spacing } from "../theme/tokens";
 import { ActionButton } from "./ActionButton";
 import { TurnstileGate } from "./TurnstileGate";
@@ -59,8 +60,9 @@ export function AiFilterAssistant({
   const [online, setOnline] = useState(isAiNetworkOnline);
   const pendingRequest = useRef<AbortController | null>(null);
   const inputRef = useRef<TextInput>(null);
-  const latestScope = useRef(scope);
-  latestScope.current = scope;
+  const latestBrowse = useRef({ scope, repository });
+  latestBrowse.current = { scope, repository };
+  const browseIsCurrent = () => latestBrowse.current.scope === scope && latestBrowse.current.repository === repository;
 
   useEffect(() => {
     if (Platform.OS !== "web" || typeof window === "undefined") return;
@@ -82,9 +84,10 @@ export function AiFilterAssistant({
   }, []);
 
   useEffect(() => {
+    pendingRequest.current?.abort();
     setInterpretation(null);
     setError("");
-  }, [scope]);
+  }, [scope, repository]);
 
   useEffect(() => {
     if (editRequestNonce === 0) return;
@@ -119,7 +122,8 @@ export function AiFilterAssistant({
         { turnstileToken, anonymousSessionId },
         { signal: controller.signal },
       );
-      setInterpretation(teacherAiResult(raw, teacherAiScope(query, latestScope.current, raw)));
+      if (!controller.signal.aborted && browseIsCurrent())
+        setInterpretation(teacherAiResult(raw, teacherAiScope(query, scope, raw)));
     } catch (reason) {
       if (controller.signal.aborted) return;
       setError(
@@ -140,10 +144,12 @@ export function AiFilterAssistant({
     setBusy(true);
     setError("");
     try {
-      const reviewedScope = teacherAiScope(query, latestScope.current, interpretation);
+      const reviewedScope = teacherAiScope(query, scope, interpretation);
       const context = await prepareAiFilterContext(repository, reviewedScope);
+      if (!browseIsCurrent()) return;
       if (hasAiWordConditions(interpretation.filters)) {
         const evidence = await loadAiFormEvidence(await repository.getDataVersion!());
+        if (!browseIsCurrent()) return;
         onApply({
           ...filterAiWordEvidence(context, interpretation.filters, (key) =>
             aiEvidenceForms(evidence, key),
@@ -166,6 +172,12 @@ export function AiFilterAssistant({
       setBusy(false);
     }
   };
+
+  const searchConditions = interpretation?.status === "ready" && interpretation.filters
+    ? describeAiFilterConditions(interpretation.filters, teacherAiScope(query, scope, interpretation))
+    : [];
+  if (searchConditions.length)
+    searchConditions.splice(1, 0, `Vocabulary set: ${wordViewLabels[getWordView()]}`);
 
   if (Platform.OS !== "web") return null;
 
@@ -203,21 +215,26 @@ export function AiFilterAssistant({
             </Text>
           ) : null}
           <Text style={styles.description}>
-            Search the{" "}
-            {scope === "core" ? "90% list" : scope === "core95" ? "95% list" : "Full database"} in
-            your own words.
+            {scope === "full"
+              ? "Search all entries in this vocabulary set."
+              : `Search the ${scope === "core95" ? "95% list" : "90% list"} in this vocabulary set.`}
           </Text>
           <TextInput
             accessibilityLabel="Describe the words to find"
             editable={!busy}
             maxLength={300}
             multiline
-            onChangeText={setQuery}
+            onChangeText={(value) => {
+              setQuery(value);
+              setInterpretation(null);
+              setError("");
+            }}
             placeholder="Example: Find words with the root act."
             ref={inputRef}
             style={styles.input}
             value={query}
           />
+          <Text style={styles.description}>Your request goes to the AI service. Leave out classroom text and student names.</Text>
           <Text style={styles.quickTitle}>Try an example</Text>
           <View style={styles.actions}>
             {VERIFIED_AI_QUICK_EXAMPLES.map((example) => (
@@ -273,25 +290,11 @@ export function AiFilterAssistant({
               <Text accessibilityRole="header" aria-level={3} style={styles.summaryTitle}>
                 Review your search
               </Text>
-              <Text style={styles.summaryText}>
-                {interpretation.status === "ready"
-                  ? interpretation.summary
-                  : interpretation.status === "needs_clarification"
-                    ? "Which words would you like to find?"
-                    : "Try a different search."}
-              </Text>
-              {interpretation.filters
-                ? describeAiFilterConditions(
-                    interpretation.filters,
-                    teacherAiScope(query, scope, interpretation),
-                  ).map((condition) => (
-                    <Text key={condition} style={styles.condition}>
-                      • {condition}
-                    </Text>
-                  ))
-                : null}
-              {interpretation.clarifyingQuestion ? (
-                <Text style={styles.question}>{interpretation.clarifyingQuestion}</Text>
+              {searchConditions.map((condition) => (
+                <Text key={condition} style={styles.condition}>• {condition}</Text>
+              ))}
+              {interpretation.status === "needs_clarification" ? (
+                <Text style={styles.question}>{interpretation.clarifyingQuestion || "Which words would you like to find?"}</Text>
               ) : null}
               {interpretation.warnings
                 .filter((warning) => !/^No filters? (?:was|were) applied\.?$/i.test(warning))
@@ -366,7 +369,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md,
   },
-  summaryText: { color: colors.ink, fontSize: 17, lineHeight: 25 },
   summaryTitle: { color: colors.primary, fontSize: 18, fontWeight: "800" },
   title: { color: colors.ink, fontSize: 19, fontWeight: "800" },
   unavailableRow: {

@@ -2,17 +2,13 @@ export type FeedbackKind = "report" | "rating";
 export interface FeedbackContext {
   product: "App/PWA" | "Web";
   page: string;
-  dataVersion?: string;
   word?: string;
   family?: string;
   familyKey?: string;
   registeredForms?: readonly string[];
   expressionId?: string;
-  expressionVersion?: string;
 }
 export interface FeedbackConfiguration {
-  productVersion: string;
-  dataVersion: string;
   report: { url: string; fields: Record<string, string>; requiredContext?: string };
   rating: { url: string; fields: Record<string, string>; requiredContext?: string };
 }
@@ -25,28 +21,20 @@ export function registeredFeedbackWord(word: string, forms: readonly string[]): 
   );
 }
 
-export function feedbackValues(context: FeedbackContext, config: FeedbackConfiguration) {
+export function feedbackValues(context: FeedbackContext) {
   // Deliberately exclude text, images, queries, emails, user identifiers and session tokens.
   const values = {
-    product: context.product,
+    product: context.product === "App/PWA" ? "App" : context.product,
     page: context.page.slice(0, 80),
     word: (context.word ?? "").slice(0, 160),
     family: (context.family ?? "").slice(0, 160),
-    familyKey: (context.familyKey ?? "").slice(0, 160),
-    productVersion: config.productVersion.slice(0, 100),
-    dataVersion: (context.dataVersion ?? config.dataVersion).slice(0, 100),
   };
   const reference = [
-    context.expressionId && "Record type: Compound",
-    context.expressionId && `Expression ID: ${context.expressionId}`,
-    context.expressionVersion && `Compound data version: ${context.expressionVersion}`,
+    context.expressionId && "Compound word",
     values.word && `Word: ${values.word}`,
     values.family && `Family: ${values.family}`,
-    values.familyKey && `Family key: ${values.familyKey}`,
     `Product: ${values.product}`,
     `Page: ${values.page}`,
-    `Product version: ${values.productVersion}`,
-    `Data version: ${values.dataVersion}`,
   ]
     .filter(Boolean)
     .join(" | ");
@@ -79,7 +67,7 @@ export function buildFeedbackUrl(
     url.search = "";
     url.hash = "";
     url.searchParams.set("usp", "pp_url");
-    for (const [key, value] of Object.entries(feedbackValues(context, config))) {
+    for (const [key, value] of Object.entries(feedbackValues(context))) {
       const entry = target.fields[key];
       if (value && entry && /^entry\.\d+$/.test(entry)) url.searchParams.set(entry, value);
     }

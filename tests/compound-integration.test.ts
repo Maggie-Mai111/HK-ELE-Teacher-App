@@ -93,7 +93,7 @@ test("compound repository adds exact records and leaves ordinary family ownershi
       await repo.browse({ scope: "core", sort: "overall", page: 1, pageSize: 25 }),
       before,
     );
-    assert.equal(before.availableItems, 1677);
+    assert.equal(before.availableItems, 1669);
   }));
 test("passage compounds preserve original tokens and add no duplicate occurrences", async () =>
   withFiles(async (_base, repo) => {
@@ -164,18 +164,17 @@ test("CSV, Markdown and XLSX retain compound identity and do not export a fabric
   assert.equal(item.derived.set_membership, null);
   assert.equal(item.derived.current_hk_frequency_rank, null);
 });
-test("compound ratings use the existing Google form and identify the expression rather than a family", () => {
+test("compound ratings prefill the expression without internal identifiers", () => {
   const expression = fixtureWord("classroom");
   const context = {
     product: "App/PWA" as const,
     page: "Check a text",
     word: expression.displayExpression,
     expressionId: expression.expressionId,
-    expressionVersion: expression.sourceVersion,
   };
   assert.ok(buildFeedbackUrl("rating", context, feedbackConfig));
-  const reference = feedbackValues(context, feedbackConfig).reference;
-  assert.match(reference, /Record type: Compound/);
-  assert.ok(reference.includes(expression.expressionId));
-  assert.ok(!reference.includes("Family key:"));
+  const reference = feedbackValues(context).reference;
+  assert.match(reference, /Compound word/);
+  assert.ok(reference.includes(expression.displayExpression));
+  assert.doesNotMatch(reference, /Expression ID|Family key|version/i);
 });

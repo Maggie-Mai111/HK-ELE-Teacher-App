@@ -84,8 +84,8 @@ test("online and offline AI use the same authoritative form-enriched A-main Core
     loadAuthoritativeProjection(),
     loadOnlineBrowseProjection(),
   ]);
-  assert.equal(authoritative.filter((family) => Boolean(family.candidate_member)).length, 1677);
-  assert.equal(authoritative.filter((family) => Boolean(family.reference_member)).length, 1677);
+  assert.equal(authoritative.filter((family) => Boolean(family.candidate_member)).length, 1669);
+  assert.equal(authoritative.filter((family) => Boolean(family.reference_member)).length, 1669);
 
   const rootFilter = {
     scope: "inclusive_reference",

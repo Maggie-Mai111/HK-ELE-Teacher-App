@@ -62,8 +62,7 @@ export function DataVersionScreen({ repository }: { repository: HkeleRepository 
       <DataUpdatePanel />
       <ProgressiveDisclosure title="How to read the word information">
         <Text style={styles.note}>
-          In All words, the 90% list contains {coreCount?.toLocaleString("en") ?? "—"} families. It reached 90% coverage in each of the study’s four Hong Kong text collections.
-          Your own text may differ. Full database includes more families.
+          In All word forms, the 90% list contains {coreCount?.toLocaleString("en") ?? "—"} word families. It matched at least 90% of the words in each of the study’s four Hong Kong text collections, counting repeats.
         </Text>
         <Text style={styles.note}>
           Textbook stages and US grade references apply to the selected spelling. HK ranks compare

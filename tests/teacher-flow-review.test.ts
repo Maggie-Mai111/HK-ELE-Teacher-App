@@ -31,7 +31,7 @@ test("class-level comparison starts only when the teacher chooses a level", () =
   assert.equal(generatePreteachSuggestions("example", items, "P6").length, 0);
   const panel = source("src/components/PreteachPanel.tsx");
   assert.match(panel, /useState<ClassLevel \| null>\(null\)/);
-  assert.match(panel, /Class level \(optional\)/);
+  assert.match(panel, /Choose class level/);
 });
 
 test("pre-teaching grade reasons use the chosen form's evidence before family evidence", () => {

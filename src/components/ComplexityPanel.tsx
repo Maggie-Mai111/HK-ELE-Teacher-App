@@ -23,17 +23,17 @@ export function ComplexityPanel({
       </Text>
       {value.status === "TOO_SHORT" ? (
         <Text style={styles.notice}>
-          Scores appear from {READABILITY_MIN_WORDS} English words.
+          Use a passage with at least {READABILITY_MIN_WORDS} English words to see the scores.
         </Text>
       ) : (
         <View style={styles.metrics}>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{value.fleschReadingEase?.toFixed(1)}</Text>
-            <Text style={styles.metricLabel}>Flesch Reading Ease</Text>
+            <Text style={styles.metricLabel}>Reading ease</Text>
           </View>
           <View style={styles.metric}>
             <Text style={styles.metricValue}>{value.fleschKincaidGrade?.toFixed(1)}</Text>
-            <Text style={styles.metricLabel}>Flesch–Kincaid (U.S. grade estimate)</Text>
+            <Text style={styles.metricLabel}>Approx. US grade</Text>
           </View>
         </View>
       )}
@@ -41,17 +41,11 @@ export function ComplexityPanel({
         <Text style={styles.note}>This is a short passage; use the scores as a rough guide.</Text>
       ) : null}
       {value.status === "READY" ? <>
-        <Text style={styles.note}>Higher Reading Ease scores suggest easier reading.</Text>
-        <Text style={styles.note}>The US grade estimate is not a Hong Kong class level.</Text>
+        <Text style={styles.note}>A higher reading ease score suggests easier reading. The grade uses the US school scale.</Text>
       </> : null}
-      <ProgressiveDisclosure title="How these estimates are calculated">
+      <ProgressiveDisclosure title="How these scores work">
         <Text style={styles.note}>
-          Both formulas use average sentence length and estimated syllables per word. Flesch Reading
-          Ease = 206.835 − 1.015 × words per sentence − 84.6 × syllables per word. Flesch–Kincaid =
-          0.39 × words per sentence + 11.8 × syllables per word − 15.59.
-        </Text>
-        <Text style={styles.note}>
-          The App estimates syllables. The US grade estimate is a reference, not a Hong Kong class level.
+          Flesch Reading Ease and Flesch–Kincaid use sentence length and the estimated number of syllables per word. Use the scores alongside your own reading of the text.
         </Text>
       </ProgressiveDisclosure>
     </View>

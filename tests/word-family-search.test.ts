@@ -57,7 +57,7 @@ test("real A search lists all related forms with the exact query, genuine form c
     const rows = sortWordForms(groups[0]!.forms, "reusable", groups[0]!.frequencies);
     assert.equal(rows[0]!.form.form, "reusable");
     assert.equal(rows[1]!.form.form, "use");
-    assert.equal(rows[1]!.frequency, 39899);
+    assert.equal(rows[1]!.frequency, 39778);
     assert.equal(rows[2]!.form.form, "used");
     const be = await repository.getFamily("stress");
     assert.equal(
@@ -111,7 +111,7 @@ test("frequency shard failure retries; installed generations never fall back to 
     );
     const hybrid = new HybridRepository(primary, {} as HkeleRepository);
     await assert.rejects(hybrid.getWordFormFrequencies("use"), /503/);
-    assert.equal(wordFormFrequency((await hybrid.getWordFormFrequencies("use")).use), 39899);
+    assert.equal(wordFormFrequency((await hybrid.getWordFormFrequencies("use")).use), 39778);
     assert.equal(hybrid.getDataMode(), "installed-full");
   } finally {
     globalThis.fetch = original;

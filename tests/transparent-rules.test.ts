@@ -214,7 +214,7 @@ test("grouped text results honour first occurrence and family alphabetic order; 
   assert.equal(hkFrequencyDisplay(2001).band, "later");
   assert.match(
     readFileSync("src/screens/CheckTextScreen.tsx", "utf8"),
-    /label="CPB100 sight words"/,
+    /label="100 sight words \(CPB100\)"/,
   );
 });
 
