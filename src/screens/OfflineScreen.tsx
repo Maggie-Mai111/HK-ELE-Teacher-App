@@ -315,7 +315,7 @@ const styles = StyleSheet.create({
   heading: { fontSize: 32, fontWeight: "800", color: colors.ink },
   intro: { fontSize: 20, lineHeight: 27, color: colors.muted },
   note: { fontSize: 18, lineHeight: 27, color: colors.ink },
-  small: { fontSize: 16, lineHeight: 24, color: colors.muted },
-  value: { fontSize: 17, lineHeight: 26, fontWeight: "700", color: colors.primary },
+  small: { fontSize: 18, lineHeight: 26, color: colors.muted },
+  value: { fontSize: 18, lineHeight: 26, fontWeight: "700", color: colors.primary },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
 });

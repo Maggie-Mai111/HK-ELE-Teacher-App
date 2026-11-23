@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   title: { fontSize: 21, fontWeight: "800", color: colors.ink },
-  meta: { fontSize: 16, lineHeight: 24, color: colors.muted },
+  meta: { fontSize: 18, lineHeight: 26, color: colors.muted },
   highlightOptions: {
     backgroundColor: colors.canvas,
     padding: spacing.sm,
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     minHeight: 44,
   },
-  error: { fontSize: 17, lineHeight: 25, color: colors.danger },
+  error: { fontSize: 18, lineHeight: 26, color: colors.danger },
   groupRow: {
     backgroundColor: colors.canvas,
     padding: spacing.sm,

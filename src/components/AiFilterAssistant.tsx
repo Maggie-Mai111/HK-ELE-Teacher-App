@@ -326,8 +326,8 @@ export function AiFilterAssistant({
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  chevron: { color: colors.primary, fontSize: 17, fontWeight: "800" },
-  compactDescription: { color: colors.muted, fontSize: 17, lineHeight: 24 },
+  chevron: { color: colors.primary, fontSize: 18, fontWeight: "800" },
+  compactDescription: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   compactHeader: {
     alignItems: "center",
     flexDirection: "row",
@@ -337,9 +337,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   compactText: { flex: 1, gap: spacing.xs },
-  condition: { color: colors.ink, fontSize: 17, lineHeight: 25 },
-  description: { color: colors.muted, fontSize: 17, lineHeight: 25 },
-  error: { color: colors.danger, fontSize: 17, lineHeight: 25 },
+  condition: { color: colors.ink, fontSize: 18, lineHeight: 26 },
+  description: { color: colors.muted, fontSize: 18, lineHeight: 26 },
+  error: { color: colors.danger, fontSize: 18, lineHeight: 26 },
   errorBox: { gap: spacing.sm },
   expandedBody: { gap: spacing.sm, padding: spacing.md, paddingTop: 0 },
   input: {
@@ -361,8 +361,8 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   pressed: { backgroundColor: colors.subdued },
-  question: { color: colors.ink, fontSize: 17, fontWeight: "700", lineHeight: 25 },
-  quickTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
+  question: { color: colors.ink, fontSize: 18, fontWeight: "700", lineHeight: 26 },
+  quickTitle: { color: colors.ink, fontSize: 18, fontWeight: "800" },
   summary: {
     backgroundColor: colors.surface,
     borderRadius: 11,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     paddingTop: 0,
   },
-  unavailableText: { color: colors.muted, fontSize: 17, lineHeight: 25 },
-  verifiedNote: { color: colors.muted, fontSize: 17, lineHeight: 25 },
-  warning: { color: colors.accent, fontSize: 17, lineHeight: 25 },
+  unavailableText: { color: colors.muted, fontSize: 18, lineHeight: 26 },
+  verifiedNote: { color: colors.muted, fontSize: 18, lineHeight: 26 },
+  warning: { color: colors.accent, fontSize: 18, lineHeight: 26 },
 });

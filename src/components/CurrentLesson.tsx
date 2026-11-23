@@ -14,5 +14,5 @@ export function CurrentLesson({ teaching }: { teaching: TeachingListStore }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: spacing.sm },
-  label: { color: colors.primary, fontSize: 17, lineHeight: 25, fontWeight: "600", flexShrink: 1 },
+  label: { color: colors.primary, fontSize: 18, lineHeight: 26, fontWeight: "600", flexShrink: 1 },
 });

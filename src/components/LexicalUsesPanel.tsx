@@ -26,5 +26,5 @@ export function LexicalUsesPanel({word, familyKey, repository}: {word: string; f
     return () => {active = false;};
   },[word,familyKey,repository,key]);
   if (loaded?.key !== key || !loaded.rows.length) return null;
-  return <ProgressiveDisclosure title="Recorded uses">{loaded.rows.map((row,i) => <View key={i} style={{gap:6}}><Text style={{fontSize:16,fontWeight:"700"}}>{row.channel === "limited" ? "Special use" : "Meaning and use"}</Text><Text selectable style={{fontSize:17,lineHeight:25}}>{useSummary(row)}</Text></View>)}</ProgressiveDisclosure>;
+  return <ProgressiveDisclosure title="Recorded uses">{loaded.rows.map((row,i) => <View key={i} style={{gap:6}}><Text style={{fontSize:18,fontWeight:"700"}}>{row.channel === "limited" ? "Special use" : "Meaning and use"}</Text><Text selectable style={{fontSize:18,lineHeight:26}}>{useSummary(row)}</Text></View>)}</ProgressiveDisclosure>;
 }

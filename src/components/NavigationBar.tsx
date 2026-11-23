@@ -76,8 +76,8 @@ const styles = StyleSheet.create({
   label: {
     textAlign: "center",
     color: colors.muted,
-    fontSize: 16,
-    lineHeight: 23,
+    fontSize: 17,
+    lineHeight: 24,
     fontWeight: "600",
   },
   pressed: { opacity: 0.72 },

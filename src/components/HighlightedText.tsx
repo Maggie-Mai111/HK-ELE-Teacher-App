@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   legend: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs, paddingTop: spacing.sm },
   legendItem: {
     borderRadius: 7,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "700",
     overflow: "hidden",
     paddingHorizontal: spacing.sm,

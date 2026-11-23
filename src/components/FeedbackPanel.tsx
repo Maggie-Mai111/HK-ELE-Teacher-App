@@ -133,14 +133,14 @@ const styles = StyleSheet.create({
   },
   heading: { color: colors.ink, fontSize: 29, fontWeight: "700", lineHeight: 36 },
   body: { color: colors.ink, fontSize: 19, lineHeight: 29 },
-  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   context: {
     backgroundColor: colors.surface,
     padding: spacing.md,
     borderRadius: 14,
     gap: spacing.sm,
   },
-  label: { color: colors.muted, fontSize: 17 },
+  label: { color: colors.muted, fontSize: 18 },
   value: { color: colors.ink, fontSize: 21, fontWeight: "600" },
   input: {
     backgroundColor: colors.canvas,

@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
   heroWide: { flexDirection: "row", alignItems: "center" },
   introduction: { gap: spacing.md, minWidth: 0 },
   half: { flex: 1 },
-  eyebrow: { color: colors.muted, fontSize: 16, fontWeight: "600", lineHeight: 24 },
+  eyebrow: { color: colors.muted, fontSize: 18, fontWeight: "600", lineHeight: 26 },
   heading: { color: colors.ink, fontSize: 34, fontWeight: "700", lineHeight: 41 },
   headingWide: { fontSize: 46, lineHeight: 54 },
   description: { color: colors.ink, fontSize: 20, lineHeight: 28 },
@@ -123,6 +123,6 @@ const styles = StyleSheet.create({
   primaryTask: { backgroundColor: "#e7f2eb", borderColor: "#b4d2c0" },
   taskTitle: { color: colors.ink, fontSize: 21, fontWeight: "600", lineHeight: 28 },
   taskDescription: { color: colors.muted, fontSize: 18, lineHeight: 27 },
-  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   pressed: { opacity: 0.75 },
 });

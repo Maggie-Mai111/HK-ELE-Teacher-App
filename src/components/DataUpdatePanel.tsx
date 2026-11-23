@@ -147,15 +147,15 @@ export function DataUpdatePanel() {
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  label: { color: colors.muted, fontSize: 16, fontWeight: "700" },
-  message: { color: colors.ink, fontSize: 16, lineHeight: 24 },
-  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
+  label: { color: colors.muted, fontSize: 18, fontWeight: "700" },
+  message: { color: colors.ink, fontSize: 18, lineHeight: 26 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   notice: {
     backgroundColor: colors.warningSoft,
     borderRadius: 9,
     color: colors.ink,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 18,
+    lineHeight: 26,
     padding: spacing.sm,
   },
   preview: {
@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     padding: spacing.sm,
   },
-  previewTitle: { color: colors.ink, fontSize: 17, fontWeight: "800" },
-  privacy: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  previewTitle: { color: colors.ink, fontSize: 18, fontWeight: "800" },
+  privacy: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   status: { gap: spacing.xs },
-  value: { color: colors.ink, fontSize: 16, lineHeight: 24 },
+  value: { color: colors.ink, fontSize: 18, lineHeight: 26 },
 });

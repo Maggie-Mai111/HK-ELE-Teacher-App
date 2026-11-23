@@ -8,12 +8,12 @@ export function WordViewSelector() {
   const view = useSyncExternalStore(subscribeWordView, getWordView, getWordView);
   return (
     <View style={{ gap: 8 }}>
-      <Text style={{ fontSize: 17, fontWeight: "700" }}>Vocabulary set</Text>
+      <Text style={{ fontSize: 18, fontWeight: "700" }}>Vocabulary set</Text>
       <View accessibilityLabel="Vocabulary set" style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         <ChoiceChip label={wordViewLabels.all} selected={view === "all"} onPress={() => setWordView("all")} />
         <ChoiceChip label={wordViewLabels.familiar} selected={view === "familiar"} onPress={() => setWordView("familiar")} />
       </View>
-      <Text style={{ fontSize: 16, lineHeight: 23 }}>{content.vocabularySetHint}</Text>
+      <Text style={{ fontSize: 18, lineHeight: 26 }}>{content.vocabularySetHint}</Text>
     </View>
   );
 }

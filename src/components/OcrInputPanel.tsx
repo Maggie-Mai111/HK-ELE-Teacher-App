@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   box: { gap: spacing.md },
   image: { width: "100%", height: 180, backgroundColor: colors.canvas, borderRadius: 10 },
   message: { color: colors.ink, fontSize: 18, lineHeight: 27 },
-  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   review: { gap: spacing.md },
   title: { color: colors.ink, fontSize: 19, fontWeight: "700" },
   textarea: {

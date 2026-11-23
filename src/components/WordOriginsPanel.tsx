@@ -55,7 +55,7 @@ export function WordOriginsPanel({
 const styles = StyleSheet.create({
   intro: { color: colors.ink, fontSize: 19, lineHeight: 28 },
   item: { backgroundColor: colors.canvas, borderRadius: 10, padding: spacing.md, gap: spacing.xs },
-  language: { color: colors.primary, fontSize: 17, fontWeight: "700" },
+  language: { color: colors.primary, fontSize: 18, fontWeight: "700" },
   form: { color: colors.ink, fontSize: 21, lineHeight: 29, fontWeight: "700" },
   meaning: { color: colors.ink, fontSize: 19, lineHeight: 28 },
 });

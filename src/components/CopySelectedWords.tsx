@@ -32,6 +32,6 @@ export function CopySelectedWords({items,onReview,reviewLabel}: {items: Teaching
 }
 const styles=StyleSheet.create({
   box:{gap:spacing.sm,width:"100%"},actions:{flexDirection:"row",flexWrap:"wrap",gap:spacing.sm},
-  note:{color:colors.primary,fontSize: 17,lineHeight: 25},
+  note:{color:colors.primary,fontSize: 18,lineHeight: 26},
   manual:{color:colors.ink,fontSize: 19,lineHeight: 28,minHeight:100,borderWidth:1,borderColor:colors.border,borderRadius:10,padding:spacing.sm,backgroundColor:colors.surface},
 });

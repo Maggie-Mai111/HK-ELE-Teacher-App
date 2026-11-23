@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
-  brand: { color: colors.primary, fontSize: 17, fontWeight: "700" },
+  brand: { color: colors.primary, fontSize: 18, fontWeight: "700" },
   heading: { color: colors.ink, fontSize: 30, fontWeight: "800", lineHeight: 38 },
   body: { color: colors.ink, fontSize: 19, lineHeight: 29 },
   card: {
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   item: { color: colors.ink, fontSize: 19, lineHeight: 28 },
-  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   details: {
     gap: spacing.sm,
     padding: spacing.md,

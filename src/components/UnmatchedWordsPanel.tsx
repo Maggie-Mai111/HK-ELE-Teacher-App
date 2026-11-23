@@ -28,8 +28,8 @@ export function UnmatchedWordsPanel({ items }: { items: UnmatchedWordSummary[] }
 }
 
 const styles = StyleSheet.create({
-  count: { color: colors.muted, fontSize: 16, fontWeight: "700" },
-  explanation: { color: colors.muted, fontSize: 16, lineHeight: 24 },
+  count: { color: colors.muted, fontSize: 18, fontWeight: "700" },
+  explanation: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   form: { color: colors.ink, fontSize: 20, fontWeight: "800" },
   headingRow: {
     alignItems: "center",
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     justifyContent: "space-between",
   },
-  note: { color: colors.ink, fontSize: 17, lineHeight: 26 },
+  note: { color: colors.ink, fontSize: 18, lineHeight: 26 },
   row: {
     backgroundColor: colors.warningSoft,
     borderRadius: 10,

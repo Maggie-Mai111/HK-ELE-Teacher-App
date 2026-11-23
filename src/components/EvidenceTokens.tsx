@@ -29,8 +29,8 @@ const styles = StyleSheet.create({
   token: {
     maxWidth: "100%",
     flexShrink: 1,
-    fontSize: 17,
-    lineHeight: 24,
+    fontSize: 18,
+    lineHeight: 26,
     fontWeight: "500",
     paddingVertical: 4,
     paddingHorizontal: 7,

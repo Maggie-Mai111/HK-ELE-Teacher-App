@@ -40,5 +40,5 @@ const styles = StyleSheet.create({
   box: { gap: spacing.sm, paddingTop: spacing.sm },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   title: { color: colors.ink, fontSize: 19, lineHeight: 28, fontWeight: "700" },
-  note: { color: colors.muted, fontSize: 16, lineHeight: 24 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
 });

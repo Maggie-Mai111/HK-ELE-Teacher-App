@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   title: { color: colors.primary, fontSize: 19, fontWeight: "800" },
-  note: { color: colors.muted, fontSize: 16, lineHeight: 24 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   search: {
     backgroundColor: colors.canvas,
     borderWidth: 1,
@@ -170,5 +170,5 @@ const styles = StyleSheet.create({
   choiceText: { flex: 1 },
   word: { color: colors.ink, fontSize: 18, fontWeight: "700" },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  success: { color: colors.primary, fontSize: 17, fontWeight: "700" },
+  success: { color: colors.primary, fontSize: 18, fontWeight: "700" },
 });

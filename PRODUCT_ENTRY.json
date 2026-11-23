@@ -1,9 +1,9 @@
 {
-  "version": 92,
-  "date": "2026-11-23",
+  "version": 93,
+  "date": "2026-11-24",
   "dataVersion": "2026-11-23-author-closeout-v1",
-  "status": "LOCAL_UNIFIED_DATA_ACCEPTED_NOT_DEPLOYED",
+  "status": "LOCAL_APP_READABLE_TYPE_NOT_DEPLOYED",
   "publicDeploymentPerformed": false,
-  "dataChanged": true,
+  "dataChanged": false,
   "masterEntry": "../PRODUCT_ENTRY.json"
 }

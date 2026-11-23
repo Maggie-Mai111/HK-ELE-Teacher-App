@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     fontWeight: "700",
   },
-  label: { width: "100%", fontSize: 17, color: colors.muted },
+  label: { width: "100%", fontSize: 18, color: colors.muted },
   parts: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, alignItems: "center" },
   part: { fontSize: 18, color: colors.ink },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },

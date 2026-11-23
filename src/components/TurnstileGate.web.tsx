@@ -135,7 +135,7 @@ export function TurnstileGate({ onTokenChange, resetNonce }: Props) {
   return (
     <View style={{ gap: spacing.xs }}>
       <div aria-label="Search verification" ref={host} />
-      <Text accessibilityLiveRegion="polite" style={{ color: colors.muted, fontSize: 15 }}>
+      <Text accessibilityLiveRegion="polite" style={{ color: colors.muted, fontSize: 18 }}>
         {message}
       </Text>
     </View>

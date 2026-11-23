@@ -51,5 +51,5 @@ const styles = StyleSheet.create({
   context: { color: colors.ink, fontSize: 19, lineHeight: 29 },
   matched: { backgroundColor: colors.primarySoft, fontWeight: "800" },
   title: { color: colors.ink, fontSize: 22, lineHeight: 30, fontWeight: "700" },
-  note: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
 });

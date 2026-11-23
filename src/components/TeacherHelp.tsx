@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   topics: { flexDirection: "row", gap: spacing.xs, paddingHorizontal: spacing.sm, paddingTop: spacing.sm },
   topic: { flex: 1, minHeight: 44, borderWidth: 1, borderColor: colors.border, borderRadius: 8, alignItems: "center", justifyContent: "center", padding: spacing.xs },
   topicActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  topicLabel: { fontSize: 16, lineHeight: 22, fontWeight: "700", color: colors.ink, textAlign: "center" },
+  topicLabel: { fontSize: 18, lineHeight: 26, fontWeight: "700", color: colors.ink, textAlign: "center" },
   topicLabelActive: { color: colors.surface },
   items: { gap: spacing.md },
   item: { gap: spacing.xs },

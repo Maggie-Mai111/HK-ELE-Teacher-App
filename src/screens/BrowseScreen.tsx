@@ -599,7 +599,7 @@ export function BrowseScreen({ repository, teaching, onOpenFamily }: Props) {
 
 const styles = StyleSheet.create({
   actions: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
-  aiConditions: { color: colors.ink, fontSize: 17, lineHeight: 25 },
+  aiConditions: { color: colors.ink, fontSize: 18, lineHeight: 26 },
   batchNotice: {
     alignItems: "flex-start",
     backgroundColor: colors.surface,
@@ -607,15 +607,15 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.sm,
   },
-  batchText: { color: colors.ink, fontSize: 17, fontWeight: "700", lineHeight: 25 },
+  batchText: { color: colors.ink, fontSize: 18, fontWeight: "700", lineHeight: 26 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   content: { gap: spacing.md, padding: spacing.lg },
   error: {
     backgroundColor: colors.dangerSoft,
     borderRadius: 10,
     color: colors.danger,
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 18,
+    lineHeight: 26,
     padding: spacing.md,
   },
   filterBody: { gap: spacing.sm },
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     minWidth: 220,
     paddingHorizontal: spacing.md,
   },
-  label: { color: colors.ink, fontSize: 17, fontWeight: "800" },
+  label: { color: colors.ink, fontSize: 18, fontWeight: "800" },
   moreFilters: {
     alignItems: "flex-start",
     backgroundColor: colors.subdued,
@@ -641,9 +641,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.md,
   },
-  muted: { color: colors.muted, fontSize: 17, lineHeight: 25 },
+  muted: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   pager: { flexDirection: "row", gap: spacing.sm, justifyContent: "space-between" },
-  resultStatus: { color: colors.primary, fontSize: 17, fontWeight: "700", lineHeight: 25 },
+  resultStatus: { color: colors.primary, fontSize: 18, fontWeight: "700", lineHeight: 26 },
   resultSummary: {
     backgroundColor: colors.primarySoft,
     borderRadius: 15,
@@ -661,8 +661,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.warningSoft,
     borderRadius: 8,
     color: colors.ink,
-    fontSize: 17,
-    lineHeight: 25,
+    fontSize: 18,
+    lineHeight: 26,
     padding: spacing.sm,
   },
 });

@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   heading: { fontSize: 21, fontWeight: "800", color: colors.ink },
-  note: { fontSize: 17, lineHeight: 25, color: colors.muted },
+  note: { fontSize: 18, lineHeight: 26, color: colors.muted },
   wordCard: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   wordButton: { flexGrow: 1 },
   word: { color: colors.primary, fontSize: 20, fontWeight: "800", textDecorationLine: "underline" },
   marker: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "800",
     color: colors.primary,
     backgroundColor: colors.surface,
@@ -328,11 +328,11 @@ const styles = StyleSheet.create({
   },
   bold: { fontWeight: "700" },
   evidenceRow: { gap: spacing.xs },
-  textbook: { fontSize: 17, lineHeight: 25, color: colors.hkTop },
-  grade: { fontSize: 17, lineHeight: 25, color: colors.cpb },
+  textbook: { fontSize: 18, lineHeight: 26, color: colors.hkTop },
+  grade: { fontSize: 18, lineHeight: 26, color: colors.cpb },
   tableRow: { flexDirection: "row" },
   tableHead: {
-    fontSize: 16,
+    fontSize: 18,
     color: colors.surface,
     fontWeight: "800",
     backgroundColor: colors.primary,

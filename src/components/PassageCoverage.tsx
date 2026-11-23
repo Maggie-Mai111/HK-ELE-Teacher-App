@@ -26,4 +26,4 @@ export function PassageCoverage({results,target,onTarget,onOutside}: {
     </ProgressiveDisclosure>
   </View>;
 }
-const styles=StyleSheet.create({box:{gap:spacing.sm,padding:spacing.md,backgroundColor:colors.primarySoft,borderRadius:15},title:{fontSize:19,fontWeight:"800",color:colors.ink},value:{fontSize:30,fontWeight:"800",color:colors.ink},text:{fontSize:17,lineHeight:25,color:colors.ink},actions:{flexDirection:"row",flexWrap:"wrap",gap:spacing.sm}});
+const styles=StyleSheet.create({box:{gap:spacing.sm,padding:spacing.md,backgroundColor:colors.primarySoft,borderRadius:15},title:{fontSize:19,fontWeight:"800",color:colors.ink},value:{fontSize:30,fontWeight:"800",color:colors.ink},text:{fontSize:18,lineHeight:26,color:colors.ink},actions:{flexDirection:"row",flexWrap:"wrap",gap:spacing.sm}});

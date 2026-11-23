@@ -22,7 +22,7 @@ export function ContextReviewPanel({ items }: { items: ContextReviewSummary[] })
   );
 }
 const styles = StyleSheet.create({
-  note: { color: colors.muted, fontSize: 17, lineHeight: 26 },
+  note: { color: colors.muted, fontSize: 18, lineHeight: 26 },
   row: {
     borderLeftWidth: 3,
     borderLeftColor: colors.primary,

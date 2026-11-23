@@ -127,6 +127,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   word: { fontSize: 24, fontWeight: "800", color: colors.ink },
-  label: { fontSize: 17, fontWeight: "700", color: colors.muted },
+  label: { fontSize: 18, fontWeight: "700", color: colors.muted },
   note: { fontSize: 19, lineHeight: 28, color: colors.ink },
 });
